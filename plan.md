@@ -27,7 +27,7 @@ Tarih: 2026-06-04
 - [x] Canva linki kaldırıldı
 - [x] Dil seviyeleri görseli (bar)
 - [ ] Profil fotoğrafı ekle (sol üst köşeye)
-- [ ] PDF olarak kaydet → cv.html aç → Print / Save PDF
+- [x] PDF oluşturuldu → Anil_Kavak_CV.pdf (Chrome headless ile)
 
 ---
 
@@ -65,8 +65,8 @@ Tarih: 2026-06-04
 
 ## 4. Yayına Alma (Hosting)
 
-- [ ] GitHub hesabı kontrol et / oluştur
-- [ ] Repository oluştur (anilkavak veya cv)
-- [ ] index.html + cv.html push et
-- [ ] GitHub Pages aktif et → ücretsiz URL al (anilkavak.github.io)
+- [x] GitHub hesabı: anllkvk
+- [x] Repository oluşturuldu: anllkvk.github.io
+- [x] index.html + cv.html + plan.md push edildi
+- [x] GitHub Pages otomatik aktif → https://anllkvk.github.io
 - [ ] Custom domain bağla (opsiyonel)
