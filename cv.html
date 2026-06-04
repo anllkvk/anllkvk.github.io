@@ -1,0 +1,459 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Anıl Kavak — CV</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=EB+Garamond:ital,wght@0,400;0,500;0,600;0,700;1,400&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --ink:     #0f0f14;
+      --ink2:    #2d2d3a;
+      --accent:  #1a1a8c;
+      --accent2: #3b3bba;
+      --rule:    #c8c8d8;
+      --rule2:   #e8e8f0;
+      --muted:   #555566;
+      --bg:      #fafafa;
+      --sidebar: #f4f4f8;
+    }
+
+    body {
+      font-family: 'Inter', sans-serif;
+      background: #e8e8ec;
+      color: var(--ink);
+      font-size: 13px;
+      line-height: 1.5;
+    }
+
+    /* TOOLBAR */
+    .toolbar {
+      background: #1a1a2e;
+      padding: 0.7rem 2rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .toolbar-title { color: rgba(255,255,255,0.5); font-size: 0.75rem; letter-spacing: 0.05em; }
+    .toolbar-actions { display: flex; gap: 0.6rem; }
+    .tb-btn {
+      padding: 0.4rem 1rem;
+      border-radius: 4px;
+      font-size: 0.75rem;
+      font-weight: 600;
+      cursor: pointer;
+      border: none;
+      text-decoration: none;
+      transition: all 0.15s;
+    }
+    .tb-back { background: rgba(255,255,255,0.1); color: rgba(255,255,255,0.7); }
+    .tb-back:hover { background: rgba(255,255,255,0.15); }
+    .tb-print { background: #1a1a8c; color: #fff; }
+    .tb-print:hover { background: #2525b0; }
+    @media print { .toolbar { display: none; } }
+
+    /* PAGE */
+    .page {
+      width: 210mm;
+      min-height: 297mm;
+      margin: 1.5rem auto 3rem;
+      background: #fff;
+      display: grid;
+      grid-template-columns: 1fr 68mm;
+      box-shadow: 0 8px 48px rgba(0,0,0,0.18);
+    }
+
+    /* SIDEBAR */
+    .sidebar {
+      background: var(--sidebar);
+      border-left: 1px solid var(--rule2);
+      padding: 2.8rem 1.6rem;
+      display: flex;
+      flex-direction: column;
+      gap: 2rem;
+    }
+
+    /* MAIN */
+    .main { padding: 2.8rem 2.2rem 2.8rem 2.6rem; }
+
+    /* NAME BLOCK */
+    .name-block { padding-bottom: 1.6rem; margin-bottom: 1.6rem; border-bottom: 2px solid var(--ink); }
+    .cv-name {
+      font-family: 'EB Garamond', serif;
+      font-size: 2.6rem;
+      font-weight: 700;
+      color: var(--ink);
+      line-height: 1;
+      letter-spacing: -0.01em;
+      margin-bottom: 0.35rem;
+    }
+    .cv-title {
+      font-size: 0.8rem;
+      font-weight: 500;
+      color: var(--accent2);
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      margin-bottom: 0.6rem;
+    }
+    .cv-contact-row {
+      display: flex; flex-wrap: wrap; gap: 0.3rem 1.2rem;
+      font-size: 0.72rem; color: var(--muted);
+    }
+    .cv-contact-row a { color: var(--muted); text-decoration: none; }
+    .cv-contact-row span { display: flex; align-items: center; gap: 0.3rem; }
+    .cv-contact-row span::before { content: attr(data-icon); opacity: 0.5; }
+
+    /* SECTION */
+    .sec { margin-bottom: 1.6rem; }
+    .sec:last-child { margin-bottom: 0; }
+    .sec-head {
+      font-size: 0.6rem;
+      font-weight: 700;
+      color: var(--accent);
+      text-transform: uppercase;
+      letter-spacing: 0.18em;
+      padding-bottom: 0.3rem;
+      margin-bottom: 0.9rem;
+      border-bottom: 1px solid var(--accent);
+    }
+
+    /* EXPERIENCE ITEM */
+    .ei { margin-bottom: 1.1rem; }
+    .ei:last-child { margin-bottom: 0; }
+    .ei-head { display: flex; justify-content: space-between; align-items: baseline; gap: 0.8rem; margin-bottom: 0.1rem; }
+    .ei-role { font-weight: 700; font-size: 0.83rem; color: var(--ink); }
+    .ei-date { font-size: 0.68rem; color: var(--muted); white-space: nowrap; flex-shrink: 0; }
+    .ei-co { font-size: 0.74rem; color: var(--accent2); font-weight: 500; margin-bottom: 0.35rem; }
+    .ei-co span { color: var(--muted); font-weight: 400; }
+    .ei-ul { list-style: none; }
+    .ei-ul li {
+      font-size: 0.74rem; color: var(--muted);
+      padding-left: 0.9rem; position: relative;
+      line-height: 1.55; margin-bottom: 0.22rem;
+    }
+    .ei-ul li::before { content: '–'; position: absolute; left: 0; color: var(--accent2); }
+    .ei-tags { display: flex; flex-wrap: wrap; gap: 0.25rem; margin-top: 0.35rem; }
+    .ei-tag {
+      font-size: 0.63rem; font-weight: 500;
+      padding: 0.1rem 0.45rem;
+      background: #ededf8;
+      color: var(--accent);
+      border-radius: 2px;
+    }
+
+    /* SUMMARY */
+    .summary-text {
+      font-size: 0.77rem;
+      color: var(--muted);
+      line-height: 1.7;
+      font-style: italic;
+    }
+
+    /* SIDEBAR SECTION */
+    .ss { }
+    .ss-head {
+      font-size: 0.58rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.18em;
+      color: var(--accent);
+      border-bottom: 1px solid var(--accent);
+      padding-bottom: 0.3rem;
+      margin-bottom: 0.8rem;
+    }
+
+    /* SKILLS SIDEBAR */
+    .skill-block { margin-bottom: 0.9rem; }
+    .skill-block:last-child { margin-bottom: 0; }
+    .skill-cat {
+      font-size: 0.66rem;
+      font-weight: 600;
+      color: var(--ink2);
+      margin-bottom: 0.3rem;
+    }
+    .skill-list { display: flex; flex-wrap: wrap; gap: 0.25rem; }
+    .skill-pill {
+      font-size: 0.63rem;
+      padding: 0.12rem 0.45rem;
+      background: #fff;
+      border: 1px solid var(--rule);
+      border-radius: 2px;
+      color: var(--muted);
+    }
+
+    /* EDU SIDEBAR */
+    .edu-entry { margin-bottom: 0.8rem; }
+    .edu-deg { font-weight: 600; font-size: 0.74rem; color: var(--ink); }
+    .edu-sch { font-size: 0.7rem; color: var(--accent2); font-weight: 500; }
+    .edu-yr  { font-size: 0.65rem; color: var(--muted); }
+    .edu-burs {
+      display: inline-block;
+      font-size: 0.6rem; font-weight: 600;
+      padding: 0.1rem 0.45rem;
+      background: #e8f8ef;
+      color: #1a7a45;
+      border-radius: 2px;
+      margin-top: 0.2rem;
+      letter-spacing: 0.04em;
+    }
+
+    /* LANG */
+    .lang-row { display: flex; justify-content: space-between; font-size: 0.72rem; margin-bottom: 0.3rem; }
+    .lang-name { font-weight: 600; color: var(--ink2); }
+    .lang-lvl  { color: var(--muted); }
+    .lang-bar  { height: 2px; background: var(--rule2); border-radius: 2px; margin-bottom: 0.5rem; overflow: hidden; }
+    .lang-fill { height: 100%; background: var(--accent); border-radius: 2px; }
+
+    /* ADDRESS */
+    .addr-text { font-size: 0.7rem; color: var(--muted); line-height: 1.6; }
+
+    /* INTERESTS */
+    .interest-tags { display: flex; flex-wrap: wrap; gap: 0.25rem; }
+    .i-tag {
+      font-size: 0.62rem; padding: 0.12rem 0.45rem;
+      background: #fff;
+      border: 1px solid var(--rule);
+      border-radius: 2px; color: var(--muted);
+    }
+
+    /* PRINT */
+    @media print {
+      body { background: #fff; }
+      .page { margin: 0; width: 100%; box-shadow: none; }
+    }
+  </style>
+</head>
+<body>
+
+<div class="toolbar">
+  <span class="toolbar-title">Anıl Kavak — Curriculum Vitae</span>
+  <div class="toolbar-actions">
+    <a href="index.html" class="tb-btn tb-back">← Portfolio</a>
+    <button class="tb-btn tb-print" onclick="window.print()">Print / Save PDF</button>
+  </div>
+</div>
+
+<div class="page">
+
+  <!-- MAIN COLUMN -->
+  <main class="main">
+
+    <div class="name-block">
+      <div class="cv-name">Anıl Kavak</div>
+      <div class="cv-title">MIS Student · Data Science &amp; AI · Marketing &amp; Business Development</div>
+      <div class="cv-contact-row">
+        <span data-icon="✉">anlkvk22@gmail.com</span>
+        <span data-icon="in"><a href="https://www.linkedin.com/in/an%C4%B1l-kavak-95045031b/">linkedin.com/in/anıl-kavak</a></span>
+        <span data-icon="📍">İstanbul, Türkiye</span>
+      </div>
+    </div>
+
+    <!-- SUMMARY -->
+    <div class="sec">
+      <div class="sec-head">Profile</div>
+      <p class="summary-text">
+        Management Information Systems student at İstinye University on a full scholarship, with a strong foundation in data science, AI tools, and business development. Currently contributing to TDG's marketing and growth operations while pursuing research in AI agent systems. Proven track record across five roles spanning tech, marketing, PR, and retail — driven by a commitment to building intelligent, data-driven solutions.
+      </p>
+    </div>
+
+    <!-- EXPERIENCE -->
+    <div class="sec">
+      <div class="sec-head">Experience</div>
+
+      <div class="ei">
+        <div class="ei-head">
+          <span class="ei-role">Marketing &amp; Administrative Specialist</span>
+          <span class="ei-date">Mar 2026 — Present</span>
+        </div>
+        <div class="ei-co">TDG <span>· Internship · Hybrid, İstanbul</span></div>
+        <ul class="ei-ul">
+          <li>Created and managed marketing content for TDG's digital channels in line with brand strategy.</li>
+          <li>Collected and structured B2B trade fair customer data to identify and qualify high-potential leads.</li>
+          <li>Coordinated client outreach and scheduled meetings to support the business development pipeline.</li>
+          <li>Provided administrative coordination across cross-functional teams in a hybrid environment.</li>
+        </ul>
+        <div class="ei-tags">
+          <span class="ei-tag">Content Marketing</span>
+          <span class="ei-tag">B2B Lead Generation</span>
+          <span class="ei-tag">CRM</span>
+          <span class="ei-tag">Business Development</span>
+        </div>
+      </div>
+
+      <div class="ei">
+        <div class="ei-head">
+          <span class="ei-role">Public Relations Specialist</span>
+          <span class="ei-date">Sep 2024 — Present</span>
+        </div>
+        <div class="ei-co">METİN GÜRSOY BRAND MANAGEMENT &amp; MARKETING <span>· Freelance</span></div>
+        <ul class="ei-ul">
+          <li>Managed PR and communication strategies for brand campaigns; event contributor at Hermes Events.</li>
+          <li>Coordinated media partnerships and maintained stakeholder relationships across projects.</li>
+        </ul>
+        <div class="ei-tags">
+          <span class="ei-tag">PR</span>
+          <span class="ei-tag">Event Management</span>
+          <span class="ei-tag">Brand Communications</span>
+        </div>
+      </div>
+
+      <div class="ei">
+        <div class="ei-head">
+          <span class="ei-role">IT Intern</span>
+          <span class="ei-date">Jul 2025 — Aug 2025</span>
+        </div>
+        <div class="ei-co">Social Office <span>· Internship · Remote</span></div>
+        <ul class="ei-ul">
+          <li>Supported IT operations; data processing with Excel and technical documentation via AutoCAD.</li>
+        </ul>
+        <div class="ei-tags"><span class="ei-tag">Excel</span><span class="ei-tag">AutoCAD</span></div>
+      </div>
+
+      <div class="ei">
+        <div class="ei-head">
+          <span class="ei-role">Student Assistant</span>
+          <span class="ei-date">Jul 2024 — Dec 2024</span>
+        </div>
+        <div class="ei-co">İstinye University <span>· Part-time · On-site</span></div>
+        <ul class="ei-ul">
+          <li>Assisted academic staff with document review, project coordination, and administrative processes.</li>
+        </ul>
+      </div>
+
+      <div class="ei">
+        <div class="ei-head">
+          <span class="ei-role">Sales Representative</span>
+          <span class="ei-date">Feb 2024 — Apr 2024</span>
+        </div>
+        <div class="ei-co">CK Klein Jeans <span>· Full-time · Mall of İstanbul</span></div>
+        <ul class="ei-ul">
+          <li>Exceeded personal sales targets for two consecutive months; managed stock, warranties, and shift logistics.</li>
+        </ul>
+      </div>
+
+      <div class="ei">
+        <div class="ei-head">
+          <span class="ei-role">Sales Representative</span>
+          <span class="ei-date">Jul 2023 — Feb 2024</span>
+        </div>
+        <div class="ei-co">SWAROVSKI <span>· Full-time · Mall of İstanbul</span></div>
+        <ul class="ei-ul">
+          <li>Completed supervisor-level sales training; converted regular visitors into long-term loyal clients.</li>
+          <li>Managed e-commerce client relationships and took on inventory and team motivation duties over time.</li>
+        </ul>
+      </div>
+    </div>
+
+    <!-- PROJECTS -->
+    <div class="sec">
+      <div class="sec-head">Projects &amp; Research</div>
+      <div class="ei">
+        <div class="ei-head">
+          <span class="ei-role">Bilişsel Çalışma Asistanı</span>
+          <span class="ei-date">2025 — Present</span>
+        </div>
+        <div class="ei-co">Thesis Project · <a href="https://bilissel-asistan.onrender.com/" style="color:var(--accent2);text-decoration:none;">bilissel-asistan.onrender.com</a></div>
+        <ul class="ei-ul">
+          <li>AI-powered cognitive study assistant selecting optimal study mode (Deep Work / Pomodoro) from sleep data.</li>
+          <li>Generates topic-specific cognitive warmup questions; includes Active Recall session analysis.</li>
+        </ul>
+        <div class="ei-tags"><span class="ei-tag">Python</span><span class="ei-tag">AI / LLM</span><span class="ei-tag">Web App</span></div>
+      </div>
+      <div class="ei">
+        <div class="ei-head">
+          <span class="ei-role">AgentFlow — Medium Publication</span>
+          <span class="ei-date">2024 — Present</span>
+        </div>
+        <div class="ei-co">Founder &amp; Author</div>
+        <ul class="ei-ul">
+          <li>Research publication on AI agents and their strategic impact on startups and business operations.</li>
+        </ul>
+      </div>
+    </div>
+
+  </main>
+
+  <!-- SIDEBAR -->
+  <aside class="sidebar">
+
+    <div class="ss">
+      <div class="ss-head">Education</div>
+      <div class="edu-entry">
+        <div class="edu-deg">Management Information Systems (YBS)</div>
+        <div class="edu-sch">İstinye University</div>
+        <div class="edu-yr">2023 – Present · İstanbul</div>
+        <span class="edu-burs">100% FULL SCHOLARSHIP</span>
+      </div>
+    </div>
+
+    <div class="ss">
+      <div class="ss-head">Technical Skills</div>
+      <div class="skill-block">
+        <div class="skill-cat">Programming & Data</div>
+        <div class="skill-list">
+          <span class="skill-pill">Python</span>
+          <span class="skill-pill">R</span>
+          <span class="skill-pill">SQL</span>
+          <span class="skill-pill">Data Analysis</span>
+          <span class="skill-pill">Excel</span>
+          <span class="skill-pill">AutoCAD</span>
+        </div>
+      </div>
+      <div class="skill-block">
+        <div class="skill-cat">AI & Dev Tools</div>
+        <div class="skill-list">
+          <span class="skill-pill">Generative AI</span>
+          <span class="skill-pill">Cursor AI</span>
+          <span class="skill-pill">Claude Code</span>
+          <span class="skill-pill">VS Code</span>
+        </div>
+      </div>
+      <div class="skill-block">
+        <div class="skill-cat">Marketing & Business</div>
+        <div class="skill-list">
+          <span class="skill-pill">Content Mkt.</span>
+          <span class="skill-pill">B2B Leads</span>
+          <span class="skill-pill">CRM</span>
+          <span class="skill-pill">PR</span>
+          <span class="skill-pill">Events</span>
+          <span class="skill-pill">Sales</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="ss">
+      <div class="ss-head">Languages</div>
+      <div class="lang-row"><span class="lang-name">Turkish</span><span class="lang-lvl">Native</span></div>
+      <div class="lang-bar"><div class="lang-fill" style="width:100%"></div></div>
+      <div class="lang-row"><span class="lang-name">English</span><span class="lang-lvl">Professional</span></div>
+      <div class="lang-bar"><div class="lang-fill" style="width:82%"></div></div>
+    </div>
+
+    <div class="ss">
+      <div class="ss-head">Address</div>
+      <div class="addr-text">
+        Esentepe, Kardeşler Caddesi No:45<br />
+        Kat:3, Daire No:3<br />
+        Şişli / İSTANBUL
+      </div>
+    </div>
+
+    <div class="ss">
+      <div class="ss-head">Interests</div>
+      <div class="interest-tags">
+        <span class="i-tag">AI Agents</span>
+        <span class="i-tag">Startups</span>
+        <span class="i-tag">Data Science</span>
+        <span class="i-tag">Basketball</span>
+        <span class="i-tag">Biz Dev</span>
+      </div>
+    </div>
+
+  </aside>
+</div>
+
+</body>
+</html>

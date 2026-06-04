@@ -1,0 +1,872 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Anıl Kavak — Portfolio</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=JetBrains+Mono:wght@300;400;500;700&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg:       #050508;
+      --bg2:      #0c0c12;
+      --bg3:      #13131c;
+      --bg4:      #1a1a26;
+      --cyan:     #00f5ff;
+      --cyan-dim: rgba(0,245,255,0.12);
+      --purple:   #a855f7;
+      --purple-dim: rgba(168,85,247,0.12);
+      --green:    #00ff88;
+      --green-dim: rgba(0,255,136,0.1);
+      --border:   rgba(255,255,255,0.07);
+      --border2:  rgba(0,245,255,0.2);
+      --text:     #e2e2f0;
+      --muted:    rgba(255,255,255,0.4);
+      --r: 10px;
+    }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      font-family: 'Space Grotesk', sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      overflow-x: hidden;
+    }
+
+    /* GRID BACKGROUND */
+    body::before {
+      content: '';
+      position: fixed;
+      inset: 0;
+      background-image:
+        linear-gradient(rgba(0,245,255,0.03) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(0,245,255,0.03) 1px, transparent 1px);
+      background-size: 60px 60px;
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    /* NAV */
+    nav {
+      position: fixed; top: 0; left: 0; right: 0; z-index: 100;
+      display: flex; justify-content: space-between; align-items: center;
+      padding: 1rem 5%;
+      background: rgba(5,5,8,0.8);
+      backdrop-filter: blur(24px);
+      border-bottom: 1px solid var(--border);
+    }
+    .nav-logo {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.9rem;
+      color: var(--cyan);
+      letter-spacing: 0.05em;
+    }
+    .nav-logo span { color: var(--muted); }
+    .nav-links { display: flex; gap: 2rem; list-style: none; }
+    .nav-links a {
+      color: var(--muted);
+      text-decoration: none;
+      font-size: 0.82rem;
+      font-weight: 500;
+      font-family: 'JetBrains Mono', monospace;
+      letter-spacing: 0.04em;
+      transition: color 0.2s;
+    }
+    .nav-links a:hover { color: var(--cyan); }
+    .nav-cta {
+      padding: 0.45rem 1.1rem;
+      border: 1px solid var(--cyan);
+      border-radius: 4px;
+      color: var(--cyan) !important;
+      font-size: 0.78rem !important;
+      transition: background 0.2s !important;
+    }
+    .nav-cta:hover { background: var(--cyan-dim) !important; }
+
+    /* HERO */
+    .hero {
+      min-height: 100vh;
+      display: flex; align-items: center;
+      padding: 0 5%;
+      position: relative;
+      overflow: hidden;
+    }
+    .hero-glow-1 {
+      position: absolute; top: -150px; right: -100px;
+      width: 700px; height: 700px;
+      background: radial-gradient(circle, rgba(0,245,255,0.07) 0%, transparent 65%);
+      pointer-events: none;
+    }
+    .hero-glow-2 {
+      position: absolute; bottom: -200px; left: -200px;
+      width: 600px; height: 600px;
+      background: radial-gradient(circle, rgba(168,85,247,0.06) 0%, transparent 65%);
+      pointer-events: none;
+    }
+    .hero-inner { position: relative; z-index: 1; max-width: 820px; }
+
+    .hero-tag {
+      display: inline-flex; align-items: center; gap: 0.5rem;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.75rem;
+      color: var(--cyan);
+      border: 1px solid rgba(0,245,255,0.25);
+      background: rgba(0,245,255,0.05);
+      padding: 0.4rem 0.9rem;
+      border-radius: 3px;
+      margin-bottom: 2rem;
+      letter-spacing: 0.08em;
+    }
+    .tag-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--green); animation: blink 2s infinite; }
+    @keyframes blink { 0%,100%{opacity:1} 50%{opacity:0.2} }
+
+    .hero h1 {
+      font-size: clamp(3rem, 7vw, 5.5rem);
+      font-weight: 700;
+      line-height: 1.05;
+      letter-spacing: -0.03em;
+      margin-bottom: 1.5rem;
+    }
+    .hero h1 .line1 { display: block; color: var(--text); }
+    .hero h1 .line2 {
+      display: block;
+      background: linear-gradient(90deg, var(--cyan), var(--purple));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+
+    .hero-desc {
+      font-size: 1.05rem;
+      color: var(--muted);
+      line-height: 1.75;
+      max-width: 540px;
+      margin-bottom: 2.5rem;
+    }
+
+    .hero-btns { display: flex; gap: 1rem; flex-wrap: wrap; }
+    .btn {
+      display: inline-flex; align-items: center; gap: 0.5rem;
+      padding: 0.75rem 1.6rem;
+      border-radius: 5px;
+      font-size: 0.85rem;
+      font-weight: 600;
+      font-family: 'JetBrains Mono', monospace;
+      text-decoration: none;
+      cursor: pointer;
+      transition: all 0.2s;
+      letter-spacing: 0.03em;
+    }
+    .btn-cyan {
+      background: var(--cyan);
+      color: #000;
+      border: none;
+    }
+    .btn-cyan:hover { box-shadow: 0 0 24px rgba(0,245,255,0.4); transform: translateY(-2px); }
+    .btn-ghost {
+      background: transparent;
+      color: var(--text);
+      border: 1px solid var(--border2);
+    }
+    .btn-ghost:hover { border-color: var(--cyan); color: var(--cyan); transform: translateY(-2px); }
+
+    .hero-scroll {
+      position: absolute; bottom: 2rem; left: 50%; transform: translateX(-50%);
+      display: flex; flex-direction: column; align-items: center; gap: 0.4rem;
+      font-family: 'JetBrains Mono', monospace; font-size: 0.65rem;
+      color: var(--muted); letter-spacing: 0.1em;
+    }
+    .scroll-line {
+      width: 1px; height: 40px;
+      background: linear-gradient(to bottom, var(--cyan), transparent);
+      animation: scrollAnim 2s infinite;
+    }
+    @keyframes scrollAnim { 0%{transform:scaleY(0);transform-origin:top} 50%{transform:scaleY(1);transform-origin:top} 51%{transform-origin:bottom} 100%{transform:scaleY(0);transform-origin:bottom} }
+
+    /* SECTION BASE */
+    section { padding: 7rem 5%; position: relative; z-index: 1; }
+    .s-label {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.7rem;
+      color: var(--cyan);
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+      margin-bottom: 0.5rem;
+    }
+    .s-title {
+      font-size: clamp(1.8rem, 3vw, 2.6rem);
+      font-weight: 700;
+      letter-spacing: -0.02em;
+      margin-bottom: 1rem;
+    }
+    .s-desc { color: var(--muted); max-width: 520px; line-height: 1.75; margin-bottom: 3.5rem; }
+
+    /* DIVIDER */
+    .divider { width: 100%; height: 1px; background: var(--border); }
+
+    /* ABOUT */
+    .about-section { background: var(--bg2); border-top: 1px solid var(--border); border-bottom: 1px solid var(--border); }
+    .about-grid { display: grid; grid-template-columns: 1.1fr 0.9fr; gap: 5rem; align-items: start; }
+    .about-text p { color: var(--muted); line-height: 1.85; margin-bottom: 1.2rem; font-size: 0.96rem; }
+    .about-text strong { color: var(--text); font-weight: 600; }
+    .about-text .highlight { color: var(--cyan); font-weight: 600; }
+    .stats-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1px; background: var(--border); border: 1px solid var(--border); border-radius: var(--r); overflow: hidden; }
+    .stat-box {
+      background: var(--bg3);
+      padding: 1.8rem;
+      display: flex; flex-direction: column; gap: 0.3rem;
+    }
+    .stat-num {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 2.4rem; font-weight: 700;
+      color: var(--cyan);
+      line-height: 1;
+    }
+    .stat-lbl { font-size: 0.75rem; color: var(--muted); letter-spacing: 0.05em; }
+
+    /* EXPERIENCE */
+    .exp-section { background: var(--bg); }
+    .timeline { position: relative; }
+    .tl-line {
+      position: absolute; left: 7px; top: 8px; bottom: 8px; width: 1px;
+      background: linear-gradient(to bottom, var(--cyan), var(--purple), transparent);
+    }
+    .tl-item { position: relative; padding-left: 40px; margin-bottom: 2rem; }
+    .tl-dot {
+      position: absolute; left: 0; top: 8px;
+      width: 15px; height: 15px;
+      border: 1px solid var(--cyan);
+      border-radius: 50%;
+      background: var(--bg);
+      display: flex; align-items: center; justify-content: center;
+    }
+    .tl-dot::after { content:''; width:5px; height:5px; border-radius:50%; background:var(--cyan); }
+    .tl-item.active .tl-dot { border-color: var(--green); box-shadow: 0 0 10px rgba(0,255,136,0.4); }
+    .tl-item.active .tl-dot::after { background: var(--green); animation: blink 2s infinite; }
+
+    .exp-card {
+      background: var(--bg3);
+      border: 1px solid var(--border);
+      border-radius: var(--r);
+      padding: 1.6rem 1.8rem;
+      transition: border-color 0.25s, box-shadow 0.25s;
+    }
+    .exp-card:hover { border-color: rgba(0,245,255,0.25); box-shadow: 0 0 30px rgba(0,245,255,0.05); }
+    .exp-top { display: flex; justify-content: space-between; align-items: flex-start; gap: 1rem; flex-wrap: wrap; margin-bottom: 0.6rem; }
+    .exp-role { font-weight: 700; font-size: 1rem; }
+    .exp-date { font-family: 'JetBrains Mono', monospace; font-size: 0.72rem; color: var(--muted); white-space: nowrap; }
+    .exp-co { font-size: 0.85rem; color: var(--cyan); font-weight: 500; margin-bottom: 0.5rem; }
+    .exp-badges { display: flex; gap: 0.4rem; flex-wrap: wrap; margin-bottom: 0.8rem; }
+    .badge {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.65rem; letter-spacing: 0.05em;
+      padding: 0.15rem 0.55rem;
+      border-radius: 3px;
+      font-weight: 500;
+    }
+    .b-green { background: var(--green-dim); color: var(--green); border: 1px solid rgba(0,255,136,0.2); }
+    .b-cyan  { background: var(--cyan-dim); color: var(--cyan); border: 1px solid rgba(0,245,255,0.2); }
+    .b-gray  { background: rgba(255,255,255,0.05); color: var(--muted); border: 1px solid var(--border); }
+    .b-purple{ background: var(--purple-dim); color: var(--purple); border: 1px solid rgba(168,85,247,0.2); }
+    .exp-bullets { list-style: none; }
+    .exp-bullets li {
+      color: var(--muted); font-size: 0.86rem; line-height: 1.65;
+      padding-left: 1.2rem; position: relative; margin-bottom: 0.3rem;
+    }
+    .exp-bullets li::before { content:'▸'; position:absolute; left:0; color:var(--cyan); font-size:0.7rem; top:0.2rem; }
+    .exp-chips { display:flex; flex-wrap:wrap; gap:0.4rem; margin-top:1rem; }
+    .chip {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.68rem;
+      padding: 0.18rem 0.55rem;
+      border-radius: 3px;
+      background: var(--bg4);
+      border: 1px solid var(--border);
+      color: var(--muted);
+    }
+
+    /* PROJECTS */
+    .projects-section { background: var(--bg2); border-top: 1px solid var(--border); border-bottom: 1px solid var(--border); }
+    .projects-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(340px, 1fr)); gap: 1.5rem; }
+    .project-card {
+      background: var(--bg3);
+      border: 1px solid var(--border);
+      border-radius: var(--r);
+      padding: 1.8rem;
+      position: relative;
+      overflow: hidden;
+      transition: all 0.25s;
+      display: flex; flex-direction: column;
+    }
+    .project-card::before {
+      content: '';
+      position: absolute; top: 0; left: 0; right: 0;
+      height: 2px;
+      background: linear-gradient(90deg, var(--cyan), var(--purple));
+      transform: scaleX(0);
+      transition: transform 0.3s;
+      transform-origin: left;
+    }
+    .project-card:hover { border-color: rgba(0,245,255,0.2); box-shadow: 0 8px 40px rgba(0,245,255,0.06); transform: translateY(-3px); }
+    .project-card:hover::before { transform: scaleX(1); }
+    .project-top { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 1rem; }
+    .project-icon {
+      width: 44px; height: 44px;
+      background: var(--cyan-dim);
+      border: 1px solid rgba(0,245,255,0.2);
+      border-radius: 8px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 1.3rem;
+    }
+    .project-link {
+      width: 32px; height: 32px;
+      background: var(--bg4);
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      display: flex; align-items: center; justify-content: center;
+      color: var(--muted); font-size: 0.85rem;
+      text-decoration: none;
+      transition: all 0.2s;
+    }
+    .project-link:hover { background: var(--cyan-dim); border-color: var(--cyan); color: var(--cyan); }
+    .project-type { font-family: 'JetBrains Mono', monospace; font-size: 0.65rem; color: var(--cyan); letter-spacing: 0.1em; text-transform: uppercase; margin-bottom: 0.4rem; }
+    .project-name { font-size: 1.1rem; font-weight: 700; margin-bottom: 0.7rem; }
+    .project-desc { color: var(--muted); font-size: 0.86rem; line-height: 1.7; flex: 1; margin-bottom: 1.2rem; }
+    .project-features { list-style: none; margin-bottom: 1.2rem; }
+    .project-features li { color: var(--muted); font-size: 0.82rem; padding-left: 1.1rem; position: relative; margin-bottom: 0.25rem; }
+    .project-features li::before { content:'◈'; position:absolute; left:0; color:var(--purple); font-size:0.6rem; top:0.2rem; }
+    .project-stack { display: flex; flex-wrap: wrap; gap: 0.4rem; }
+    .stack-tag {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.65rem;
+      padding: 0.15rem 0.5rem;
+      border-radius: 3px;
+      background: var(--purple-dim);
+      color: var(--purple);
+      border: 1px solid rgba(168,85,247,0.2);
+    }
+
+    /* SKILLS */
+    .skills-section { background: var(--bg); }
+    .skills-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 1.2rem; }
+    .skill-group {
+      background: var(--bg3);
+      border: 1px solid var(--border);
+      border-radius: var(--r);
+      padding: 1.5rem;
+      transition: border-color 0.2s;
+    }
+    .skill-group:hover { border-color: rgba(0,245,255,0.15); }
+    .sg-title {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.68rem; font-weight: 500;
+      color: var(--cyan);
+      letter-spacing: 0.12em; text-transform: uppercase;
+      margin-bottom: 1rem;
+      display: flex; align-items: center; gap: 0.5rem;
+    }
+    .sg-title::before { content:'//'; color: var(--muted); }
+    .skill-tags { display: flex; flex-wrap: wrap; gap: 0.4rem; }
+    .skill-tag {
+      font-size: 0.8rem; font-weight: 500;
+      padding: 0.3rem 0.7rem;
+      background: var(--bg4);
+      border: 1px solid var(--border);
+      border-radius: 4px;
+      color: var(--text);
+      transition: all 0.15s;
+    }
+    .skill-tag:hover { background: var(--cyan-dim); border-color: rgba(0,245,255,0.3); color: var(--cyan); }
+
+    /* EDUCATION */
+    .edu-section { background: var(--bg2); border-top: 1px solid var(--border); border-bottom: 1px solid var(--border); }
+    .edu-card {
+      max-width: 640px;
+      background: var(--bg3);
+      border: 1px solid var(--border);
+      border-radius: var(--r);
+      padding: 2rem 2.2rem;
+      display: grid;
+      grid-template-columns: auto 1fr;
+      gap: 1.5rem;
+      align-items: center;
+    }
+    .edu-icon {
+      width: 56px; height: 56px;
+      background: var(--purple-dim);
+      border: 1px solid rgba(168,85,247,0.25);
+      border-radius: 10px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 1.6rem;
+    }
+    .edu-degree { font-weight: 700; font-size: 1.05rem; margin-bottom: 0.25rem; }
+    .edu-school { color: var(--cyan); font-weight: 500; font-size: 0.9rem; margin-bottom: 0.35rem; }
+    .edu-meta { font-family: 'JetBrains Mono', monospace; font-size: 0.72rem; color: var(--muted); margin-bottom: 0.5rem; }
+    .edu-badge {
+      display: inline-block;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.68rem;
+      padding: 0.2rem 0.6rem;
+      background: var(--green-dim);
+      border: 1px solid rgba(0,255,136,0.25);
+      color: var(--green);
+      border-radius: 3px;
+      font-weight: 500;
+    }
+
+    /* CONTACT */
+    .contact-section { background: var(--bg); }
+    .contact-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 4rem; align-items: start; }
+    .contact-links { display: flex; flex-direction: column; gap: 0.8rem; }
+    .c-link {
+      display: flex; align-items: center; gap: 1rem;
+      background: var(--bg3);
+      border: 1px solid var(--border);
+      border-radius: var(--r);
+      padding: 1.1rem 1.4rem;
+      text-decoration: none;
+      color: var(--text);
+      transition: all 0.2s;
+    }
+    .c-link:hover { border-color: rgba(0,245,255,0.3); box-shadow: 0 0 20px rgba(0,245,255,0.05); transform: translateX(4px); }
+    .c-icon {
+      width: 38px; height: 38px;
+      background: var(--cyan-dim);
+      border: 1px solid rgba(0,245,255,0.2);
+      border-radius: 7px;
+      display: flex; align-items: center; justify-content: center;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.75rem;
+      color: var(--cyan);
+      flex-shrink: 0;
+    }
+    .c-main { font-weight: 600; font-size: 0.88rem; margin-bottom: 0.1rem; }
+    .c-sub { font-family: 'JetBrains Mono', monospace; font-size: 0.7rem; color: var(--muted); }
+    .contact-note { color: var(--muted); line-height: 1.85; font-size: 0.92rem; }
+    .contact-note strong { color: var(--text); }
+
+    /* FOOTER */
+    footer {
+      border-top: 1px solid var(--border);
+      padding: 1.8rem 5%;
+      display: flex; justify-content: space-between; align-items: center;
+      position: relative; z-index: 1;
+    }
+    .footer-logo { font-family: 'JetBrains Mono', monospace; font-size: 0.8rem; color: var(--muted); }
+    .footer-copy { font-family: 'JetBrains Mono', monospace; font-size: 0.72rem; color: var(--muted); }
+
+    /* REVEAL */
+    .reveal { opacity: 0; transform: translateY(24px); transition: opacity 0.65s ease, transform 0.65s ease; }
+    .reveal.visible { opacity: 1; transform: none; }
+
+    /* RESPONSIVE */
+    @media (max-width: 800px) {
+      .nav-links { display: none; }
+      .about-grid, .contact-grid { grid-template-columns: 1fr; gap: 2.5rem; }
+      .stats-grid { grid-template-columns: 1fr 1fr; }
+      footer { flex-direction: column; gap: 0.5rem; text-align: center; }
+    }
+  </style>
+</head>
+<body>
+
+<nav>
+  <div class="nav-logo">anıl<span>.</span>kavak<span>()</span></div>
+  <ul class="nav-links">
+    <li><a href="#about">about</a></li>
+    <li><a href="#experience">experience</a></li>
+    <li><a href="#projects">projects</a></li>
+    <li><a href="#skills">skills</a></li>
+    <li><a href="#contact" class="nav-cta">contact</a></li>
+  </ul>
+</nav>
+
+<!-- HERO -->
+<section class="hero">
+  <div class="hero-glow-1"></div>
+  <div class="hero-glow-2"></div>
+  <div class="hero-inner">
+    <div class="hero-tag">
+      <span class="tag-dot"></span>
+      OPEN_TO_OPPORTUNITIES · ISTANBUL
+    </div>
+    <h1>
+      <span class="line1">Data, AI &</span>
+      <span class="line2">Business.</span>
+    </h1>
+    <p class="hero-desc">
+      I'm <strong>Anıl Kavak</strong> — MIS student, AI enthusiast, and marketing professional.
+      Building intelligent systems and data-driven strategies at the intersection of technology and business.
+    </p>
+    <div class="hero-btns">
+      <a href="#contact" class="btn btn-cyan">get_in_touch →</a>
+      <a href="cv.html" target="_blank" class="btn btn-ghost">view_cv.pdf</a>
+      <a href="#projects" class="btn btn-ghost">see_projects</a>
+    </div>
+  </div>
+  <div class="hero-scroll">
+    <div class="scroll-line"></div>
+    scroll
+  </div>
+</section>
+
+<!-- ABOUT -->
+<section class="about-section" id="about">
+  <div class="reveal">
+    <p class="s-label">01 // about</p>
+    <h2 class="s-title">Who I Am</h2>
+  </div>
+  <div class="about-grid">
+    <div class="about-text reveal">
+      <p>
+        I'm a <strong>Management Information Systems student at İstinye University</strong> studying on a
+        <span class="highlight">100% full scholarship</span>, passionate about the intersection of AI, data science, and business development.
+      </p>
+      <p>
+        Currently interning at <strong>TDG</strong> as a Marketing & Administrative Specialist — creating content,
+        collecting B2B fair leads, and driving client engagement. I also work as a
+        <strong>freelance PR specialist</strong> for Metin Gürsoy Brand Management & Marketing.
+      </p>
+      <p>
+        I founded <strong>AgentFlow</strong> on Medium, a research publication exploring how AI agents are reshaping startup ecosystems.
+        I believe the most powerful solutions come from pairing <span class="highlight">technical precision</span> with <span class="highlight">human intuition</span>.
+      </p>
+      <p>
+        Off-screen: competitive <strong>basketball athlete</strong>, event organizer, and lifelong learner.
+      </p>
+    </div>
+    <div class="reveal">
+      <div class="stats-grid">
+        <div class="stat-box">
+          <div class="stat-num">383<span style="font-size:1.2rem;color:var(--muted)">+</span></div>
+          <div class="stat-lbl">LinkedIn connections</div>
+        </div>
+        <div class="stat-box">
+          <div class="stat-num">5<span style="font-size:1.2rem;color:var(--muted)">+</span></div>
+          <div class="stat-lbl">roles & internships</div>
+        </div>
+        <div class="stat-box">
+          <div class="stat-num">100<span style="font-size:1.2rem;color:var(--muted)">%</span></div>
+          <div class="stat-lbl">scholarship</div>
+        </div>
+        <div class="stat-box">
+          <div class="stat-num">3<span style="font-size:1.2rem;color:var(--muted)">yr</span></div>
+          <div class="stat-lbl">work experience</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- EXPERIENCE -->
+<section class="exp-section" id="experience">
+  <div class="reveal">
+    <p class="s-label">02 // experience</p>
+    <h2 class="s-title">Where I've Worked</h2>
+    <p class="s-desc">From luxury retail to AI-driven marketing — a career built on adaptability, customer insight, and data thinking.</p>
+  </div>
+  <div class="timeline">
+    <div class="tl-line"></div>
+
+    <div class="tl-item active reveal">
+      <div class="tl-dot"></div>
+      <div class="exp-card">
+        <div class="exp-top">
+          <div class="exp-role">Marketing & Administrative Specialist</div>
+          <div class="exp-date">Mar 2026 → now</div>
+        </div>
+        <div class="exp-co">TDG</div>
+        <div class="exp-badges">
+          <span class="badge b-green">● ACTIVE</span>
+          <span class="badge b-cyan">Internship</span>
+          <span class="badge b-gray">Hybrid · İstanbul</span>
+        </div>
+        <ul class="exp-bullets">
+          <li>Created and managed marketing content aligned with TDG's brand strategy across digital channels.</li>
+          <li>Collected and structured B2B trade fair customer data to identify and qualify high-value leads.</li>
+          <li>Coordinated outreach campaigns and scheduled client meetings to support the sales pipeline.</li>
+          <li>Provided cross-functional administrative support in a fast-paced hybrid environment.</li>
+        </ul>
+        <div class="exp-chips">
+          <span class="chip">content_marketing</span>
+          <span class="chip">b2b_leads</span>
+          <span class="chip">crm</span>
+          <span class="chip">biz_dev</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="tl-item active reveal">
+      <div class="tl-dot"></div>
+      <div class="exp-card">
+        <div class="exp-top">
+          <div class="exp-role">Public Relations Specialist</div>
+          <div class="exp-date">Sep 2024 → now</div>
+        </div>
+        <div class="exp-co">METİN GÜRSOY BRAND MANAGEMENT & MARKETING</div>
+        <div class="exp-badges">
+          <span class="badge b-green">● ACTIVE</span>
+          <span class="badge b-gray">Freelance</span>
+        </div>
+        <ul class="exp-bullets">
+          <li>Managed PR and communications for brand campaigns; contributor at Hermes Events.</li>
+          <li>Built and maintained relationships with media partners and event stakeholders.</li>
+        </ul>
+        <div class="exp-chips">
+          <span class="chip">pr</span>
+          <span class="chip">event_mgmt</span>
+          <span class="chip">communications</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="tl-item reveal">
+      <div class="tl-dot"></div>
+      <div class="exp-card">
+        <div class="exp-top">
+          <div class="exp-role">IT Intern</div>
+          <div class="exp-date">Jul 2025 → Aug 2025</div>
+        </div>
+        <div class="exp-co">Social Office</div>
+        <div class="exp-badges">
+          <span class="badge b-purple">Internship</span>
+          <span class="badge b-gray">Remote</span>
+        </div>
+        <ul class="exp-bullets">
+          <li>Supported IT operations; data processing with Excel and technical docs with AutoCAD.</li>
+        </ul>
+        <div class="exp-chips"><span class="chip">excel</span><span class="chip">autocad</span><span class="chip">it_support</span></div>
+      </div>
+    </div>
+
+    <div class="tl-item reveal">
+      <div class="tl-dot"></div>
+      <div class="exp-card">
+        <div class="exp-top">
+          <div class="exp-role">Student Assistant</div>
+          <div class="exp-date">Jul 2024 → Dec 2024</div>
+        </div>
+        <div class="exp-co">İstinye University</div>
+        <div class="exp-badges">
+          <span class="badge b-gray">Part-time · On-site</span>
+        </div>
+        <ul class="exp-bullets">
+          <li>Document review, project coordination, and administrative support for academic staff.</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="tl-item reveal">
+      <div class="tl-dot"></div>
+      <div class="exp-card">
+        <div class="exp-top">
+          <div class="exp-role">Sales Representative</div>
+          <div class="exp-date">Feb 2024 → Apr 2024</div>
+        </div>
+        <div class="exp-co">CK Klein Jeans · Mall of İstanbul</div>
+        <ul class="exp-bullets">
+          <li>Exceeded sales targets for two consecutive months; led stock and shift management alongside core role.</li>
+        </ul>
+        <div class="exp-chips"><span class="chip">sales</span><span class="chip">stock_mgmt</span><span class="chip">customer_relations</span></div>
+      </div>
+    </div>
+
+    <div class="tl-item reveal">
+      <div class="tl-dot"></div>
+      <div class="exp-card">
+        <div class="exp-top">
+          <div class="exp-role">Sales Representative</div>
+          <div class="exp-date">Jul 2023 → Feb 2024</div>
+        </div>
+        <div class="exp-co">SWAROVSKI · Mall of İstanbul</div>
+        <ul class="exp-bullets">
+          <li>Completed supervisor-level sales training at a global luxury brand; converted regular visitors to loyal clients.</li>
+          <li>Managed e-commerce relationships and took on team motivation and inventory duties after initial months.</li>
+        </ul>
+        <div class="exp-chips"><span class="chip">luxury_retail</span><span class="chip">e-commerce</span><span class="chip">inventory</span><span class="chip">team_lead</span></div>
+      </div>
+    </div>
+
+  </div>
+</section>
+
+<!-- PROJECTS -->
+<section class="projects-section" id="projects">
+  <div class="reveal">
+    <p class="s-label">03 // projects</p>
+    <h2 class="s-title">What I've Built</h2>
+    <p class="s-desc">Personal and academic projects at the intersection of AI, productivity, and real user problems.</p>
+  </div>
+  <div class="projects-grid">
+
+    <div class="project-card reveal">
+      <div class="project-top">
+        <div class="project-icon">🧠</div>
+        <a href="https://bilissel-asistan.onrender.com/" target="_blank" class="project-link">↗</a>
+      </div>
+      <div class="project-type">AI · Thesis Project · Web App</div>
+      <div class="project-name">Bilişsel Çalışma Asistanı</div>
+      <p class="project-desc">
+        An AI-powered cognitive study assistant that adapts to your mental state. Automatically selects the optimal study mode based on sleep data — Deep Work or Pomodoro — and generates topic-specific cognitive warmup questions to prime focus before each session.
+      </p>
+      <ul class="project-features">
+        <li>Sleep-based study mode selection (Deep Work 50/10 vs Pomodoro 25/5)</li>
+        <li>AI-generated cognitive warmup questions per topic</li>
+        <li>Neon visual timer with session progress tracking</li>
+        <li>Active Recall analysis with success scoring post-session</li>
+        <li>Privacy-first — no data stored, no account required</li>
+      </ul>
+      <div class="project-stack">
+        <span class="stack-tag">Python</span>
+        <span class="stack-tag">AI / LLM</span>
+        <span class="stack-tag">Web</span>
+        <span class="stack-tag">Cognitive Science</span>
+        <span class="stack-tag">Productivity</span>
+      </div>
+    </div>
+
+    <div class="project-card reveal">
+      <div class="project-top">
+        <div class="project-icon">✍️</div>
+        <a href="https://medium.com/@agentflow" target="_blank" class="project-link">↗</a>
+      </div>
+      <div class="project-type">Research · Writing · AI</div>
+      <div class="project-name">AgentFlow — Medium Publication</div>
+      <p class="project-desc">
+        A research publication exploring how AI agents are transforming startup ecosystems and business operations. Covers agent architecture, multi-agent systems, and real-world applications in business strategy.
+      </p>
+      <ul class="project-features">
+        <li>Research-driven articles on AI agent frameworks</li>
+        <li>Analysis of agent impact on early-stage startups</li>
+        <li>Business-focused perspective on emerging AI trends</li>
+      </ul>
+      <div class="project-stack">
+        <span class="stack-tag">AI Agents</span>
+        <span class="stack-tag">Research</span>
+        <span class="stack-tag">Startups</span>
+        <span class="stack-tag">Strategy</span>
+      </div>
+    </div>
+
+  </div>
+</section>
+
+<!-- SKILLS -->
+<section class="skills-section" id="skills">
+  <div class="reveal">
+    <p class="s-label">04 // skills</p>
+    <h2 class="s-title">Tech & Tools</h2>
+    <p class="s-desc">A hybrid skill set built across academic projects, internships, and self-driven exploration.</p>
+  </div>
+  <div class="skills-grid">
+    <div class="skill-group reveal">
+      <div class="sg-title">programming & data</div>
+      <div class="skill-tags">
+        <span class="skill-tag">Python</span>
+        <span class="skill-tag">R</span>
+        <span class="skill-tag">SQL</span>
+        <span class="skill-tag">Data Analysis</span>
+        <span class="skill-tag">Excel</span>
+        <span class="skill-tag">AutoCAD</span>
+      </div>
+    </div>
+    <div class="skill-group reveal">
+      <div class="sg-title">AI & dev tools</div>
+      <div class="skill-tags">
+        <span class="skill-tag">Generative AI</span>
+        <span class="skill-tag">Cursor AI</span>
+        <span class="skill-tag">Claude Code</span>
+        <span class="skill-tag">VS Code</span>
+        <span class="skill-tag">AI Agents</span>
+      </div>
+    </div>
+    <div class="skill-group reveal">
+      <div class="sg-title">marketing & business</div>
+      <div class="skill-tags">
+        <span class="skill-tag">Content Marketing</span>
+        <span class="skill-tag">B2B Lead Gen</span>
+        <span class="skill-tag">CRM</span>
+        <span class="skill-tag">Public Relations</span>
+        <span class="skill-tag">Event Mgmt</span>
+        <span class="skill-tag">Sales</span>
+      </div>
+    </div>
+    <div class="skill-group reveal">
+      <div class="sg-title">soft skills</div>
+      <div class="skill-tags">
+        <span class="skill-tag">Communication</span>
+        <span class="skill-tag">Leadership</span>
+        <span class="skill-tag">Client Relations</span>
+        <span class="skill-tag">Problem Solving</span>
+        <span class="skill-tag">Adaptability</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- EDUCATION -->
+<section class="edu-section" id="education">
+  <div class="reveal">
+    <p class="s-label">05 // education</p>
+    <h2 class="s-title">Academic Background</h2>
+  </div>
+  <div class="edu-card reveal">
+    <div class="edu-icon">🎓</div>
+    <div>
+      <div class="edu-degree">Management Information Systems (YBS)</div>
+      <div class="edu-school">İstinye University</div>
+      <div class="edu-meta">İstanbul, Türkiye · 2023 → Present</div>
+      <span class="edu-badge">100% FULL SCHOLARSHIP</span>
+    </div>
+  </div>
+</section>
+
+<!-- CONTACT -->
+<section class="contact-section" id="contact">
+  <div class="reveal">
+    <p class="s-label">06 // contact</p>
+    <h2 class="s-title">Let's Connect</h2>
+    <p class="s-desc">Open to internships, collaborations, and conversations about AI, data science, and business development.</p>
+  </div>
+  <div class="contact-grid">
+    <div class="contact-links reveal">
+      <a href="https://www.linkedin.com/in/an%C4%B1l-kavak-95045031b/" target="_blank" class="c-link">
+        <div class="c-icon">in</div>
+        <div><div class="c-main">LinkedIn</div><div class="c-sub">linkedin.com/in/anıl-kavak</div></div>
+      </a>
+      <a href="mailto:anlkvk22@gmail.com" class="c-link">
+        <div class="c-icon">@</div>
+        <div><div class="c-main">Email</div><div class="c-sub">anlkvk22@gmail.com</div></div>
+      </a>
+      <a href="https://bilissel-asistan.onrender.com/" target="_blank" class="c-link">
+        <div class="c-icon">↗</div>
+        <div><div class="c-main">Thesis Project</div><div class="c-sub">bilissel-asistan.onrender.com</div></div>
+      </a>
+    </div>
+    <div class="contact-note reveal">
+      <p>Based in <strong>İstanbul, Türkiye</strong> — open to hybrid and remote opportunities across Turkey and globally.</p>
+      <br />
+      <p>Especially interested in roles at the intersection of <strong>data science, AI, marketing analytics,</strong> and <strong>business development</strong>.</p>
+      <br />
+      <p style="color:var(--muted);font-family:'JetBrains Mono',monospace;font-size:0.75rem;">response_time: &lt; 24h</p>
+    </div>
+  </div>
+</section>
+
+<footer>
+  <div class="footer-logo">anıl.kavak() · İstanbul</div>
+  <div class="footer-copy">© 2026 · built with passion</div>
+</footer>
+
+<script>
+  const io = new IntersectionObserver(entries => {
+    entries.forEach(e => { if (e.isIntersecting) e.target.classList.add('visible'); });
+  }, { threshold: 0.08 });
+  document.querySelectorAll('.reveal').forEach(el => io.observe(el));
+</script>
+</body>
+</html>
