@@ -373,15 +373,86 @@
 
   /* ── PRINT ───────────────────────────────────────────── */
   @media print {
-    @page { margin: 0; size: A4; }
-    html  { font-size: 9.2px; }
-    body  { background: #fff; }
-    .page {
-      margin: 0; width: 100%; min-height: auto;
-      box-shadow: none;
+    @page {
+      size: A4 portrait;
+      margin: 14mm 16mm 14mm 18mm;
     }
-    .main  { padding: 2.2rem 1.8rem 2.2rem 2.2rem; }
-    .sidebar { padding: 2.2rem 1.4rem 2.2rem 1.6rem; }
+
+    html { font-size: 8.6px; }
+    body { background: #fff; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+
+    .toolbar { display: none !important; }
+
+    /* ── Convert two-column grid → single column ── */
+    .page {
+      display: block;
+      width: 100%;
+      margin: 0;
+      min-height: auto;
+      box-shadow: none;
+      background: #fff;
+    }
+
+    .main {
+      padding: 0;
+      border-right: none;
+      width: 100%;
+    }
+
+    /* ── Sidebar becomes a compact footer row ── */
+    .sidebar {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 0 2.4rem;
+      padding: 1.8rem 0 0 0;
+      margin-top: 2rem;
+      border-top: 2px solid var(--navy);
+      background: transparent;
+      break-before: avoid;
+    }
+
+    /* Each sidebar section spans normally */
+    .ss { break-inside: avoid; }
+
+    /* Hide address and interests in sidebar (shown inline above) */
+    .ss-address { display: none; }
+    .ss-interests { display: none; }
+
+    /* ── Page break rules ── */
+    .name-block  { break-after: avoid; }
+    .sec-title   { break-after: avoid; }
+    .ei          { break-inside: avoid; }
+    .ei-header   { break-after: avoid; }
+    .sec         { break-inside: auto; }
+
+    /* Projects section starts on a new page */
+    .sec-projects { break-before: page; }
+
+    /* ── Tighten spacing for print ── */
+    .name-block  { padding-bottom: 1.4rem; margin-bottom: 1.6rem; }
+    .cv-name     { font-size: 3.6rem; }
+    .cv-title    { font-size: 1.0rem; margin-bottom: 0.7rem; }
+    .cv-contacts { gap: 0.3rem 1.6rem; }
+
+    .sec         { margin-bottom: 1.5rem; }
+    .sec-title   { margin-bottom: 0.9rem; padding-bottom: 0.35rem; }
+
+    .summary-p   { font-size: 1.35rem; }
+
+    .ei          { margin-bottom: 1.1rem; padding-bottom: 1.1rem; }
+    .ei-role     { font-size: 1.15rem; }
+    .ei-company  { font-size: 1.0rem; }
+    .ei-meta     { margin-bottom: 0.5rem; }
+    .ei-ul li    { font-size: 1.0rem; margin-bottom: 0.18rem; }
+    .ei-tags     { display: none; }
+
+    .ss-title    { font-size: 0.88rem; margin-bottom: 0.7rem; padding-bottom: 0.3rem; }
+    .edu-degree  { font-size: 1.05rem; }
+    .edu-school  { font-size: 0.95rem; }
+    .lang-item   { margin-bottom: 0.6rem; }
+    .skill-block { margin-bottom: 0.7rem; }
+    .skill-cat   { font-size: 0.88rem; }
+    .skill-pill  { font-size: 0.85rem; padding: 0.12rem 0.45rem; }
   }
   </style>
 </head>
@@ -564,7 +635,7 @@
     </div>
 
     <!-- PROJECTS -->
-    <div class="sec">
+    <div class="sec sec-projects">
       <div class="sec-title">Projects &amp; Research</div>
 
       <div class="ei">
@@ -673,7 +744,7 @@
       </div>
     </div>
 
-    <div class="ss">
+    <div class="ss ss-address">
       <div class="ss-title">Address</div>
       <div class="addr">
         Esentepe, Kardeşler Cad. No:45<br />
@@ -682,7 +753,7 @@
       </div>
     </div>
 
-    <div class="ss">
+    <div class="ss ss-interests">
       <div class="ss-title">Interests</div>
       <div class="interest-wrap">
         <span class="interest-chip">AI Agents</span>
