@@ -3,7 +3,11 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Anıl Kavak — Curriculum Vitae</title>
+  <title>Anıl Kavak — Résumé · Business Analysis, AI & Automation, Data</title>
+  <meta name="description" content="Résumé of Anıl Kavak — Business Analysis, AI & Automation, Data. MIS student at İstinye University (100% merit scholarship), İstanbul." />
+  <link rel="canonical" href="https://anllkvk.github.io/cv.html" />
+  <link rel="icon" type="image/svg+xml" href="favicon.svg" />
+  <meta name="theme-color" content="#0f2447" />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <!--
@@ -351,14 +355,6 @@
   .lang-track { height: 3px; background: var(--rule); border-radius: 2px; overflow: hidden; }
   .lang-fill  { height: 100%; background: var(--navy); border-radius: 2px; }
 
-  /* ADDRESS */
-  .addr {
-    font-family: 'JetBrains Mono', monospace;
-    font-size: 0.95rem;
-    color: var(--ink-light);
-    line-height: 1.7;
-  }
-
   /* INTERESTS */
   .interest-wrap { display: flex; flex-wrap: wrap; gap: 0.28rem; }
   .interest-chip {
@@ -414,8 +410,7 @@
     /* Each sidebar section spans normally */
     .ss { break-inside: avoid; }
 
-    /* Hide address and interests in sidebar (shown inline above) */
-    .ss-address { display: none; }
+    /* Hide interests in sidebar for print */
     .ss-interests { display: none; }
 
     /* ── Page break rules ── */
@@ -454,6 +449,23 @@
     .skill-cat   { font-size: 0.88rem; }
     .skill-pill  { font-size: 0.85rem; padding: 0.12rem 0.45rem; }
   }
+
+  /* ── MOBILE / SMALL SCREENS ──────────────────────────── */
+  @media screen and (max-width: 900px) {
+    .page {
+      width: 100%;
+      min-height: auto;
+      display: block;
+      margin: 0 0 2rem;
+      box-shadow: none;
+    }
+    .main { padding: 2.4rem 1.8rem; border-right: none; }
+    .sidebar { padding: 2.2rem 1.8rem 3rem; border-top: 1px solid var(--rule); }
+    .cv-name { font-size: 3.4rem; }
+    .toolbar { padding: 0.8rem 1.6rem; flex-wrap: wrap; gap: 0.6rem; }
+    .ei-header { flex-wrap: wrap; }
+    .ei-date { padding-top: 0; }
+  }
   </style>
 </head>
 <body>
@@ -463,7 +475,8 @@
   <div class="tb-title"><span>Anıl Kavak</span> — Curriculum Vitae</div>
   <div class="tb-actions">
     <a href="index.html" class="tb-btn tb-back">← Portfolio</a>
-    <button class="tb-btn tb-print" onclick="window.print()">Save as PDF</button>
+    <a href="Anil_Kavak_CV.pdf" class="tb-btn tb-print" download>Download PDF</a>
+    <button class="tb-btn tb-back" onclick="window.print()">Print</button>
   </div>
 </div>
 
@@ -476,7 +489,7 @@
     <!-- NAME BLOCK -->
     <header class="name-block">
       <div class="cv-name">Anıl Kavak</div>
-      <div class="cv-title">Management Information Systems · Data Science &amp; AI · Marketing</div>
+      <div class="cv-title">Business Analysis · AI &amp; Automation · Data · Commercial Operations</div>
       <div class="cv-contacts">
 
         <a href="mailto:anlkvk22@gmail.com" class="cv-contact-item">
@@ -487,7 +500,7 @@
           anlkvk22@gmail.com
         </a>
 
-        <a href="https://www.linkedin.com/in/an%C4%B1l-kavak-95045031b/" target="_blank" class="cv-contact-item">
+        <a href="https://www.linkedin.com/in/an%C4%B1l-kavak-95045031b/" target="_blank" rel="noopener noreferrer" class="cv-contact-item">
           <!-- linkedin icon -->
           <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
             <path d="M16 8a6 6 0 0 1 6 6v7h-4v-7a2 2 0 0 0-2-2 2 2 0 0 0-2 2v7h-4v-7a6 6 0 0 1 6-6z"/>
@@ -496,13 +509,21 @@
           linkedin.com/in/anıl-kavak
         </a>
 
-        <a href="https://anllkvk.github.io" target="_blank" class="cv-contact-item">
+        <a href="https://anllkvk.github.io" target="_blank" rel="noopener noreferrer" class="cv-contact-item">
           <!-- globe icon -->
           <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
             <circle cx="12" cy="12" r="10"/>
             <path d="M2 12h20M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/>
           </svg>
           anllkvk.github.io
+        </a>
+
+        <a href="https://github.com/anllkvk" target="_blank" rel="noopener noreferrer" class="cv-contact-item">
+          <!-- github icon -->
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M15 22v-4a4.8 4.8 0 0 0-1-3.5c3 0 6-2 6-5.5.08-1.25-.27-2.48-1-3.5.28-1.15.28-2.35 0-3.5 0 0-1 0-3 1.5-2.64-.5-5.36-.5-8 0C6 2 5 2 5 2c-.3 1.15-.3 2.35 0 3.5A5.403 5.403 0 0 0 4 9c0 3.5 3 5.5 6 5.5-.39.49-.68 1.05-.85 1.65-.17.6-.22 1.23-.15 1.85v4"/><path d="M9 18c-4.51 2-5-2-7-2"/>
+          </svg>
+          github.com/anllkvk
         </a>
 
         <span class="cv-contact-item">
@@ -520,11 +541,11 @@
     <div class="sec">
       <div class="sec-title">Profile</div>
       <p class="summary-p">
-        Management Information Systems student at İstinye University on a <strong>full scholarship</strong>,
-        combining data science, AI tools, and business development to build
-        <strong>intelligent, results-driven solutions</strong>.
-        Proven across five professional roles spanning marketing, PR, IT, and customer relations
-        — consistently delivering above target in every position.
+        Management Information Systems student at İstinye University on a <strong>100% merit scholarship</strong>,
+        working at the intersection of <strong>business analysis, AI-driven automation, and data</strong>.
+        Six roles across marketing operations, sales, PR, and IT since 2023 — including
+        exceeding retail sales targets two consecutive months and shipping a
+        <strong>live AI product end to end</strong> as an undergraduate thesis.
       </p>
     </div>
 
@@ -543,10 +564,9 @@
         <div class="ei-company">TDG</div>
         <div class="ei-meta">Internship · Hybrid · İstanbul, Türkiye</div>
         <ul class="ei-ul">
-          <li>Created and managed marketing content for TDG's digital channels, ensuring alignment with corporate brand strategy.</li>
-          <li>Supported data collection at B2B events to assist the team's lead identification and qualification process.</li>
-          <li>Helped coordinate client outreach activities and meeting scheduling in support of the sales team.</li>
-          <li>Provided general administrative support across hybrid team operations.</li>
+          <li>Capture and qualify B2B leads at trade fairs, structuring data for the sales team's pipeline and CRM.</li>
+          <li>Produce marketing content for TDG's digital channels within corporate brand guidelines.</li>
+          <li>Coordinate client outreach and meeting scheduling that feeds the business development pipeline.</li>
         </ul>
         <div class="ei-tags">
           <span class="ei-tag">Content Marketing</span>
@@ -567,8 +587,8 @@
         <div class="ei-company">Metin Gürsoy Brand Management &amp; Marketing</div>
         <div class="ei-meta">Freelance Contributor</div>
         <ul class="ei-ul">
-          <li>Supported PR and communications efforts for brand campaigns; active contributor at Hermes Events.</li>
-          <li>Assisted in coordinating media partnerships and maintaining stakeholder relationships across projects.</li>
+          <li>Deliver PR and communications support for brand campaigns; regular contributor at Hermes Events.</li>
+          <li>Coordinate media partnerships and stakeholder relationships across concurrent projects.</li>
         </ul>
         <div class="ei-tags">
           <span class="ei-tag">PR</span>
@@ -585,7 +605,7 @@
         <div class="ei-company">Social Office</div>
         <div class="ei-meta">Internship · Remote</div>
         <ul class="ei-ul">
-          <li>Supported digital IT operations; data processing in Excel and technical documentation via AutoCAD.</li>
+          <li>Processed operational data in Excel and produced technical documentation in AutoCAD for IT operations.</li>
         </ul>
         <div class="ei-tags">
           <span class="ei-tag">Excel</span>
@@ -602,7 +622,7 @@
         <div class="ei-company">İstinye University</div>
         <div class="ei-meta">Part-time · On-site · İstanbul</div>
         <ul class="ei-ul">
-          <li>Provided document review, project coordination, and administrative support for academic and research staff.</li>
+          <li>Coordinated document workflows and project administration for academic and research staff.</li>
         </ul>
       </div>
 
@@ -611,11 +631,11 @@
           <div class="ei-role">Sales Representative</div>
           <div class="ei-date">Feb 2024 – Apr 2024</div>
         </div>
-        <div class="ei-company">CK Klein Jeans</div>
+        <div class="ei-company">Calvin Klein Jeans</div>
         <div class="ei-meta">Full-time · Mall of İstanbul</div>
         <ul class="ei-ul">
-          <li>Exceeded personal sales targets for two consecutive months through consistent customer engagement.</li>
-          <li>Took on extended responsibilities: stock tracking, warranty management, and shift scheduling.</li>
+          <li>Exceeded personal sales targets two consecutive months through structured customer engagement.</li>
+          <li>Took on stock tracking, warranty management, and shift scheduling beyond core sales scope.</li>
         </ul>
       </div>
 
@@ -627,8 +647,8 @@
         <div class="ei-company">Swarovski</div>
         <div class="ei-meta">Full-time · Mall of İstanbul</div>
         <ul class="ei-ul">
-          <li>Completed supervisor-level sales training at a global luxury brand; converted regular visitors into loyal long-term clients.</li>
-          <li>Managed e-commerce client relationships and assumed inventory management and team motivation duties.</li>
+          <li>Selected for supervisor-track training at a global luxury brand within the first months.</li>
+          <li>Converted walk-in visitors into repeat clients; managed e-commerce client relationships and inventory duties.</li>
         </ul>
       </div>
 
@@ -648,8 +668,8 @@
           <a href="https://bilissel-asistan.onrender.com/" target="_blank" style="color:var(--navy-mid);text-decoration:none;">bilissel-asistan.onrender.com</a>
         </div>
         <ul class="ei-ul">
-          <li>AI-powered web application selecting optimal study mode (Deep Work or Pomodoro) based on user's sleep data.</li>
-          <li>Generates subject-specific cognitive warmup questions; performs Active Recall analysis with success scoring.</li>
+          <li>Designed, built, and deployed an AI web app that selects the optimal study protocol (Deep Work vs. Pomodoro) from the user's sleep data.</li>
+          <li>Generates subject-specific cognitive warm-up questions and scores retention via active-recall analysis; live in production, privacy-first (no accounts, no stored data).</li>
         </ul>
         <div class="ei-tags">
           <span class="ei-tag">Python</span>
@@ -666,7 +686,7 @@
         </div>
         <div class="ei-company">Founder &amp; Author</div>
         <ul class="ei-ul">
-          <li>Research publication on AI agents and their strategic impact on startups and business operations.</li>
+          <li>Founded and write a research publication analyzing AI agents, multi-agent coordination, and their operational impact on startups — from a business-decision perspective.</li>
         </ul>
       </div>
 
@@ -691,7 +711,7 @@
       <div class="ss-title">Technical Skills</div>
 
       <div class="skill-block">
-        <div class="skill-cat">Programming &amp; Data</div>
+        <div class="skill-cat">Data &amp; Analytics</div>
         <div class="skill-list">
           <span class="skill-pill">Python</span>
           <span class="skill-pill">R</span>
@@ -703,21 +723,22 @@
       </div>
 
       <div class="skill-block">
-        <div class="skill-cat">AI &amp; Dev Tools</div>
+        <div class="skill-cat">AI &amp; Automation</div>
         <div class="skill-list">
+          <span class="skill-pill">LLM Applications</span>
+          <span class="skill-pill">AI Agents</span>
           <span class="skill-pill">Generative AI</span>
           <span class="skill-pill">Claude Code</span>
-          <span class="skill-pill">Cursor AI</span>
-          <span class="skill-pill">VS Code</span>
+          <span class="skill-pill">Cursor</span>
         </div>
       </div>
 
       <div class="skill-block">
-        <div class="skill-cat">Marketing &amp; Business</div>
+        <div class="skill-cat">Business &amp; Operations</div>
         <div class="skill-list">
+          <span class="skill-pill">B2B Lead Generation</span>
+          <span class="skill-pill">CRM Operations</span>
           <span class="skill-pill">Content Marketing</span>
-          <span class="skill-pill">B2B Lead Gen</span>
-          <span class="skill-pill">CRM</span>
           <span class="skill-pill">Public Relations</span>
           <span class="skill-pill">Event Management</span>
           <span class="skill-pill">Sales</span>
@@ -741,15 +762,6 @@
           <span class="lang-level">Professional</span>
         </div>
         <div class="lang-track"><div class="lang-fill" style="width:82%"></div></div>
-      </div>
-    </div>
-
-    <div class="ss ss-address">
-      <div class="ss-title">Address</div>
-      <div class="addr">
-        Esentepe, Kardeşler Cad. No:45<br />
-        Kat:3, Daire No:3<br />
-        Şişli / İSTANBUL
       </div>
     </div>
 

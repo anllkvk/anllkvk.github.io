@@ -3,1073 +3,884 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Anıl Kavak — Portfolio</title>
+  <title>Anıl Kavak — Business & AI Analyst · Data, Automation & Commercial Operations · İstanbul</title>
+  <meta name="description" content="Anıl Kavak combines business analysis, AI automation, and data to help commercial teams work smarter. MIS student on a 100% merit scholarship, shipped a live AI product, experienced in B2B marketing operations and sales. Open to Business Analyst, BI, and Revenue Operations roles." />
   <meta name="google" content="notranslate" />
-  <meta http-equiv="Content-Language" content="en" />
+  <meta name="theme-color" content="#05070d" />
+  <link rel="canonical" href="https://anllkvk.github.io/" />
+  <link rel="icon" type="image/svg+xml" href="favicon.svg" />
+
+  <!-- Open Graph / LinkedIn -->
+  <meta property="og:type" content="profile" />
+  <meta property="og:title" content="Anıl Kavak — Business & AI Analyst" />
+  <meta property="og:description" content="Business analysis × AI automation × data. MIS student (100% merit scholarship) with a live AI product and hands-on B2B commercial experience. Open to Business Analyst, BI & RevOps roles." />
+  <meta property="og:url" content="https://anllkvk.github.io/" />
+  <meta property="og:image" content="https://anllkvk.github.io/og-image.png" />
+  <meta property="og:image:width" content="1200" />
+  <meta property="og:image:height" content="630" />
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:title" content="Anıl Kavak — Business & AI Analyst" />
+  <meta name="twitter:description" content="Business analysis × AI automation × data. Open to Business Analyst, BI & Revenue Operations roles." />
+  <meta name="twitter:image" content="https://anllkvk.github.io/og-image.png" />
+
+  <!-- Structured data -->
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "Person",
+    "name": "Anıl Kavak",
+    "url": "https://anllkvk.github.io/",
+    "email": "mailto:anlkvk22@gmail.com",
+    "jobTitle": "Business & AI Analyst (Management Information Systems student)",
+    "address": { "@type": "PostalAddress", "addressLocality": "İstanbul", "addressCountry": "TR" },
+    "alumniOf": { "@type": "CollegeOrUniversity", "name": "İstinye University" },
+    "knowsLanguage": ["tr", "en"],
+    "sameAs": [
+      "https://www.linkedin.com/in/an%C4%B1l-kavak-95045031b/",
+      "https://github.com/anllkvk",
+      "https://medium.com/@agentflow"
+    ]
+  }
+  </script>
+
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:ital,wght@0,300;0,400;0,500;0,600;0,700;0,800;1,400&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
 
   <style>
-  /* ─── RESET & BASE ─────────────────────────────────────── */
+  /* ─── RESET & TOKENS ─────────────────────────────────── */
   *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
   :root {
-    --bg:        #04040d;
-    --bg2:       #080814;
-    --bg3:       #0e0e1f;
-    --bg4:       #141428;
-    --blue:      #3b82f6;
-    --blue-g:    rgba(59,130,246,0.15);
-    --violet:    #8b5cf6;
-    --violet-g:  rgba(139,92,246,0.12);
-    --cyan:      #06b6d4;
-    --green:     #10b981;
-    --border:    rgba(255,255,255,0.06);
-    --border2:   rgba(59,130,246,0.25);
-    --text:      #f0f0f8;
-    --muted:     rgba(240,240,248,0.45);
-    --r:         14px;
+    --bg:      #05070d;
+    --bg2:     #090c15;
+    --bg3:     #0e1220;
+    --bg4:     #131829;
+    --blue:    #60a5fa;   /* brightened for contrast on dark */
+    --blue-deep: #3b82f6;
+    --violet:  #a78bfa;
+    --green:   #34d399;
+    --border:  rgba(255,255,255,0.08);
+    --text:    #eef1f8;
+    --muted:   #a3abc2;   /* ≥7:1 on --bg */
+    --faint:   #7d86a0;   /* labels only, ≥4.5:1 */
+    --r: 14px;
+    --maxw: 1080px;
   }
   html { scroll-behavior: smooth; }
   body {
-    font-family: 'Plus Jakarta Sans', sans-serif;
+    font-family: 'Plus Jakarta Sans', system-ui, sans-serif;
     background: var(--bg);
     color: var(--text);
-    overflow-x: hidden;
-    line-height: 1.6;
+    line-height: 1.65;
+    font-size: 16px;
   }
-  a { text-decoration: none; color: inherit; }
-
-  /* ─── CANVAS BACKGROUND ──────────────────────────────── */
-  #particle-canvas {
-    position: fixed;
-    inset: 0;
-    z-index: 0;
-    pointer-events: none;
-    opacity: 0.45;
+  a { color: inherit; text-decoration: none; }
+  :focus-visible {
+    outline: 2px solid var(--blue);
+    outline-offset: 3px;
+    border-radius: 4px;
   }
+  .skip-link {
+    position: absolute; left: 1rem; top: -100px; z-index: 999;
+    background: var(--blue-deep); color: #fff; font-weight: 700;
+    padding: 0.7rem 1.2rem; border-radius: 8px;
+    transition: top 0.15s;
+  }
+  .skip-link:focus { top: 1rem; }
+  .wrap { max-width: var(--maxw); margin: 0 auto; padding: 0 24px; }
 
-  /* ─── NAV ────────────────────────────────────────────── */
-  nav {
+  /* ─── HEADER / NAV ───────────────────────────────────── */
+  header.site {
     position: fixed; top: 0; left: 0; right: 0; z-index: 200;
-    padding: 0 6%;
-    height: 68px;
-    display: flex; align-items: center; justify-content: space-between;
-    background: rgba(4,4,13,0.75);
-    backdrop-filter: blur(20px) saturate(1.4);
+    background: rgba(5,7,13,0.85);
+    backdrop-filter: blur(14px);
     border-bottom: 1px solid var(--border);
-    transition: background 0.3s;
+  }
+  .nav-row {
+    max-width: var(--maxw); margin: 0 auto; padding: 0 24px;
+    height: 64px;
+    display: flex; align-items: center; justify-content: space-between;
   }
   .nav-brand {
     display: flex; align-items: center; gap: 0.6rem;
     font-family: 'JetBrains Mono', monospace;
-    font-size: 0.85rem;
-    color: var(--text);
+    font-size: 0.9rem; font-weight: 500;
   }
-  .nav-dot {
-    width: 8px; height: 8px; border-radius: 50%;
-    background: var(--green);
-    box-shadow: 0 0 8px var(--green);
-    animation: pulse-dot 2.5s infinite;
+  .nav-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--green); }
+  @media (prefers-reduced-motion: no-preference) {
+    .nav-dot { animation: pulse-dot 3s ease-in-out infinite; }
+    @keyframes pulse-dot { 0%,100% { opacity: 1; } 50% { opacity: 0.4; } }
   }
-  @keyframes pulse-dot {
-    0%,100% { opacity: 1; transform: scale(1); }
-    50%      { opacity: 0.4; transform: scale(0.75); }
-  }
-  .nav-links { display: flex; gap: 0.25rem; list-style: none; }
+  .nav-links { display: flex; gap: 0.25rem; list-style: none; align-items: center; }
   .nav-links a {
-    padding: 0.45rem 0.9rem;
+    display: block;
+    padding: 0.5rem 0.95rem;
     border-radius: 8px;
-    font-size: 0.82rem;
-    font-weight: 500;
+    font-size: 0.88rem; font-weight: 500;
     color: var(--muted);
     transition: color 0.2s, background 0.2s;
   }
   .nav-links a:hover { color: var(--text); background: rgba(255,255,255,0.06); }
-  .nav-cta {
-    padding: 0.5rem 1.2rem !important;
-    border-radius: 8px !important;
-    background: var(--blue) !important;
-    color: #fff !important;
-    font-weight: 600 !important;
-    transition: box-shadow 0.2s, transform 0.2s !important;
+  .nav-links a.nav-cta { background: var(--blue-deep); color: #fff; font-weight: 700; margin-left: 0.4rem; }
+  .nav-links a.nav-cta:hover { background: #2f6fe0; }
+  .nav-toggle {
+    display: none;
+    background: none; border: 1px solid var(--border); border-radius: 8px;
+    color: var(--text); cursor: pointer;
+    width: 42px; height: 42px;
+    font-size: 1.15rem; line-height: 1;
   }
-  .nav-cta:hover { box-shadow: 0 0 20px rgba(59,130,246,0.5) !important; transform: translateY(-1px) !important; background: var(--blue) !important; }
+  @media (max-width: 860px) {
+    .nav-toggle { display: inline-flex; align-items: center; justify-content: center; }
+    .nav-links {
+      display: none;
+      position: absolute; top: 64px; left: 0; right: 0;
+      flex-direction: column; align-items: stretch; gap: 0;
+      background: var(--bg2);
+      border-bottom: 1px solid var(--border);
+      padding: 0.6rem 24px 1rem;
+    }
+    .nav-links a { padding: 0.85rem 0.6rem; font-size: 1rem; border-radius: 8px; }
+    .nav-links a.nav-cta { margin: 0.5rem 0 0; text-align: center; }
+    header.site.open .nav-links { display: flex; }
+  }
 
   /* ─── HERO ───────────────────────────────────────────── */
   .hero {
-    min-height: 100vh;
-    display: flex; align-items: center;
-    padding: 88px 6% 0;
+    padding: 150px 0 84px;
     position: relative;
-    z-index: 1;
     overflow: hidden;
   }
-  .hero-orb {
-    position: absolute;
-    border-radius: 50%;
-    filter: blur(80px);
+  .hero::before {
+    content: '';
+    position: absolute; top: -220px; right: -160px;
+    width: 560px; height: 560px; border-radius: 50%;
+    background: radial-gradient(circle, rgba(59,130,246,0.13), transparent 65%);
     pointer-events: none;
-    animation: orb-float 8s ease-in-out infinite;
   }
-  .orb-1 { width: 560px; height: 560px; background: rgba(59,130,246,0.1); top: -120px; right: -80px; animation-delay: 0s; }
-  .orb-2 { width: 400px; height: 400px; background: rgba(139,92,246,0.09); bottom: -80px; left: -60px; animation-delay: -4s; }
-  @keyframes orb-float {
-    0%,100% { transform: translateY(0) scale(1); }
-    50%      { transform: translateY(-30px) scale(1.05); }
+  .hero::after {
+    content: '';
+    position: absolute; bottom: -180px; left: -140px;
+    width: 420px; height: 420px; border-radius: 50%;
+    background: radial-gradient(circle, rgba(139,92,246,0.10), transparent 65%);
+    pointer-events: none;
   }
-
-  .hero-inner { position: relative; z-index: 1; max-width: 800px; }
-
+  .hero-inner { position: relative; z-index: 1; max-width: 760px; }
   .hero-eyebrow {
     display: inline-flex; align-items: center; gap: 0.6rem;
     font-family: 'JetBrains Mono', monospace;
-    font-size: 0.72rem;
-    letter-spacing: 0.12em;
+    font-size: 0.74rem; letter-spacing: 0.1em; text-transform: uppercase;
     color: var(--green);
-    background: rgba(16,185,129,0.08);
-    border: 1px solid rgba(16,185,129,0.2);
-    padding: 0.35rem 0.9rem;
-    border-radius: 100px;
-    margin-bottom: 2.2rem;
-    text-transform: uppercase;
+    background: rgba(52,211,153,0.08);
+    border: 1px solid rgba(52,211,153,0.25);
+    padding: 0.4rem 1rem; border-radius: 100px;
+    margin-bottom: 2rem;
   }
-  .eyebrow-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--green); animation: pulse-dot 2s infinite; }
-
-  .hero-name {
-    font-size: clamp(3.2rem, 7vw, 5.8rem);
-    font-weight: 800;
-    letter-spacing: -0.03em;
-    line-height: 1.04;
-    margin-bottom: 1rem;
+  .hero h1 {
+    font-size: clamp(2.9rem, 7vw, 4.6rem);
+    font-weight: 800; letter-spacing: -0.03em; line-height: 1.05;
+    margin-bottom: 1.1rem;
   }
-  .hero-name .first { color: var(--text); display: block; }
-  .hero-name .last  {
-    display: block;
-    background: linear-gradient(135deg, var(--blue) 0%, var(--violet) 60%, var(--cyan) 100%);
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-    background-clip: text;
-    background-size: 200%;
-    animation: grad-shift 5s ease infinite;
+  .hero h1 .accent {
+    background: linear-gradient(120deg, var(--blue) 0%, var(--violet) 100%);
+    -webkit-background-clip: text; background-clip: text;
+    -webkit-text-fill-color: transparent; color: var(--blue);
   }
-  @keyframes grad-shift {
-    0%,100% { background-position: 0% 50%; }
-    50%      { background-position: 100% 50%; }
+  .hero-role {
+    font-size: clamp(1.05rem, 2.4vw, 1.3rem);
+    font-weight: 600; color: var(--text);
+    margin-bottom: 1.2rem;
   }
-
-  .hero-typewriter {
-    font-size: 1.15rem;
-    font-weight: 500;
-    color: var(--muted);
-    margin-bottom: 1.8rem;
-    min-height: 1.8rem;
-  }
-  .cursor {
-    display: inline-block;
-    width: 2px; height: 1.1em;
-    background: var(--blue);
-    margin-left: 2px;
-    vertical-align: middle;
-    animation: blink-cursor 1s infinite;
-  }
-  @keyframes blink-cursor { 0%,100%{opacity:1} 50%{opacity:0} }
-
+  .hero-role .sep { color: var(--faint); font-weight: 400; padding: 0 0.35rem; }
   .hero-desc {
-    font-size: 1rem;
-    color: var(--muted);
-    line-height: 1.8;
-    max-width: 520px;
-    margin-bottom: 2.8rem;
+    font-size: 1.04rem; color: var(--muted); line-height: 1.8;
+    max-width: 620px; margin-bottom: 2.4rem;
   }
   .hero-desc strong { color: var(--text); font-weight: 600; }
-
-  .hero-actions { display: flex; gap: 1rem; flex-wrap: wrap; margin-bottom: 3.5rem; }
+  .hero-actions { display: flex; gap: 0.85rem; flex-wrap: wrap; margin-bottom: 3rem; }
   .btn {
-    display: inline-flex; align-items: center; gap: 0.5rem;
-    padding: 0.8rem 1.7rem;
-    border-radius: 10px;
-    font-size: 0.88rem;
-    font-weight: 700;
-    letter-spacing: 0.01em;
-    cursor: pointer;
-    transition: all 0.25s;
-    border: none;
-    position: relative; overflow: hidden;
+    display: inline-flex; align-items: center; gap: 0.55rem;
+    padding: 0.85rem 1.7rem; border-radius: 10px;
+    font-size: 0.92rem; font-weight: 700;
+    border: none; cursor: pointer;
+    transition: background 0.2s, border-color 0.2s, transform 0.2s;
   }
-  .btn::after {
-    content: '';
-    position: absolute; inset: 0;
-    background: rgba(255,255,255,0);
-    transition: background 0.2s;
-  }
-  .btn:hover::after { background: rgba(255,255,255,0.08); }
-  .btn-solid {
-    background: linear-gradient(135deg, var(--blue), var(--violet));
-    color: #fff;
-    box-shadow: 0 4px 20px rgba(59,130,246,0.3);
-  }
-  .btn-solid:hover { transform: translateY(-3px); box-shadow: 0 8px 32px rgba(59,130,246,0.45); }
+  .btn-solid { background: var(--blue-deep); color: #fff; }
+  .btn-solid:hover { background: #2f6fe0; transform: translateY(-2px); }
   .btn-outline {
-    background: rgba(255,255,255,0.04);
-    color: var(--text);
-    border: 1px solid var(--border2);
-    backdrop-filter: blur(8px);
+    background: rgba(255,255,255,0.04); color: var(--text);
+    border: 1px solid rgba(96,165,250,0.35);
   }
-  .btn-outline:hover { transform: translateY(-3px); border-color: var(--blue); background: var(--blue-g); }
-
-  .hero-badges { display: flex; gap: 0.7rem; flex-wrap: wrap; }
-  .h-badge {
-    display: flex; align-items: center; gap: 0.4rem;
-    font-size: 0.78rem; font-weight: 500;
-    color: var(--muted);
-    background: var(--bg3);
-    border: 1px solid var(--border);
-    padding: 0.3rem 0.75rem;
-    border-radius: 100px;
-    transition: all 0.2s;
+  .btn-outline:hover { border-color: var(--blue); background: rgba(59,130,246,0.1); transform: translateY(-2px); }
+  .proof-strip {
+    display: flex; flex-wrap: wrap; gap: 0.6rem 1.6rem;
+    padding-top: 1.6rem;
+    border-top: 1px solid var(--border);
+    max-width: 640px;
   }
-  .h-badge:hover { border-color: rgba(59,130,246,0.3); color: var(--text); }
-  .h-badge-icon { font-size: 0.85rem; }
-
-  .hero-scroll {
-    position: absolute; bottom: 2.5rem; left: 50%; transform: translateX(-50%);
-    display: flex; flex-direction: column; align-items: center; gap: 0.5rem;
-    animation: scroll-bounce 2s ease-in-out infinite;
+  .proof {
+    font-size: 0.85rem; color: var(--muted);
+    display: flex; align-items: center; gap: 0.5rem;
   }
-  @keyframes scroll-bounce { 0%,100%{transform:translateX(-50%) translateY(0)} 50%{transform:translateX(-50%) translateY(6px)} }
-  .scroll-mouse {
-    width: 22px; height: 34px;
-    border: 2px solid rgba(255,255,255,0.2);
-    border-radius: 12px;
-    display: flex; justify-content: center; padding-top: 5px;
-  }
-  .scroll-wheel {
-    width: 3px; height: 8px;
-    background: var(--blue);
-    border-radius: 3px;
-    animation: wheel-scroll 2s infinite;
-  }
-  @keyframes wheel-scroll { 0%{opacity:1;transform:translateY(0)} 100%{opacity:0;transform:translateY(10px)} }
+  .proof::before { content: ''; width: 5px; height: 5px; border-radius: 50%; background: var(--blue); flex-shrink: 0; }
 
   /* ─── SECTION BASE ───────────────────────────────────── */
-  section { padding: 7rem 6%; position: relative; z-index: 1; }
+  section { padding: 84px 0; }
   .s-eyebrow {
-    display: inline-flex; align-items: center; gap: 0.5rem;
     font-family: 'JetBrains Mono', monospace;
-    font-size: 0.68rem;
-    letter-spacing: 0.15em;
+    font-size: 0.72rem; letter-spacing: 0.15em; text-transform: uppercase;
     color: var(--blue);
-    text-transform: uppercase;
-    margin-bottom: 0.6rem;
+    margin-bottom: 0.7rem;
+    display: flex; align-items: center; gap: 0.6rem;
   }
   .s-eyebrow::before { content: ''; width: 24px; height: 1px; background: var(--blue); }
   .s-title {
-    font-size: clamp(1.9rem, 3.5vw, 2.8rem);
-    font-weight: 800;
-    letter-spacing: -0.025em;
-    line-height: 1.1;
-    margin-bottom: 1rem;
+    font-size: clamp(1.7rem, 3.4vw, 2.4rem);
+    font-weight: 800; letter-spacing: -0.02em; line-height: 1.15;
+    margin-bottom: 0.9rem;
   }
-  .s-sub { color: var(--muted); font-size: 1rem; max-width: 500px; line-height: 1.75; margin-bottom: 3.5rem; }
+  .s-sub { color: var(--muted); font-size: 1rem; max-width: 560px; line-height: 1.75; margin-bottom: 3rem; }
+  .alt { background: var(--bg2); border-top: 1px solid var(--border); border-bottom: 1px solid var(--border); }
 
-  /* ─── ABOUT ──────────────────────────────────────────── */
-  .about-section {
-    background: linear-gradient(180deg, var(--bg2) 0%, var(--bg) 100%);
-    border-top: 1px solid var(--border);
-  }
-  .about-grid { display: grid; grid-template-columns: 1.2fr 0.8fr; gap: 5rem; align-items: center; }
-  .about-text p { color: var(--muted); line-height: 1.85; margin-bottom: 1.3rem; font-size: 0.97rem; }
+  /* ─── PROFILE ────────────────────────────────────────── */
+  .about-grid { display: grid; grid-template-columns: 1.25fr 0.75fr; gap: 4rem; align-items: start; }
+  .about-text p { color: var(--muted); line-height: 1.85; margin-bottom: 1.25rem; font-size: 1rem; }
+  .about-text p:last-child { margin-bottom: 0; }
   .about-text strong { color: var(--text); font-weight: 600; }
-  .about-text .hl { color: var(--blue); font-weight: 600; }
-
-  .stats-wrap { display: grid; grid-template-columns: 1fr 1fr; gap: 1px; background: var(--border); border-radius: var(--r); overflow: hidden; border: 1px solid var(--border); }
-  .stat-tile {
-    background: var(--bg3);
-    padding: 1.8rem;
-    position: relative;
-    overflow: hidden;
+  .stats-wrap {
+    display: grid; grid-template-columns: 1fr 1fr; gap: 1px;
+    background: var(--border); border: 1px solid var(--border);
+    border-radius: var(--r); overflow: hidden;
   }
-  .stat-tile::before {
-    content: '';
-    position: absolute; top: 0; left: 0; right: 0; height: 2px;
-    background: linear-gradient(90deg, var(--blue), var(--violet));
-    transform: scaleX(0); transform-origin: left;
-    transition: transform 0.4s;
-  }
-  .stat-tile:hover::before { transform: scaleX(1); }
+  .stat-tile { background: var(--bg3); padding: 1.6rem 1.5rem; }
   .stat-n {
     font-family: 'JetBrains Mono', monospace;
-    font-size: 2.6rem; font-weight: 700;
-    background: linear-gradient(135deg, var(--blue), var(--violet));
-    -webkit-background-clip: text; -webkit-text-fill-color: transparent;
-    background-clip: text;
-    line-height: 1;
-    margin-bottom: 0.35rem;
+    font-size: 2rem; font-weight: 700; line-height: 1.1;
+    color: var(--blue);
+    margin-bottom: 0.3rem;
   }
-  .stat-l { font-size: 0.76rem; color: var(--muted); font-weight: 500; letter-spacing: 0.03em; }
+  .stat-l { font-size: 0.82rem; color: var(--muted); line-height: 1.45; }
 
   /* ─── EXPERIENCE ─────────────────────────────────────── */
-  .exp-section { background: var(--bg); }
-  .tl { position: relative; }
+  .tl { position: relative; max-width: 820px; }
   .tl-spine {
-    position: absolute; left: 10px; top: 12px; bottom: 12px; width: 1px;
-    background: linear-gradient(to bottom, var(--blue), var(--violet), rgba(139,92,246,0));
+    position: absolute; left: 8px; top: 10px; bottom: 10px; width: 1px;
+    background: linear-gradient(to bottom, var(--blue-deep), var(--violet), transparent);
   }
-  .tl-item { position: relative; padding-left: 44px; margin-bottom: 1.5rem; }
+  .tl-item { position: relative; padding-left: 42px; margin-bottom: 1.4rem; }
   .tl-pip {
-    position: absolute; left: 3px; top: 12px;
-    width: 16px; height: 16px;
-    border-radius: 50%;
-    background: var(--bg);
-    border: 2px solid var(--border2);
-    display: flex; align-items: center; justify-content: center;
-    transition: border-color 0.3s, box-shadow 0.3s;
+    position: absolute; left: 1px; top: 14px;
+    width: 15px; height: 15px; border-radius: 50%;
+    background: var(--bg); border: 2px solid rgba(96,165,250,0.5);
   }
-  .tl-pip::after { content:''; width:5px; height:5px; border-radius:50%; background:var(--blue); }
-  .tl-item.live .tl-pip { border-color: var(--green); box-shadow: 0 0 12px rgba(16,185,129,0.4); }
-  .tl-item.live .tl-pip::after { background: var(--green); animation: pulse-dot 2s infinite; }
-
+  .tl-item.live .tl-pip { border-color: var(--green); }
   .exp-card {
     background: var(--bg3);
     border: 1px solid var(--border);
     border-radius: var(--r);
-    padding: 1.7rem 2rem;
-    transition: border-color 0.3s, transform 0.3s, box-shadow 0.3s;
-    transform-style: preserve-3d;
-    will-change: transform;
+    padding: 1.6rem 1.9rem;
+    transition: border-color 0.25s;
   }
-  .exp-card:hover {
-    border-color: rgba(59,130,246,0.3);
-    box-shadow: 0 12px 40px rgba(59,130,246,0.08), 0 0 0 1px rgba(59,130,246,0.08);
-  }
-  .ec-top { display: flex; justify-content: space-between; align-items: flex-start; gap: 1rem; flex-wrap: wrap; margin-bottom: 0.4rem; }
-  .ec-role { font-weight: 800; font-size: 1.02rem; }
-  .ec-date { font-family: 'JetBrains Mono', monospace; font-size: 0.71rem; color: var(--muted); }
-  .ec-co   { font-size: 0.84rem; color: var(--blue); font-weight: 600; margin-bottom: 0.6rem; }
-  .ec-pills { display: flex; gap: 0.35rem; flex-wrap: wrap; margin-bottom: 0.9rem; }
-  .pill {
-    font-family: 'JetBrains Mono', monospace;
-    font-size: 0.62rem; letter-spacing: 0.04em; font-weight: 600;
-    padding: 0.18rem 0.6rem; border-radius: 100px;
-  }
-  .p-green  { background: rgba(16,185,129,0.1);  color: var(--green);  border: 1px solid rgba(16,185,129,0.25); }
-  .p-blue   { background: rgba(59,130,246,0.1);  color: var(--blue);   border: 1px solid rgba(59,130,246,0.25); }
-  .p-violet { background: rgba(139,92,246,0.1);  color: var(--violet); border: 1px solid rgba(139,92,246,0.25); }
-  .p-gray   { background: rgba(255,255,255,0.05);color: var(--muted);  border: 1px solid var(--border); }
-
-  .ec-list { list-style: none; margin-bottom: 1rem; }
+  .exp-card:hover { border-color: rgba(96,165,250,0.35); }
+  .ec-top { display: flex; justify-content: space-between; align-items: baseline; gap: 1rem; flex-wrap: wrap; margin-bottom: 0.25rem; }
+  .ec-role { font-weight: 700; font-size: 1.05rem; }
+  .ec-date { font-family: 'JetBrains Mono', monospace; font-size: 0.76rem; color: var(--muted); }
+  .ec-co { font-size: 0.9rem; color: var(--blue); font-weight: 600; margin-bottom: 0.35rem; }
+  .ec-meta { font-size: 0.8rem; color: var(--faint); margin-bottom: 0.85rem; }
+  .ec-meta .live-flag { color: var(--green); font-weight: 600; }
+  .ec-list { list-style: none; }
   .ec-list li {
-    font-size: 0.86rem; color: var(--muted); line-height: 1.65;
-    padding-left: 1.2rem; position: relative; margin-bottom: 0.3rem;
+    font-size: 0.93rem; color: var(--muted); line-height: 1.7;
+    padding-left: 1.2rem; position: relative; margin-bottom: 0.35rem;
   }
-  .ec-list li::before { content:'▸'; position:absolute; left:0; color:var(--blue); font-size:0.65rem; top:0.3rem; }
-  .ec-tags { display:flex; flex-wrap:wrap; gap:0.35rem; }
-  .ec-tag {
-    font-family: 'JetBrains Mono', monospace;
-    font-size: 0.65rem; padding: 0.15rem 0.55rem;
-    background: var(--bg4); border: 1px solid var(--border);
-    border-radius: 5px; color: var(--muted);
-    transition: border-color 0.2s, color 0.2s;
-  }
-  .exp-card:hover .ec-tag { border-color: rgba(59,130,246,0.2); }
+  .ec-list li::before { content: '–'; position: absolute; left: 0; color: var(--blue); font-weight: 700; }
+  .ec-list li:last-child { margin-bottom: 0; }
+  .ec-list strong { color: var(--text); font-weight: 600; }
 
-  /* ─── PROJECTS ───────────────────────────────────────── */
-  .projects-section {
-    background: linear-gradient(180deg, var(--bg2) 0%, var(--bg3) 100%);
-    border-top: 1px solid var(--border);
-    border-bottom: 1px solid var(--border);
-  }
-  .proj-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(360px, 1fr)); gap: 1.5rem; }
-  .proj-card {
+  /* ─── CASE STUDIES ───────────────────────────────────── */
+  .case-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 440px), 1fr)); gap: 1.5rem; }
+  .case {
     background: var(--bg4);
     border: 1px solid var(--border);
     border-radius: var(--r);
-    padding: 2rem;
+    padding: 2rem 2.1rem;
     display: flex; flex-direction: column;
-    position: relative; overflow: hidden;
-    transition: transform 0.3s, border-color 0.3s, box-shadow 0.3s;
-    transform-style: preserve-3d;
+    transition: border-color 0.25s;
   }
-  .proj-card::before {
-    content:'';
-    position: absolute; top:0; left:0; right:0; height:2px;
-    background: linear-gradient(90deg, var(--blue), var(--violet), var(--cyan));
-    transform: scaleX(0); transform-origin: left;
-    transition: transform 0.4s cubic-bezier(0.4,0,0.2,1);
+  .case:hover { border-color: rgba(96,165,250,0.3); }
+  .case-type {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.68rem; letter-spacing: 0.12em; text-transform: uppercase;
+    color: var(--blue); margin-bottom: 0.5rem;
   }
-  .proj-card:hover { transform: translateY(-6px); border-color: rgba(59,130,246,0.25); box-shadow: 0 20px 60px rgba(59,130,246,0.1); }
-  .proj-card:hover::before { transform: scaleX(1); }
-  .pc-top { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 1.2rem; }
-  .pc-icon {
-    width: 48px; height: 48px;
-    background: var(--blue-g);
-    border: 1px solid rgba(59,130,246,0.2);
-    border-radius: 12px;
-    display: flex; align-items: center; justify-content: center;
-    font-size: 1.4rem;
+  .case-head { display: flex; justify-content: space-between; align-items: flex-start; gap: 1rem; margin-bottom: 1.4rem; }
+  .case-name { font-size: 1.25rem; font-weight: 800; letter-spacing: -0.01em; line-height: 1.3; }
+  .case-link {
+    flex-shrink: 0;
+    display: inline-flex; align-items: center; gap: 0.4rem;
+    font-size: 0.8rem; font-weight: 600; color: var(--blue);
+    border: 1px solid rgba(96,165,250,0.3); border-radius: 8px;
+    padding: 0.4rem 0.85rem;
+    transition: background 0.2s, border-color 0.2s;
+    white-space: nowrap;
   }
-  .pc-link {
-    width: 34px; height: 34px;
-    background: var(--bg3); border: 1px solid var(--border);
-    border-radius: 8px; display: flex; align-items: center; justify-content: center;
-    color: var(--muted); font-size: 0.9rem;
-    transition: all 0.2s;
+  .case-link:hover { background: rgba(59,130,246,0.12); border-color: var(--blue); }
+  .cs-block { margin-bottom: 1.1rem; }
+  .cs-block:last-of-type { margin-bottom: 1.4rem; }
+  .cs-block h4 {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.7rem; letter-spacing: 0.12em; text-transform: uppercase;
+    color: var(--violet); margin-bottom: 0.3rem;
   }
-  .pc-link:hover { background: var(--blue-g); border-color: var(--blue); color: var(--blue); }
-  .pc-type { font-family: 'JetBrains Mono', monospace; font-size: 0.63rem; color: var(--blue); letter-spacing: 0.1em; text-transform: uppercase; margin-bottom: 0.35rem; }
-  .pc-name { font-size: 1.15rem; font-weight: 800; margin-bottom: 0.7rem; }
-  .pc-desc { color: var(--muted); font-size: 0.86rem; line-height: 1.72; flex: 1; margin-bottom: 1.2rem; }
-  .pc-features { list-style: none; margin-bottom: 1.2rem; }
-  .pc-features li { color: var(--muted); font-size: 0.82rem; padding-left: 1.1rem; position: relative; margin-bottom: 0.28rem; line-height: 1.55; }
-  .pc-features li::before { content:'◆'; position:absolute; left:0; color:var(--violet); font-size:0.45rem; top:0.38rem; }
-  .pc-stack { display: flex; flex-wrap: wrap; gap: 0.35rem; }
+  .cs-block p { font-size: 0.92rem; color: var(--muted); line-height: 1.72; }
+  .case-stack { display: flex; flex-wrap: wrap; gap: 0.4rem; margin-top: auto; }
   .stack-chip {
     font-family: 'JetBrains Mono', monospace;
-    font-size: 0.62rem; padding: 0.18rem 0.55rem;
-    background: var(--violet-g); color: var(--violet);
-    border: 1px solid rgba(139,92,246,0.2); border-radius: 4px;
+    font-size: 0.72rem; padding: 0.24rem 0.65rem;
+    background: rgba(167,139,250,0.1); color: var(--violet);
+    border: 1px solid rgba(167,139,250,0.25); border-radius: 5px;
   }
 
   /* ─── SKILLS ─────────────────────────────────────────── */
-  .skills-section { background: var(--bg); }
-  .skills-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 1.2rem; }
+  .skills-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 300px), 1fr)); gap: 1.2rem; }
   .sk-group {
     background: var(--bg3);
     border: 1px solid var(--border);
     border-radius: var(--r);
-    padding: 1.6rem;
-    transition: border-color 0.25s, transform 0.25s;
+    padding: 1.6rem 1.7rem;
   }
-  .sk-group:hover { border-color: rgba(59,130,246,0.2); transform: translateY(-3px); }
-  .sk-head {
-    display: flex; align-items: center; gap: 0.6rem;
+  .sk-group h3 {
     font-family: 'JetBrains Mono', monospace;
-    font-size: 0.67rem; font-weight: 700;
+    font-size: 0.72rem; font-weight: 500;
     color: var(--blue); letter-spacing: 0.12em; text-transform: uppercase;
     margin-bottom: 1.1rem;
   }
-  .sk-icon { font-size: 1rem; }
-  .sk-chips { display: flex; flex-wrap: wrap; gap: 0.4rem; }
+  .sk-chips { display: flex; flex-wrap: wrap; gap: 0.45rem; }
   .sk-chip {
-    font-size: 0.8rem; font-weight: 500;
-    padding: 0.3rem 0.75rem;
+    font-size: 0.84rem; font-weight: 500;
+    padding: 0.34rem 0.8rem;
     background: var(--bg4); border: 1px solid var(--border);
-    border-radius: 6px; color: var(--text);
-    transition: all 0.18s; cursor: default;
+    border-radius: 7px; color: var(--text);
   }
-  .sk-chip:hover { background: var(--blue-g); border-color: rgba(59,130,246,0.35); color: var(--blue); transform: translateY(-2px); }
 
   /* ─── EDUCATION ──────────────────────────────────────── */
-  .edu-section {
-    background: linear-gradient(180deg, var(--bg2) 0%, var(--bg) 100%);
-    border-top: 1px solid var(--border);
-  }
   .edu-card {
-    max-width: 660px;
+    max-width: 680px;
     background: var(--bg3);
     border: 1px solid var(--border);
     border-radius: var(--r);
-    padding: 2.2rem 2.4rem;
-    display: flex; gap: 1.8rem; align-items: center;
-    position: relative; overflow: hidden;
-    transition: border-color 0.3s;
+    padding: 2rem 2.2rem;
+    display: flex; gap: 1.6rem; align-items: flex-start;
   }
-  .edu-card::after {
-    content: '';
-    position: absolute; bottom: 0; left: 0; right: 0; height: 2px;
-    background: linear-gradient(90deg, var(--blue), var(--violet));
+  .edu-mark {
+    width: 52px; height: 52px; flex-shrink: 0;
+    background: rgba(167,139,250,0.1); border: 1px solid rgba(167,139,250,0.25);
+    border-radius: 12px; display: flex; align-items: center; justify-content: center;
+    color: var(--violet); font-family: 'JetBrains Mono', monospace; font-weight: 700; font-size: 0.9rem;
   }
-  .edu-card:hover { border-color: rgba(59,130,246,0.3); }
-  .edu-icon-wrap {
-    width: 60px; height: 60px; flex-shrink: 0;
-    background: var(--violet-g); border: 1px solid rgba(139,92,246,0.2);
-    border-radius: 14px; display: flex; align-items: center; justify-content: center;
-    font-size: 1.7rem;
-  }
-  .edu-deg  { font-weight: 800; font-size: 1.05rem; margin-bottom: 0.25rem; }
-  .edu-sch  { color: var(--blue); font-weight: 600; font-size: 0.9rem; margin-bottom: 0.35rem; }
-  .edu-meta { font-family: 'JetBrains Mono', monospace; font-size: 0.72rem; color: var(--muted); margin-bottom: 0.6rem; }
+  .edu-deg { font-weight: 800; font-size: 1.08rem; margin-bottom: 0.2rem; }
+  .edu-sch { color: var(--blue); font-weight: 600; font-size: 0.92rem; margin-bottom: 0.3rem; }
+  .edu-meta { font-family: 'JetBrains Mono', monospace; font-size: 0.76rem; color: var(--muted); margin-bottom: 0.7rem; }
   .edu-badge {
-    display: inline-flex; align-items: center; gap: 0.35rem;
-    font-family: 'JetBrains Mono', monospace; font-size: 0.67rem;
-    padding: 0.22rem 0.7rem;
-    background: rgba(16,185,129,0.1); border: 1px solid rgba(16,185,129,0.25);
-    color: var(--green); border-radius: 100px; font-weight: 700;
+    display: inline-block;
+    font-family: 'JetBrains Mono', monospace; font-size: 0.72rem; font-weight: 700;
+    padding: 0.28rem 0.75rem;
+    background: rgba(52,211,153,0.1); border: 1px solid rgba(52,211,153,0.3);
+    color: var(--green); border-radius: 100px;
   }
+  .edu-note { font-size: 0.9rem; color: var(--muted); margin-top: 0.8rem; line-height: 1.7; }
 
   /* ─── CONTACT ────────────────────────────────────────── */
-  .contact-section { background: var(--bg); }
-  .contact-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 5rem; align-items: start; }
-  .c-links { display: flex; flex-direction: column; gap: 0.9rem; }
+  .contact-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 4rem; align-items: start; }
+  .c-links { display: flex; flex-direction: column; gap: 0.85rem; }
   .c-card {
     display: flex; align-items: center; gap: 1.1rem;
     background: var(--bg3); border: 1px solid var(--border);
-    border-radius: var(--r); padding: 1.2rem 1.5rem;
-    transition: all 0.25s;
-    position: relative; overflow: hidden;
+    border-radius: var(--r); padding: 1.15rem 1.4rem;
+    transition: border-color 0.2s, background 0.2s;
   }
-  .c-card::before {
-    content: '';
-    position: absolute; left: 0; top: 0; bottom: 0; width: 2px;
-    background: linear-gradient(to bottom, var(--blue), var(--violet));
-    transform: scaleY(0); transform-origin: top;
-    transition: transform 0.3s;
-  }
-  .c-card:hover { border-color: rgba(59,130,246,0.25); transform: translateX(5px); box-shadow: 0 8px 30px rgba(59,130,246,0.08); }
-  .c-card:hover::before { transform: scaleY(1); }
+  .c-card:hover { border-color: rgba(96,165,250,0.4); background: var(--bg4); }
   .c-ico {
     width: 42px; height: 42px; flex-shrink: 0;
-    background: var(--blue-g); border: 1px solid rgba(59,130,246,0.2);
+    background: rgba(59,130,246,0.1); border: 1px solid rgba(96,165,250,0.25);
     border-radius: 10px; display: flex; align-items: center; justify-content: center;
-    font-family: 'JetBrains Mono', monospace; font-size: 0.75rem; font-weight: 700;
+    font-family: 'JetBrains Mono', monospace; font-size: 0.78rem; font-weight: 700;
     color: var(--blue);
   }
-  .c-label { font-weight: 700; font-size: 0.9rem; margin-bottom: 0.1rem; }
-  .c-val   { font-family: 'JetBrains Mono', monospace; font-size: 0.7rem; color: var(--muted); }
-
-  .contact-text { color: var(--muted); line-height: 1.85; font-size: 0.95rem; }
+  .c-label { font-weight: 700; font-size: 0.92rem; }
+  .c-val { font-family: 'JetBrains Mono', monospace; font-size: 0.74rem; color: var(--muted); }
+  .contact-text p { color: var(--muted); line-height: 1.85; font-size: 0.98rem; margin-bottom: 1.2rem; }
   .contact-text strong { color: var(--text); }
-  .contact-text .mono { font-family: 'JetBrains Mono', monospace; font-size: 0.75rem; color: var(--blue); }
 
-  /* ─── FOOTER ─────────────────────────────────────────── */
-  footer {
+  footer.site {
     border-top: 1px solid var(--border);
-    padding: 2rem 6%;
-    display: flex; justify-content: space-between; align-items: center;
-    position: relative; z-index: 1;
+    padding: 1.8rem 0;
     background: var(--bg2);
   }
-  .ft-left { font-family: 'JetBrains Mono', monospace; font-size: 0.78rem; color: var(--muted); }
-  .ft-right { font-size: 0.78rem; color: var(--muted); }
-
-  /* ─── REVEAL ANIMATION ───────────────────────────────── */
-  .reveal {
-    opacity: 0;
-    transform: translateY(32px);
-    transition: opacity 0.7s cubic-bezier(0.16,1,0.3,1), transform 0.7s cubic-bezier(0.16,1,0.3,1);
+  .foot-row {
+    max-width: var(--maxw); margin: 0 auto; padding: 0 24px;
+    display: flex; justify-content: space-between; align-items: center; gap: 1rem; flex-wrap: wrap;
+    font-size: 0.82rem; color: var(--muted);
   }
-  .reveal.visible { opacity: 1; transform: none; }
-  .reveal-left { opacity:0; transform:translateX(-32px); transition: opacity 0.7s cubic-bezier(0.16,1,0.3,1), transform 0.7s cubic-bezier(0.16,1,0.3,1); }
-  .reveal-left.visible { opacity:1; transform:none; }
+  .foot-row .mono { font-family: 'JetBrains Mono', monospace; }
+
+  /* ─── REVEAL (JS + motion-safe only; content visible by default) ── */
+  @media (prefers-reduced-motion: no-preference) {
+    html.js .reveal {
+      opacity: 0; transform: translateY(24px);
+      transition: opacity 0.6s cubic-bezier(0.16,1,0.3,1), transform 0.6s cubic-bezier(0.16,1,0.3,1);
+    }
+    html.js .reveal.visible { opacity: 1; transform: none; }
+  }
 
   /* ─── RESPONSIVE ─────────────────────────────────────── */
   @media (max-width: 860px) {
-    .nav-links { display: none; }
-    .about-grid, .contact-grid { grid-template-columns: 1fr; gap: 3rem; }
+    .about-grid, .contact-grid { grid-template-columns: 1fr; gap: 2.6rem; }
+    .hero { padding: 120px 0 64px; }
+    section { padding: 64px 0; }
   }
-  @media (max-width: 540px) {
-    section { padding: 5rem 5%; }
-    .proj-grid { grid-template-columns: 1fr; }
+  @media (max-width: 480px) {
+    .exp-card { padding: 1.3rem 1.2rem; }
+    .case { padding: 1.5rem 1.3rem; }
+    .btn { width: 100%; justify-content: center; }
+    .hero-actions { flex-direction: column; }
   }
   </style>
 </head>
 <body>
 
-<!-- CANVAS -->
-<canvas id="particle-canvas"></canvas>
+<a class="skip-link" href="#main">Skip to content</a>
 
-<!-- NAV -->
-<nav>
-  <div class="nav-brand" translate="no">
-    <div class="nav-dot"></div>
-    anıl.kavak
+<header class="site" id="site-header">
+  <div class="nav-row">
+    <a href="#top" class="nav-brand" translate="no">
+      <span class="nav-dot" aria-hidden="true"></span>
+      anıl.kavak
+    </a>
+    <nav aria-label="Main">
+      <button class="nav-toggle" id="nav-toggle" aria-expanded="false" aria-controls="nav-menu" aria-label="Menu">☰</button>
+      <ul class="nav-links" id="nav-menu">
+        <li><a href="#profile">Profile</a></li>
+        <li><a href="#experience">Experience</a></li>
+        <li><a href="#work">Case Studies</a></li>
+        <li><a href="#skills">Skills</a></li>
+        <li><a href="#education">Education</a></li>
+        <li><a href="#contact" class="nav-cta">Contact</a></li>
+      </ul>
+    </nav>
   </div>
-  <ul class="nav-links">
-    <li><a href="#about">about</a></li>
-    <li><a href="#experience">experience</a></li>
-    <li><a href="#projects">projects</a></li>
-    <li><a href="#skills">skills</a></li>
-    <li><a href="#contact" class="nav-cta">contact</a></li>
-  </ul>
-</nav>
+</header>
+
+<main id="main">
 
 <!-- HERO -->
-<section class="hero">
-  <div class="hero-orb orb-1"></div>
-  <div class="hero-orb orb-2"></div>
+<section class="hero" id="top">
+  <div class="wrap">
+    <div class="hero-inner">
+      <p class="hero-eyebrow">
+        Open to analyst &amp; operations roles · İstanbul / Remote
+      </p>
 
-  <div class="hero-inner">
-    <div class="hero-eyebrow">
-      <span class="eyebrow-dot"></span>
-      available for opportunities · istanbul
+      <h1 translate="no">Anıl <span class="accent">Kavak</span></h1>
+
+      <p class="hero-role">
+        Business Analysis <span class="sep" aria-hidden="true">·</span>
+        AI &amp; Automation <span class="sep" aria-hidden="true">·</span>
+        Data <span class="sep" aria-hidden="true">·</span>
+        Commercial Operations
+      </p>
+
+      <p class="hero-desc">
+        I help commercial teams turn manual processes and scattered data into
+        <strong>decisions and automated workflows</strong>. Management Information Systems
+        student on a <strong>100% merit scholarship</strong> — with hands-on experience across
+        B2B marketing operations and sales, and a <strong>live AI product</strong> shipped end to end.
+      </p>
+
+      <div class="hero-actions">
+        <a href="cv.html" class="btn btn-solid">View Résumé</a>
+        <a href="https://www.linkedin.com/in/an%C4%B1l-kavak-95045031b/" target="_blank" rel="noopener noreferrer" class="btn btn-outline">LinkedIn</a>
+        <a href="https://github.com/anllkvk" target="_blank" rel="noopener noreferrer" class="btn btn-outline">GitHub</a>
+      </div>
+
+      <ul class="proof-strip" role="list" aria-label="Highlights">
+        <li class="proof">100% merit scholarship</li>
+        <li class="proof">Live AI product in production</li>
+        <li class="proof">6 roles across commercial &amp; tech functions</li>
+        <li class="proof">Turkish native · English professional</li>
+      </ul>
     </div>
-
-    <h1 class="hero-name" translate="no">
-      <span class="first">Anıl</span>
-      <span class="last">Kavak</span>
-    </h1>
-
-    <div class="hero-typewriter">
-      <span id="tw-text"></span><span class="cursor"></span>
-    </div>
-
-    <p class="hero-desc">
-      <strong>MIS student, AI researcher &amp; marketing professional</strong> building intelligent systems at the crossroads of data science, technology, and business strategy.
-    </p>
-
-    <div class="hero-actions">
-      <a href="#contact" class="btn btn-solid">Get in touch ↗</a>
-      <a href="cv.html" target="_blank" class="btn btn-outline">View CV</a>
-      <a href="#projects" class="btn btn-outline">Projects</a>
-    </div>
-
-    <div class="hero-badges">
-      <span class="h-badge"><span class="h-badge-icon">🎓</span> İstinye University · 100% Scholarship</span>
-      <span class="h-badge"><span class="h-badge-icon">🏢</span> TDG Intern</span>
-      <span class="h-badge"><span class="h-badge-icon">🧠</span> AgentFlow Founder</span>
-      <span class="h-badge"><span class="h-badge-icon">🏀</span> Basketball Athlete</span>
-    </div>
-  </div>
-
-  <div class="hero-scroll">
-    <div class="scroll-mouse"><div class="scroll-wheel"></div></div>
   </div>
 </section>
 
-<!-- ABOUT -->
-<section class="about-section" id="about">
-  <div class="reveal">
-    <p class="s-eyebrow">about me</p>
-    <h2 class="s-title">Who I Am</h2>
-  </div>
-  <div class="about-grid">
-    <div class="about-text reveal-left">
-      <p>I'm a <strong>Management Information Systems student at İstinye University</strong>, studying on a <span class="hl">100% full scholarship</span>. My focus sits at the intersection of AI, data science, and business — building systems that solve real problems.</p>
-      <p>Currently interning at <strong>TDG</strong> as a Marketing &amp; Administrative Specialist, where I create marketing content, collect B2B trade fair leads, and coordinate strategic client meetings to drive business growth.</p>
-      <p>I'm the founder of <strong>AgentFlow</strong> on Medium — a research publication exploring how AI agents are reshaping startup ecosystems. I also contribute as a <strong>PR &amp; Communications Coordinator</strong> for Metin Gürsoy Brand Management, working closely with Hermes Events.</p>
-      <p>Away from screens: I compete as a <span class="hl">basketball athlete</span> and believe the sharpest solutions come from combining rigorous data thinking with genuine human empathy.</p>
+<!-- PROFILE -->
+<section class="alt" id="profile">
+  <div class="wrap">
+    <div class="reveal">
+      <p class="s-eyebrow">Profile</p>
+      <h2 class="s-title">Business first. Technology as leverage.</h2>
     </div>
-    <div class="stats-wrap reveal">
-      <div class="stat-tile">
-        <div class="stat-n" data-target="383">0</div>
-        <div class="stat-l">LinkedIn connections</div>
+    <div class="about-grid">
+      <div class="about-text reveal">
+        <p>Most analysts read the data. Fewer can also <strong>build the tooling that produces it</strong>. I work in that overlap: framing a business problem, finding the signal in the data, and automating the workflow with AI so the improvement sticks.</p>
+        <p>At <strong>TDG</strong>, I support the commercial engine directly — capturing and qualifying B2B leads at trade fairs, keeping CRM data clean, and coordinating outreach that feeds the sales pipeline. Before that, I exceeded sales targets on the retail floor at <strong>Swarovski</strong> and <strong>Calvin Klein Jeans</strong>, where I learned how revenue is actually made: one qualified conversation at a time.</p>
+        <p>On the technical side, I designed, built, and deployed an <strong>AI-powered study assistant</strong> as my undergraduate thesis — live in production today — and I write <strong>AgentFlow</strong>, a Medium publication analyzing what AI agents change for startups and business operations.</p>
+        <p>I'm targeting <strong>Business Analyst, AI Business Analyst, BI, and Revenue Operations</strong> roles at international companies, where that combination compounds.</p>
       </div>
-      <div class="stat-tile">
-        <div class="stat-n" data-target="5">0</div>
-        <div class="stat-l">roles &amp; internships</div>
-      </div>
-      <div class="stat-tile">
-        <div class="stat-n" data-target="100">0</div>
-        <div class="stat-l">% scholarship</div>
-      </div>
-      <div class="stat-tile">
-        <div class="stat-n" data-target="3">0</div>
-        <div class="stat-l">yrs work experience</div>
+      <div class="stats-wrap reveal" role="list" aria-label="Key facts">
+        <div class="stat-tile" role="listitem">
+          <p class="stat-n">100%</p>
+          <p class="stat-l">merit scholarship, İstinye University</p>
+        </div>
+        <div class="stat-tile" role="listitem">
+          <p class="stat-n">1</p>
+          <p class="stat-l">AI product live in production, built end to end</p>
+        </div>
+        <div class="stat-tile" role="listitem">
+          <p class="stat-n">2×</p>
+          <p class="stat-l">consecutive months above personal sales target</p>
+        </div>
+        <div class="stat-tile" role="listitem">
+          <p class="stat-n">6</p>
+          <p class="stat-l">roles across marketing, sales, PR &amp; IT since 2023</p>
+        </div>
       </div>
     </div>
   </div>
 </section>
 
 <!-- EXPERIENCE -->
-<section class="exp-section" id="experience">
-  <div class="reveal">
-    <p class="s-eyebrow">experience</p>
-    <h2 class="s-title">Where I've Worked</h2>
-    <p class="s-sub">From global luxury retail to AI-driven marketing — each role sharpened a different edge.</p>
-  </div>
-
-  <div class="tl">
-    <div class="tl-spine"></div>
-
-    <div class="tl-item live reveal">
-      <div class="tl-pip"></div>
-      <div class="exp-card">
-        <div class="ec-top">
-          <span class="ec-role">Marketing &amp; Administrative Specialist</span>
-          <span class="ec-date">Mar 2026 → now</span>
-        </div>
-        <div class="ec-co">TDG</div>
-        <div class="ec-pills">
-          <span class="pill p-green">● ACTIVE</span>
-          <span class="pill p-blue">Internship</span>
-          <span class="pill p-gray">Hybrid · İstanbul</span>
-        </div>
-        <ul class="ec-list">
-          <li>Created and managed marketing content for TDG's digital channels, aligned with brand strategy.</li>
-          <li>Supported data collection efforts at B2B events to assist lead qualification processes.</li>
-          <li>Helped coordinate outreach activities and meeting scheduling to support the sales team.</li>
-          <li>Provided general administrative support across hybrid team operations.</li>
-        </ul>
-        <div class="ec-tags">
-          <span class="ec-tag">content_marketing</span><span class="ec-tag">b2b_lead_gen</span>
-          <span class="ec-tag">crm</span><span class="ec-tag">biz_dev</span>
-        </div>
-      </div>
+<section id="experience">
+  <div class="wrap">
+    <div class="reveal">
+      <p class="s-eyebrow">Experience</p>
+      <h2 class="s-title">Where I've delivered</h2>
+      <p class="s-sub">Six roles across the commercial value chain — from the sales floor to marketing operations. Each one taught a different part of how businesses generate revenue.</p>
     </div>
 
-    <div class="tl-item live reveal">
-      <div class="tl-pip"></div>
-      <div class="exp-card">
-        <div class="ec-top">
-          <span class="ec-role">PR &amp; Event Communications Coordinator</span>
-          <span class="ec-date">Sep 2024 → now</span>
-        </div>
-        <div class="ec-co">METİN GÜRSOY BRAND MANAGEMENT &amp; MARKETING</div>
-        <div class="ec-pills">
-          <span class="pill p-green">● ACTIVE</span>
-          <span class="pill p-gray">Freelance</span>
-        </div>
-        <ul class="ec-list">
-          <li>Supported PR and communications efforts for brand campaigns; active contributor at Hermes Events.</li>
-          <li>Assisted in building media partnerships and maintaining stakeholder relationships across projects.</li>
-        </ul>
-        <div class="ec-tags">
-          <span class="ec-tag">pr</span><span class="ec-tag">event_mgmt</span><span class="ec-tag">communications</span>
-        </div>
-      </div>
-    </div>
+    <div class="tl">
+      <div class="tl-spine" aria-hidden="true"></div>
 
-    <div class="tl-item reveal">
-      <div class="tl-pip"></div>
-      <div class="exp-card">
-        <div class="ec-top">
-          <span class="ec-role">IT Intern</span>
-          <span class="ec-date">Jul 2025 → Aug 2025</span>
-        </div>
-        <div class="ec-co">Social Office</div>
-        <div class="ec-pills"><span class="pill p-violet">Internship</span><span class="pill p-gray">Remote</span></div>
-        <ul class="ec-list"><li>Supported IT operations; data processing with Excel and technical documentation via AutoCAD.</li></ul>
-        <div class="ec-tags"><span class="ec-tag">excel</span><span class="ec-tag">autocad</span><span class="ec-tag">it_support</span></div>
+      <div class="tl-item live reveal">
+        <span class="tl-pip" aria-hidden="true"></span>
+        <article class="exp-card">
+          <div class="ec-top">
+            <h3 class="ec-role">Marketing &amp; Administrative Specialist</h3>
+            <span class="ec-date">Mar 2026 – Present</span>
+          </div>
+          <p class="ec-co">TDG</p>
+          <p class="ec-meta"><span class="live-flag">● Current</span> · Internship · Hybrid · İstanbul</p>
+          <ul class="ec-list">
+            <li>Capture and qualify <strong>B2B leads at trade fairs</strong>, structuring the data for the sales team's pipeline and CRM.</li>
+            <li>Produce marketing content for TDG's digital channels within corporate brand guidelines.</li>
+            <li>Coordinate client outreach and meeting scheduling that feeds the business development pipeline.</li>
+          </ul>
+        </article>
       </div>
-    </div>
 
-    <div class="tl-item reveal">
-      <div class="tl-pip"></div>
-      <div class="exp-card">
-        <div class="ec-top">
-          <span class="ec-role">Student Assistant</span>
-          <span class="ec-date">Jul 2024 → Dec 2024</span>
-        </div>
-        <div class="ec-co">İstinye University</div>
-        <div class="ec-pills"><span class="pill p-gray">Part-time · On-site</span></div>
-        <ul class="ec-list"><li>Document review, project coordination, and administrative support for academic staff.</li></ul>
+      <div class="tl-item live reveal">
+        <span class="tl-pip" aria-hidden="true"></span>
+        <article class="exp-card">
+          <div class="ec-top">
+            <h3 class="ec-role">PR &amp; Event Communications Coordinator</h3>
+            <span class="ec-date">Sep 2024 – Present</span>
+          </div>
+          <p class="ec-co">Metin Gürsoy Brand Management &amp; Marketing</p>
+          <p class="ec-meta"><span class="live-flag">● Current</span> · Freelance</p>
+          <ul class="ec-list">
+            <li>Deliver PR and communications support for brand campaigns; regular contributor at <strong>Hermes Events</strong>.</li>
+            <li>Coordinate media partnerships and stakeholder relationships across concurrent projects.</li>
+          </ul>
+        </article>
       </div>
-    </div>
 
-    <div class="tl-item reveal">
-      <div class="tl-pip"></div>
-      <div class="exp-card">
-        <div class="ec-top">
-          <span class="ec-role">Sales Representative</span>
-          <span class="ec-date">Feb 2024 → Apr 2024</span>
-        </div>
-        <div class="ec-co">CK Klein Jeans · Mall of İstanbul</div>
-        <ul class="ec-list">
-          <li>Exceeded personal sales targets for two consecutive months.</li>
-          <li>Led stock tracking, warranty management, and shift scheduling alongside core sales duties.</li>
-        </ul>
-        <div class="ec-tags"><span class="ec-tag">sales</span><span class="ec-tag">stock_mgmt</span><span class="ec-tag">customer_relations</span></div>
+      <div class="tl-item reveal">
+        <span class="tl-pip" aria-hidden="true"></span>
+        <article class="exp-card">
+          <div class="ec-top">
+            <h3 class="ec-role">IT Intern</h3>
+            <span class="ec-date">Jul 2025 – Aug 2025</span>
+          </div>
+          <p class="ec-co">Social Office</p>
+          <p class="ec-meta">Internship · Remote</p>
+          <ul class="ec-list">
+            <li>Processed operational data in <strong>Excel</strong> and produced technical documentation in AutoCAD for IT operations.</li>
+          </ul>
+        </article>
       </div>
-    </div>
 
-    <div class="tl-item reveal">
-      <div class="tl-pip"></div>
-      <div class="exp-card">
-        <div class="ec-top">
-          <span class="ec-role">Sales Representative</span>
-          <span class="ec-date">Jul 2023 → Feb 2024</span>
-        </div>
-        <div class="ec-co">SWAROVSKI · Mall of İstanbul</div>
-        <ul class="ec-list">
-          <li>Completed supervisor-level training at a global luxury brand; converted regulars to loyal clients.</li>
-          <li>Managed e-commerce relationships and took on inventory &amp; team motivation responsibilities.</li>
-        </ul>
-        <div class="ec-tags"><span class="ec-tag">luxury_retail</span><span class="ec-tag">e-commerce</span><span class="ec-tag">inventory</span><span class="ec-tag">team_motivation</span></div>
+      <div class="tl-item reveal">
+        <span class="tl-pip" aria-hidden="true"></span>
+        <article class="exp-card">
+          <div class="ec-top">
+            <h3 class="ec-role">Student Assistant</h3>
+            <span class="ec-date">Jul 2024 – Dec 2024</span>
+          </div>
+          <p class="ec-co">İstinye University</p>
+          <p class="ec-meta">Part-time · On-site · İstanbul</p>
+          <ul class="ec-list">
+            <li>Coordinated document workflows and project administration for academic and research staff.</li>
+          </ul>
+        </article>
+      </div>
+
+      <div class="tl-item reveal">
+        <span class="tl-pip" aria-hidden="true"></span>
+        <article class="exp-card">
+          <div class="ec-top">
+            <h3 class="ec-role">Sales Representative</h3>
+            <span class="ec-date">Feb 2024 – Apr 2024</span>
+          </div>
+          <p class="ec-co">Calvin Klein Jeans · Mall of İstanbul</p>
+          <p class="ec-meta">Full-time · Retail</p>
+          <ul class="ec-list">
+            <li><strong>Exceeded personal sales targets two consecutive months</strong> through structured customer engagement.</li>
+            <li>Took on stock tracking, warranty management, and shift scheduling beyond core sales scope.</li>
+          </ul>
+        </article>
+      </div>
+
+      <div class="tl-item reveal">
+        <span class="tl-pip" aria-hidden="true"></span>
+        <article class="exp-card">
+          <div class="ec-top">
+            <h3 class="ec-role">Sales Representative</h3>
+            <span class="ec-date">Jul 2023 – Feb 2024</span>
+          </div>
+          <p class="ec-co">Swarovski · Mall of İstanbul</p>
+          <p class="ec-meta">Full-time · Luxury Retail</p>
+          <ul class="ec-list">
+            <li>Selected for <strong>supervisor-track training</strong> at a global luxury brand within the first months.</li>
+            <li>Converted walk-in visitors into repeat clients; managed e-commerce client relationships and inventory duties.</li>
+          </ul>
+        </article>
       </div>
     </div>
   </div>
 </section>
 
-<!-- PROJECTS -->
-<section class="projects-section" id="projects">
-  <div class="reveal">
-    <p class="s-eyebrow">projects</p>
-    <h2 class="s-title">What I've Built</h2>
-    <p class="s-sub">Hands-on projects at the intersection of AI, cognitive science, and research.</p>
-  </div>
-  <div class="proj-grid">
-
-    <div class="proj-card reveal">
-      <div class="pc-top">
-        <div class="pc-icon">🧠</div>
-        <a href="https://bilissel-asistan.onrender.com/" target="_blank" class="pc-link">↗</a>
-      </div>
-      <div class="pc-type">AI · Thesis Project · Web App</div>
-      <div class="pc-name">Bilişsel Çalışma Asistanı</div>
-      <p class="pc-desc">An AI-powered cognitive study assistant that adapts to your mental state. Selects Deep Work or Pomodoro mode based on sleep data, then primes focus with topic-specific cognitive warmup questions before each session.</p>
-      <ul class="pc-features">
-        <li>Sleep-based study mode selection (Deep Work 50/10 vs Pomodoro 25/5)</li>
-        <li>AI-generated cognitive warmup questions per subject</li>
-        <li>Neon visual countdown timer with session progress</li>
-        <li>Active Recall analysis with success scoring post-session</li>
-        <li>Privacy-first — no data stored, no account needed</li>
-      </ul>
-      <div class="pc-stack">
-        <span class="stack-chip">Python</span>
-        <span class="stack-chip">AI / LLM</span>
-        <span class="stack-chip">Web</span>
-        <span class="stack-chip">Cognitive Science</span>
-      </div>
+<!-- CASE STUDIES -->
+<section class="alt" id="work">
+  <div class="wrap">
+    <div class="reveal">
+      <p class="s-eyebrow">Case Studies</p>
+      <h2 class="s-title">Business problems, shipped solutions</h2>
+      <p class="s-sub">Not portfolio pieces — working products and published research, framed the way I approach any business problem: problem, solution, impact, lessons.</p>
     </div>
+    <div class="case-grid">
 
-    <div class="proj-card reveal">
-      <div class="pc-top">
-        <div class="pc-icon">✍️</div>
-        <a href="https://medium.com/@agentflow" target="_blank" class="pc-link">↗</a>
-      </div>
-      <div class="pc-type">Research · Writing · AI Strategy</div>
-      <div class="pc-name">AgentFlow — Medium Publication</div>
-      <p class="pc-desc">A research publication exploring how AI agents are reshaping startup ecosystems and business operations. Covers agent architecture, multi-agent coordination, and real-world strategic applications.</p>
-      <ul class="pc-features">
-        <li>Research articles on AI agent frameworks &amp; orchestration</li>
-        <li>Analysis of agentic AI impact on early-stage startups</li>
-        <li>Business-strategy perspective on frontier AI trends</li>
-      </ul>
-      <div class="pc-stack">
-        <span class="stack-chip">AI Agents</span>
-        <span class="stack-chip">Research</span>
-        <span class="stack-chip">Startups</span>
-        <span class="stack-chip">Strategy</span>
-      </div>
+      <article class="case reveal">
+        <div>
+          <p class="case-type">AI Product · Undergraduate Thesis · Live</p>
+          <div class="case-head">
+            <h3 class="case-name">Cognitive Study Assistant</h3>
+            <a href="https://bilissel-asistan.onrender.com/" target="_blank" rel="noopener noreferrer" class="case-link" aria-label="Open Cognitive Study Assistant (live product)">View live ↗</a>
+          </div>
+        </div>
+        <div class="cs-block">
+          <h4>Problem</h4>
+          <p>Students default to one study method regardless of their mental state, so focus and retention suffer — a behavior-change problem, not an information problem.</p>
+        </div>
+        <div class="cs-block">
+          <h4>Solution</h4>
+          <p>A web app that selects the right study protocol (Deep Work vs. Pomodoro) from the user's sleep data, primes focus with AI-generated warm-up questions per subject, and scores retention through active-recall analysis after each session.</p>
+        </div>
+        <div class="cs-block">
+          <h4>Impact</h4>
+          <p>Live in production on zero-cost infrastructure. Privacy-first by design: no accounts, no stored personal data — which removed the biggest adoption barrier.</p>
+        </div>
+        <div class="cs-block">
+          <h4>Lessons</h4>
+          <p>Owning a product end to end — from behavioral research and scoping through LLM integration to deployment — is the fastest way to learn where AI genuinely adds value.</p>
+        </div>
+        <div class="case-stack">
+          <span class="stack-chip">Python</span>
+          <span class="stack-chip">LLM APIs</span>
+          <span class="stack-chip">Web App</span>
+          <span class="stack-chip">Render</span>
+        </div>
+      </article>
+
+      <article class="case reveal">
+        <div>
+          <p class="case-type">Research Publication · Founder &amp; Author</p>
+          <div class="case-head">
+            <h3 class="case-name">AgentFlow</h3>
+            <a href="https://medium.com/@agentflow" target="_blank" rel="noopener noreferrer" class="case-link" aria-label="Open AgentFlow on Medium">Read on Medium ↗</a>
+          </div>
+        </div>
+        <div class="cs-block">
+          <h4>Problem</h4>
+          <p>Business leaders struggle to separate AI-agent hype from operational value — most coverage is either too technical or too promotional to support real decisions.</p>
+        </div>
+        <div class="cs-block">
+          <h4>Solution</h4>
+          <p>A Medium publication analyzing AI agent frameworks, multi-agent coordination, and adoption strategy — written from a business-operations perspective rather than an engineering one.</p>
+        </div>
+        <div class="cs-block">
+          <h4>Impact</h4>
+          <p>A public, growing body of work that documents how I think about AI in business terms — the same lens I bring to analyst work.</p>
+        </div>
+        <div class="cs-block">
+          <h4>Lessons</h4>
+          <p>Translating frontier technology into decision-ready insight is a discipline of its own — and it's the core skill of an AI business analyst.</p>
+        </div>
+        <div class="case-stack">
+          <span class="stack-chip">AI Agents</span>
+          <span class="stack-chip">Research</span>
+          <span class="stack-chip">Business Strategy</span>
+        </div>
+      </article>
+
     </div>
-
   </div>
 </section>
 
 <!-- SKILLS -->
-<section class="skills-section" id="skills">
-  <div class="reveal">
-    <p class="s-eyebrow">skills</p>
-    <h2 class="s-title">Tech &amp; Tools</h2>
-    <p class="s-sub">A hybrid stack built across academics, internships, and self-driven exploration.</p>
-  </div>
-  <div class="skills-grid">
-    <div class="sk-group reveal">
-      <div class="sk-head"><span class="sk-icon">⌨️</span> Programming &amp; Data</div>
-      <div class="sk-chips">
-        <span class="sk-chip">Python</span><span class="sk-chip">R</span>
-        <span class="sk-chip">SQL</span><span class="sk-chip">Data Analysis</span>
-        <span class="sk-chip">Excel</span><span class="sk-chip">AutoCAD</span>
-      </div>
+<section id="skills">
+  <div class="wrap">
+    <div class="reveal">
+      <p class="s-eyebrow">Skills</p>
+      <h2 class="s-title">The toolkit</h2>
+      <p class="s-sub">Built across coursework, six professional roles, and shipping a real product — grouped the way analyst teams actually use them.</p>
     </div>
-    <div class="sk-group reveal">
-      <div class="sk-head"><span class="sk-icon">🤖</span> AI &amp; Dev Tools</div>
-      <div class="sk-chips">
-        <span class="sk-chip">Generative AI</span><span class="sk-chip">Cursor AI</span>
-        <span class="sk-chip">Claude Code</span><span class="sk-chip">VS Code</span>
-        <span class="sk-chip">AI Agents</span>
+    <div class="skills-grid">
+      <div class="sk-group reveal">
+        <h3>Business &amp; Operations</h3>
+        <div class="sk-chips">
+          <span class="sk-chip">B2B Lead Generation</span><span class="sk-chip">CRM Operations</span>
+          <span class="sk-chip">Sales Support</span><span class="sk-chip">Content Marketing</span>
+          <span class="sk-chip">Stakeholder Management</span><span class="sk-chip">Event &amp; PR Coordination</span>
+        </div>
       </div>
-    </div>
-    <div class="sk-group reveal">
-      <div class="sk-head"><span class="sk-icon">📈</span> Marketing &amp; Business</div>
-      <div class="sk-chips">
-        <span class="sk-chip">Content Marketing</span><span class="sk-chip">B2B Lead Gen</span>
-        <span class="sk-chip">CRM</span><span class="sk-chip">Public Relations</span>
-        <span class="sk-chip">Event Management</span><span class="sk-chip">Sales</span>
+      <div class="sk-group reveal">
+        <h3>Data &amp; Analytics</h3>
+        <div class="sk-chips">
+          <span class="sk-chip">Python</span><span class="sk-chip">SQL</span>
+          <span class="sk-chip">R</span><span class="sk-chip">Excel</span>
+          <span class="sk-chip">Data Analysis</span>
+        </div>
       </div>
-    </div>
-    <div class="sk-group reveal">
-      <div class="sk-head"><span class="sk-icon">🤝</span> Soft Skills</div>
-      <div class="sk-chips">
-        <span class="sk-chip">Communication</span><span class="sk-chip">Leadership</span>
-        <span class="sk-chip">Client Relations</span><span class="sk-chip">Problem Solving</span>
-        <span class="sk-chip">Adaptability</span>
+      <div class="sk-group reveal">
+        <h3>AI &amp; Automation</h3>
+        <div class="sk-chips">
+          <span class="sk-chip">LLM Applications</span><span class="sk-chip">AI Agents</span>
+          <span class="sk-chip">Generative AI</span><span class="sk-chip">Claude Code</span>
+          <span class="sk-chip">Cursor</span><span class="sk-chip">VS Code</span>
+        </div>
+      </div>
+      <div class="sk-group reveal">
+        <h3>Languages</h3>
+        <div class="sk-chips">
+          <span class="sk-chip">Turkish — Native</span>
+          <span class="sk-chip">English — Professional</span>
+        </div>
       </div>
     </div>
   </div>
 </section>
 
 <!-- EDUCATION -->
-<section class="edu-section" id="education">
-  <div class="reveal">
-    <p class="s-eyebrow">education</p>
-    <h2 class="s-title">Academic Background</h2>
-  </div>
-  <div class="edu-card reveal">
-    <div class="edu-icon-wrap">🎓</div>
-    <div>
-      <div class="edu-deg">Management Information Systems (YBS)</div>
-      <div class="edu-sch">İstinye University</div>
-      <div class="edu-meta">İstanbul, Türkiye · 2023 → Present</div>
-      <span class="edu-badge">✦ 100% FULL SCHOLARSHIP</span>
+<section class="alt" id="education">
+  <div class="wrap">
+    <div class="reveal">
+      <p class="s-eyebrow">Education</p>
+      <h2 class="s-title">Academic foundation</h2>
+    </div>
+    <div class="edu-card reveal">
+      <div class="edu-mark" aria-hidden="true">İÜ</div>
+      <div>
+        <h3 class="edu-deg">B.Sc. Management Information Systems</h3>
+        <p class="edu-sch">İstinye University</p>
+        <p class="edu-meta">İstanbul, Türkiye · 2023 – Present</p>
+        <span class="edu-badge">100% MERIT SCHOLARSHIP</span>
+        <p class="edu-note">MIS sits exactly where I work: half business administration, half information systems — process analysis, databases, statistics, and management, in one degree.</p>
+      </div>
     </div>
   </div>
 </section>
 
 <!-- CONTACT -->
-<section class="contact-section" id="contact">
-  <div class="reveal">
-    <p class="s-eyebrow">contact</p>
-    <h2 class="s-title">Let's Connect</h2>
-    <p class="s-sub">Open to collaborations, internships, and conversations about AI and data science.</p>
-  </div>
-  <div class="contact-grid">
-    <div class="c-links reveal">
-      <a href="https://www.linkedin.com/in/an%C4%B1l-kavak-95045031b/" target="_blank" class="c-card">
-        <div class="c-ico">in</div>
-        <div><div class="c-label">LinkedIn</div><div class="c-val">linkedin.com/in/anıl-kavak</div></div>
-      </a>
-      <a href="mailto:anlkvk22@gmail.com" class="c-card">
-        <div class="c-ico">@</div>
-        <div><div class="c-label">Email</div><div class="c-val">anlkvk22@gmail.com</div></div>
-      </a>
-      <a href="https://bilissel-asistan.onrender.com/" target="_blank" class="c-card">
-        <div class="c-ico">↗</div>
-        <div><div class="c-label">Thesis Project</div><div class="c-val">bilissel-asistan.onrender.com</div></div>
-      </a>
+<section id="contact">
+  <div class="wrap">
+    <div class="reveal">
+      <p class="s-eyebrow">Contact</p>
+      <h2 class="s-title">Let's talk</h2>
+      <p class="s-sub">Open to internships and early-career analyst roles — Business Analysis, BI, Revenue Operations, AI Business Operations — in Türkiye and internationally.</p>
     </div>
-    <div class="contact-text reveal">
-      <p style="margin-bottom:1.2rem">Based in <strong>İstanbul, Türkiye</strong> — open to hybrid and remote opportunities across Turkey and globally.</p>
-      <p style="margin-bottom:1.2rem">Especially interested in <strong>data science, AI applications, marketing analytics,</strong> and <strong>business development</strong> at tech-driven companies.</p>
-      <p class="mono">response_time: &lt; 24h</p>
+    <div class="contact-grid">
+      <div class="c-links reveal">
+        <a href="mailto:anlkvk22@gmail.com" class="c-card">
+          <span class="c-ico" aria-hidden="true">@</span>
+          <span><span class="c-label">Email</span><br /><span class="c-val">anlkvk22@gmail.com</span></span>
+        </a>
+        <a href="https://www.linkedin.com/in/an%C4%B1l-kavak-95045031b/" target="_blank" rel="noopener noreferrer" class="c-card">
+          <span class="c-ico" aria-hidden="true">in</span>
+          <span><span class="c-label">LinkedIn</span><br /><span class="c-val">linkedin.com/in/anıl-kavak</span></span>
+        </a>
+        <a href="https://github.com/anllkvk" target="_blank" rel="noopener noreferrer" class="c-card">
+          <span class="c-ico" aria-hidden="true">&lt;/&gt;</span>
+          <span><span class="c-label">GitHub</span><br /><span class="c-val">github.com/anllkvk</span></span>
+        </a>
+        <a href="https://medium.com/@agentflow" target="_blank" rel="noopener noreferrer" class="c-card">
+          <span class="c-ico" aria-hidden="true">M</span>
+          <span><span class="c-label">AgentFlow on Medium</span><br /><span class="c-val">medium.com/@agentflow</span></span>
+        </a>
+      </div>
+      <div class="contact-text reveal">
+        <p>Based in <strong>İstanbul, Türkiye</strong> — open to on-site, hybrid, and remote work with international teams.</p>
+        <p>The fastest way to reach me is <strong>email or LinkedIn</strong>. If you're hiring for a role where business judgment, data fluency, and AI capability need to live in one person, I'd like to hear about it.</p>
+        <p><a href="cv.html" style="color: var(--blue); font-weight: 600;">View my résumé →</a></p>
+      </div>
     </div>
   </div>
 </section>
 
-<footer>
-  <div class="ft-left" translate="no">anıl.kavak() · İstanbul · 2026</div>
-  <div class="ft-right">Built with precision &amp; passion</div>
+</main>
+
+<footer class="site">
+  <div class="foot-row">
+    <span class="mono" translate="no">© 2026 Anıl Kavak · İstanbul</span>
+    <span>Business × AI × Data</span>
+  </div>
 </footer>
 
-<!-- ─── SCRIPTS ──────────────────────────────────────────── -->
 <script>
-/* PARTICLE CANVAS */
-(function() {
-  const canvas = document.getElementById('particle-canvas');
-  const ctx = canvas.getContext('2d');
-  let W, H, particles = [], mouse = { x: -999, y: -999 };
-  const COUNT = 80;
-  const COLORS = ['#3b82f6','#8b5cf6','#06b6d4','#3b82f6'];
+document.documentElement.classList.add('js');
 
-  function resize() {
-    W = canvas.width  = window.innerWidth;
-    H = canvas.height = window.innerHeight;
-  }
-  resize();
-  window.addEventListener('resize', resize);
-  window.addEventListener('mousemove', e => { mouse.x = e.clientX; mouse.y = e.clientY; });
-
-  for (let i = 0; i < COUNT; i++) {
-    particles.push({
-      x: Math.random() * window.innerWidth,
-      y: Math.random() * window.innerHeight,
-      r: Math.random() * 1.8 + 0.4,
-      vx: (Math.random() - 0.5) * 0.35,
-      vy: (Math.random() - 0.5) * 0.35,
-      color: COLORS[Math.floor(Math.random() * COLORS.length)],
-      alpha: Math.random() * 0.5 + 0.2
+/* Mobile nav */
+(function () {
+  var header = document.getElementById('site-header');
+  var toggle = document.getElementById('nav-toggle');
+  toggle.addEventListener('click', function () {
+    var open = header.classList.toggle('open');
+    toggle.setAttribute('aria-expanded', open ? 'true' : 'false');
+  });
+  document.querySelectorAll('#nav-menu a').forEach(function (a) {
+    a.addEventListener('click', function () {
+      header.classList.remove('open');
+      toggle.setAttribute('aria-expanded', 'false');
     });
-  }
-
-  function draw() {
-    ctx.clearRect(0, 0, W, H);
-    particles.forEach(p => {
-      p.x += p.vx; p.y += p.vy;
-      if (p.x < 0) p.x = W; if (p.x > W) p.x = 0;
-      if (p.y < 0) p.y = H; if (p.y > H) p.y = 0;
-
-      ctx.beginPath();
-      ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2);
-      ctx.fillStyle = p.color + Math.round(p.alpha * 255).toString(16).padStart(2,'0');
-      ctx.fill();
-    });
-
-    particles.forEach((a, i) => {
-      for (let j = i + 1; j < particles.length; j++) {
-        const b = particles[j];
-        const d = Math.hypot(a.x - b.x, a.y - b.y);
-        if (d < 120) {
-          ctx.beginPath();
-          ctx.moveTo(a.x, a.y); ctx.lineTo(b.x, b.y);
-          ctx.strokeStyle = `rgba(59,130,246,${0.12 * (1 - d / 120)})`;
-          ctx.lineWidth = 0.5;
-          ctx.stroke();
-        }
-      }
-      const dm = Math.hypot(a.x - mouse.x, a.y - mouse.y);
-      if (dm < 150) {
-        ctx.beginPath();
-        ctx.moveTo(a.x, a.y); ctx.lineTo(mouse.x, mouse.y);
-        ctx.strokeStyle = `rgba(139,92,246,${0.25 * (1 - dm / 150)})`;
-        ctx.lineWidth = 0.7;
-        ctx.stroke();
-      }
-    });
-    requestAnimationFrame(draw);
-  }
-  draw();
+  });
 })();
 
-/* TYPEWRITER */
-(function() {
-  const phrases = [
-    'Data Science & AI Enthusiast',
-    'Marketing & Business Developer',
-    'AgentFlow Founder on Medium',
-    'MIS Student @ İstinye University',
-    'Building the future with AI.'
-  ];
-  let pi = 0, ci = 0, deleting = false;
-  const el = document.getElementById('tw-text');
-
-  function tick() {
-    const phrase = phrases[pi];
-    if (!deleting) {
-      el.textContent = phrase.slice(0, ++ci);
-      if (ci === phrase.length) { deleting = true; setTimeout(tick, 1800); return; }
-      setTimeout(tick, 55);
-    } else {
-      el.textContent = phrase.slice(0, --ci);
-      if (ci === 0) { deleting = false; pi = (pi + 1) % phrases.length; setTimeout(tick, 300); return; }
-      setTimeout(tick, 28);
-    }
+/* Scroll reveal — motion-safe only; content is visible without JS */
+(function () {
+  if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+  if (!('IntersectionObserver' in window)) {
+    document.querySelectorAll('.reveal').forEach(function (el) { el.classList.add('visible'); });
+    return;
   }
-  setTimeout(tick, 800);
+  var obs = new IntersectionObserver(function (entries) {
+    entries.forEach(function (e) {
+      if (e.isIntersecting) {
+        e.target.classList.add('visible');
+        obs.unobserve(e.target);
+      }
+    });
+  }, { threshold: 0.08, rootMargin: '0px 0px -5% 0px' });
+  document.querySelectorAll('.reveal').forEach(function (el) { obs.observe(el); });
 })();
-
-/* SCROLL REVEAL */
-const revealObserver = new IntersectionObserver(entries => {
-  entries.forEach((e, i) => {
-    if (e.isIntersecting) {
-      setTimeout(() => e.target.classList.add('visible'), i * 60);
-      revealObserver.unobserve(e.target);
-    }
-  });
-}, { threshold: 0.08 });
-document.querySelectorAll('.reveal, .reveal-left').forEach(el => revealObserver.observe(el));
-
-/* COUNTER ANIMATION */
-const counterObserver = new IntersectionObserver(entries => {
-  entries.forEach(e => {
-    if (!e.isIntersecting) return;
-    const el = e.target;
-    const target = +el.dataset.target;
-    const suffix = el.parentElement.querySelector('.stat-l').textContent.includes('%') ? '%' : '+';
-    let start = 0;
-    const step = target / 50;
-    const timer = setInterval(() => {
-      start = Math.min(start + step, target);
-      el.textContent = Math.floor(start) + (start >= target ? suffix : '');
-      if (start >= target) clearInterval(timer);
-    }, 28);
-    counterObserver.unobserve(el);
-  });
-}, { threshold: 0.5 });
-document.querySelectorAll('[data-target]').forEach(el => counterObserver.observe(el));
-
-/* 3D CARD TILT */
-document.querySelectorAll('.exp-card, .proj-card').forEach(card => {
-  card.addEventListener('mousemove', e => {
-    const r = card.getBoundingClientRect();
-    const x = (e.clientX - r.left) / r.width  - 0.5;
-    const y = (e.clientY - r.top)  / r.height - 0.5;
-    card.style.transform = `perspective(800px) rotateY(${x * 6}deg) rotateX(${-y * 5}deg) translateZ(4px)`;
-  });
-  card.addEventListener('mouseleave', () => {
-    card.style.transform = '';
-  });
-});
 </script>
 
 </body>

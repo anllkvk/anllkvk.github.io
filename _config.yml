@@ -1,0 +1,5 @@
+# GitHub Pages (Jekyll) config — keep internal docs out of the published site.
+exclude:
+  - REPORT.md
+  - CAREER_POSITIONING.md
+  - README.md
