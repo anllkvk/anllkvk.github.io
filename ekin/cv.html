@@ -3,466 +3,182 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Ekin Sarı — Résumé · Computer Engineering, Software Support & Development</title>
-  <meta name="description" content="Résumé of Ekin Sarı — Computer Engineering student at Bahçeşehir University (full scholarship), İstanbul. Software support, web development, C++, Python, Java, SQL." />
+  <title>Ekin Sarı — Résumé · Computer Engineering, Software Support &amp; Development</title>
+  <meta name="description" content="Résumé of Ekin Sarı — Computer Engineering student at Bahçeşehir University (full scholarship), İstanbul. Software support, web development, C++, Python, Java, SQL. ATS-friendly." />
   <link rel="canonical" href="https://anllkvk.github.io/ekin/cv.html" />
   <link rel="icon" type="image/svg+xml" href="favicon.svg" />
-  <meta name="theme-color" content="#0f2447" />
+  <meta name="theme-color" content="#1e3a5f" />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <!--
-    Font Stack:
-    · Headings / Name  : "Cormorant Garamond" – elegant, authoritative serif
-    · Body / Labels    : "Inter"              – neutral, highly legible grotesque
-    · Monospace        : "JetBrains Mono"     – clean technical labels & dates
+    ATS-FRIENDLY RÉSUMÉ
+    · Single column, standard section headings, real selectable text.
+    · No multi-column layout, tables, text-in-images, or icon-only info.
+    · Fonts: "Inter" (body) + "Source Serif 4" (name/headings) — with safe fallbacks.
   -->
-  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;0,700;1,400;1,500&family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Source+Serif+4:wght@600;700&display=swap" rel="stylesheet" />
 
   <style>
-  /* ── RESET ───────────────────────────────────────────── */
   *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
-  /* ── DESIGN TOKENS ───────────────────────────────────── */
   :root {
-    --navy:        #0f2447;      /* primary accent — deep corporate navy */
-    --navy-mid:    #1a3a6e;
-    --navy-light:  #e8edf6;      /* very light navy tint for backgrounds  */
-    --ink:         #1a1a2e;      /* near-black for body text              */
-    --ink-mid:     #3d3d5c;      /* secondary text                        */
-    --ink-light:   #6b6b8a;      /* captions, dates, labels               */
-    --rule:        #dde2ee;      /* subtle dividers                       */
-    --rule-strong: #b0bbd4;      /* stronger rules                        */
-    --bg-page:     #edf0f4;      /* browser canvas                        */
-    --bg-card:     #ffffff;      /* paper white                           */
-    --bg-sidebar:  #f4f6fa;      /* sidebar background                    */
-    --green:       #1a6b45;      /* scholarship badge                     */
-    --green-bg:    #e6f4ed;
+    --accent:      #1e3a5f;   /* deep professional blue */
+    --accent-soft: #3a5a80;
+    --ink:         #1a1a1a;
+    --ink-mid:     #333333;
+    --ink-light:   #555555;
+    --rule:        #d9dde3;
+    --rule-strong: #b7bec9;
+    --bg-page:     #e9edf1;
+    --paper:       #ffffff;
   }
 
-  /* ── BODY / BROWSER CHROME ───────────────────────────── */
-  html { font-size: 10px; }      /* 1rem = 10px base for easy math        */
+  html { font-size: 15px; }
   body {
-    font-family: 'Inter', system-ui, -apple-system, sans-serif;
+    font-family: 'Inter', Arial, Helvetica, sans-serif;
     background: var(--bg-page);
     color: var(--ink);
     -webkit-font-smoothing: antialiased;
-    -moz-osx-font-smoothing: grayscale;
+    line-height: 1.5;
   }
 
-  /* ── TOOLBAR ─────────────────────────────────────────── */
+  /* ── TOOLBAR (screen only) ─────────────────────────── */
   .toolbar {
-    background: var(--navy);
-    padding: 0.8rem 2.4rem;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    position: sticky; top: 0; z-index: 50;
+    background: var(--accent);
+    padding: 0.7rem 1.6rem;
+    display: flex; justify-content: space-between; align-items: center;
+    position: sticky; top: 0; z-index: 50; gap: 0.6rem; flex-wrap: wrap;
   }
-  .tb-title {
-    font-family: 'Inter', sans-serif;
-    font-size: 1.15rem;
-    font-weight: 500;
-    color: rgba(255,255,255,0.55);
-    letter-spacing: 0.02em;
-  }
-  .tb-title span { color: rgba(255,255,255,0.9); font-weight: 600; }
-  .tb-actions { display: flex; gap: 0.8rem; }
+  .tb-title { font-size: 0.9rem; font-weight: 500; color: rgba(255,255,255,0.6); }
+  .tb-title span { color: #fff; font-weight: 600; }
+  .tb-actions { display: flex; gap: 0.6rem; flex-wrap: wrap; }
   .tb-btn {
-    padding: 0.55rem 1.4rem;
-    border-radius: 5px;
-    font-family: 'Inter', sans-serif;
-    font-size: 1.2rem;
-    font-weight: 600;
-    cursor: pointer;
-    border: none;
-    text-decoration: none;
-    letter-spacing: 0.01em;
+    padding: 0.45rem 1.1rem; border-radius: 5px;
+    font-size: 0.82rem; font-weight: 600; cursor: pointer;
+    border: none; text-decoration: none;
     transition: background 0.18s, color 0.18s, transform 0.15s;
   }
   .tb-btn:hover { transform: translateY(-1px); }
-  .tb-back  { background: rgba(255,255,255,0.1);  color: rgba(255,255,255,0.75); }
-  .tb-back:hover { background: rgba(255,255,255,0.18); color: #fff; }
-  .tb-print { background: #fff; color: var(--navy); }
-  .tb-print:hover { background: var(--navy-light); }
-  @media print { .toolbar { display: none; } }
+  .tb-back  { background: rgba(255,255,255,0.12); color: rgba(255,255,255,0.85); }
+  .tb-back:hover { background: rgba(255,255,255,0.22); color: #fff; }
+  .tb-print { background: #fff; color: var(--accent); }
+  @media print { .toolbar { display: none !important; } }
 
-  /* ── A4 PAGE ─────────────────────────────────────────── */
+  /* ── PAGE (A4) ─────────────────────────────────────── */
   .page {
     width: 210mm;
     min-height: 297mm;
-    margin: 2.4rem auto 4rem;
-    background: var(--bg-card);
-    display: grid;
-    grid-template-columns: 1fr 66mm;
-    box-shadow:
-      0 2px 4px rgba(15,36,71,0.04),
-      0 8px 24px rgba(15,36,71,0.10),
-      0 24px 64px rgba(15,36,71,0.08);
+    margin: 1.8rem auto 3rem;
+    background: var(--paper);
+    padding: 18mm 18mm 16mm;
+    box-shadow: 0 8px 30px rgba(30,58,95,0.12);
   }
 
-  /* ── MAIN COLUMN ─────────────────────────────────────── */
-  .main {
-    padding: 3.2rem 2.6rem 3.2rem 3.2rem;
-    border-right: 1px solid var(--rule);
-  }
-
-  /* NAME BLOCK */
-  .name-block {
-    padding-bottom: 2rem;
-    margin-bottom: 2.2rem;
-    border-bottom: 2px solid var(--navy);
-    position: relative;
-  }
-  .name-block::after {
-    content: '';
-    position: absolute;
-    bottom: -4px; left: 0;
-    width: 48px; height: 2px;
-    background: var(--navy-mid);
-    opacity: 0.4;
+  /* ── HEADER ────────────────────────────────────────── */
+  .cv-header {
+    border-bottom: 2px solid var(--accent);
+    padding-bottom: 0.85rem;
+    margin-bottom: 1.4rem;
   }
   .cv-name {
-    font-family: 'Cormorant Garamond', Georgia, serif;
-    font-size: 4.2rem;
+    font-family: 'Source Serif 4', Georgia, 'Times New Roman', serif;
+    font-size: 2.5rem;
     font-weight: 700;
-    color: var(--navy);
-    letter-spacing: -0.01em;
-    line-height: 1;
-    margin-bottom: 0.55rem;
-  }
-  .cv-title {
-    font-family: 'Inter', sans-serif;
-    font-size: 1.15rem;
-    font-weight: 500;
-    color: var(--ink-mid);
-    letter-spacing: 0.04em;
-    text-transform: uppercase;
-    margin-bottom: 0.9rem;
-  }
-  .cv-contacts {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 0.4rem 2rem;
-  }
-  .cv-contact-item {
-    display: flex;
-    align-items: center;
-    gap: 0.45rem;
-    font-family: 'JetBrains Mono', monospace;
-    font-size: 1.05rem;
-    color: var(--ink-light);
-    text-decoration: none;
-    transition: color 0.15s;
-  }
-  .cv-contact-item:hover { color: var(--navy); }
-  .cv-contact-item svg { flex-shrink: 0; }
-
-  /* SECTION */
-  .sec { margin-bottom: 2.2rem; }
-  .sec:last-child { margin-bottom: 0; }
-  .sec-title {
-    font-family: 'Inter', sans-serif;
-    font-size: 1.0rem;
-    font-weight: 700;
-    color: var(--navy);
-    text-transform: uppercase;
-    letter-spacing: 0.16em;
-    margin-bottom: 1.2rem;
-    padding-bottom: 0.5rem;
-    border-bottom: 1.5px solid var(--navy);
-    position: relative;
-  }
-
-  /* SUMMARY */
-  .summary-p {
-    font-family: 'Cormorant Garamond', serif;
-    font-size: 1.55rem;
-    font-style: italic;
-    font-weight: 500;
-    color: var(--ink-mid);
-    line-height: 1.65;
-  }
-  .summary-p strong { font-style: normal; color: var(--navy); }
-
-  /* EXPERIENCE ITEM */
-  .ei { margin-bottom: 1.6rem; padding-bottom: 1.6rem; border-bottom: 1px solid var(--rule); }
-  .ei:last-child { margin-bottom: 0; padding-bottom: 0; border-bottom: none; }
-  .ei-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: flex-start;
-    gap: 1rem;
-    margin-bottom: 0.2rem;
-  }
-  .ei-role {
-    font-family: 'Inter', sans-serif;
-    font-size: 1.3rem;
-    font-weight: 700;
-    color: var(--ink);
-    line-height: 1.3;
-  }
-  .ei-date {
-    font-family: 'JetBrains Mono', monospace;
-    font-size: 0.95rem;
-    color: var(--ink-light);
-    white-space: nowrap;
-    flex-shrink: 0;
-    padding-top: 0.1rem;
-  }
-  .ei-company {
-    font-family: 'Inter', sans-serif;
-    font-size: 1.1rem;
-    font-weight: 600;
-    color: var(--navy-mid);
+    color: var(--accent);
+    letter-spacing: 0.01em;
+    line-height: 1.05;
     margin-bottom: 0.15rem;
   }
-  .ei-meta {
-    font-family: 'JetBrains Mono', monospace;
+  .cv-role {
     font-size: 1.0rem;
-    color: var(--ink-light);
-    margin-bottom: 0.75rem;
-  }
-  .ei-active {
-    display: inline-flex; align-items: center; gap: 0.35rem;
-    font-family: 'JetBrains Mono', monospace;
-    font-size: 0.82rem; font-weight: 500;
-    color: var(--green);
-    background: var(--green-bg);
-    border: 1px solid rgba(26,107,69,0.2);
-    padding: 0.1rem 0.55rem;
-    border-radius: 3px;
-    margin-left: 0.6rem;
-    vertical-align: middle;
-  }
-  .ei-active::before { content: '●'; font-size: 0.55rem; }
-  .ei-ul { list-style: none; margin-bottom: 0.7rem; }
-  .ei-ul li {
-    font-family: 'Inter', sans-serif;
-    font-size: 1.1rem;
-    color: var(--ink-mid);
-    line-height: 1.55;
-    padding-left: 1.3rem;
-    position: relative;
-    margin-bottom: 0.28rem;
-  }
-  .ei-ul li::before {
-    content: '–';
-    position: absolute; left: 0;
-    color: var(--navy);
-    font-weight: 700;
-  }
-  .ei-tags { display: flex; flex-wrap: wrap; gap: 0.3rem; }
-  .ei-tag {
-    font-family: 'Inter', sans-serif;
-    font-size: 0.9rem;
-    font-weight: 500;
-    padding: 0.18rem 0.65rem;
-    background: var(--navy-light);
-    color: var(--navy);
-    border-radius: 3px;
-    letter-spacing: 0.01em;
-  }
-
-  /* ── SIDEBAR ─────────────────────────────────────────── */
-  .sidebar {
-    background: var(--bg-sidebar);
-    padding: 3.2rem 1.8rem 3.2rem 2rem;
-    display: flex;
-    flex-direction: column;
-    gap: 2rem;
-  }
-
-  .ss { }
-  .ss-title {
-    font-family: 'Inter', sans-serif;
-    font-size: 0.95rem;
-    font-weight: 700;
-    color: var(--navy);
-    text-transform: uppercase;
-    letter-spacing: 0.16em;
-    margin-bottom: 1.1rem;
-    padding-bottom: 0.5rem;
-    border-bottom: 1.5px solid var(--navy);
-  }
-
-  /* EDUCATION */
-  .edu-entry { margin-bottom: 1.2rem; }
-  .edu-entry:last-child { margin-bottom: 0; }
-  .edu-degree {
-    font-family: 'Inter', sans-serif;
-    font-size: 1.15rem;
-    font-weight: 700;
-    color: var(--ink);
-    line-height: 1.3;
-    margin-bottom: 0.25rem;
-  }
-  .edu-school {
-    font-size: 1.05rem;
     font-weight: 600;
-    color: var(--navy-mid);
-    margin-bottom: 0.18rem;
+    color: var(--ink-mid);
+    letter-spacing: 0.02em;
+    margin-bottom: 0.6rem;
   }
-  .edu-year {
-    font-family: 'JetBrains Mono', monospace;
-    font-size: 0.9rem;
+  /* Contact line: plain text, ATS-parseable */
+  .cv-contact {
+    font-size: 0.86rem;
     color: var(--ink-light);
-    margin-bottom: 0.55rem;
+    line-height: 1.7;
   }
-  .edu-badge {
-    display: inline-flex; align-items: center; gap: 0.3rem;
-    font-family: 'Inter', sans-serif;
-    font-size: 0.85rem;
+  .cv-contact a { color: var(--ink-light); text-decoration: none; }
+  .cv-contact a:hover { color: var(--accent); text-decoration: underline; }
+  .cv-contact .dot { color: var(--rule-strong); padding: 0 0.5rem; }
+
+  /* ── SECTIONS ──────────────────────────────────────── */
+  section.blk { margin-bottom: 1.25rem; }
+  section.blk:last-child { margin-bottom: 0; }
+  .blk-title {
+    font-size: 0.82rem;
     font-weight: 700;
-    color: var(--green);
-    background: var(--green-bg);
-    border: 1px solid rgba(26,107,69,0.22);
-    padding: 0.2rem 0.65rem;
-    border-radius: 3px;
-    letter-spacing: 0.03em;
+    color: var(--accent);
+    text-transform: uppercase;
+    letter-spacing: 0.14em;
+    padding-bottom: 0.3rem;
+    margin-bottom: 0.7rem;
+    border-bottom: 1px solid var(--rule);
   }
 
-  /* SKILLS */
-  .skill-block { margin-bottom: 1.1rem; }
-  .skill-block:last-child { margin-bottom: 0; }
-  .skill-cat {
-    font-family: 'Inter', sans-serif;
-    font-size: 0.95rem;
-    font-weight: 700;
-    color: var(--ink);
-    margin-bottom: 0.4rem;
-    letter-spacing: 0.01em;
+  .summary { font-size: 0.92rem; color: var(--ink-mid); line-height: 1.6; }
+
+  /* ── EXPERIENCE / EDUCATION ENTRIES ────────────────── */
+  .entry { margin-bottom: 0.95rem; }
+  .entry:last-child { margin-bottom: 0; }
+  .entry-head {
+    display: flex; justify-content: space-between; align-items: baseline;
+    gap: 1rem; flex-wrap: wrap;
   }
-  .skill-list { display: flex; flex-wrap: wrap; gap: 0.28rem; }
-  .skill-pill {
-    font-family: 'Inter', sans-serif;
-    font-size: 1.0rem;
-    font-weight: 400;
-    padding: 0.2rem 0.6rem;
-    background: #fff;
-    border: 1px solid var(--rule-strong);
-    border-radius: 3px;
-    color: var(--ink-mid);
+  .entry-role { font-size: 0.98rem; font-weight: 700; color: var(--ink); }
+  .entry-org  { font-size: 0.92rem; font-weight: 600; color: var(--accent-soft); }
+  .entry-date {
+    font-size: 0.82rem; color: var(--ink-light); font-weight: 500;
+    white-space: nowrap;
+  }
+  .entry-sub { font-size: 0.84rem; color: var(--ink-light); margin-bottom: 0.35rem; }
+  .entry ul { list-style: none; margin-top: 0.3rem; }
+  .entry ul li {
+    font-size: 0.89rem; color: var(--ink-mid); line-height: 1.55;
+    padding-left: 1.1rem; position: relative; margin-bottom: 0.2rem;
+  }
+  .entry ul li::before {
+    content: '•'; position: absolute; left: 0.15rem;
+    color: var(--accent); font-weight: 700;
   }
 
-  /* LANGUAGES */
-  .lang-item { margin-bottom: 0.85rem; }
-  .lang-item:last-child { margin-bottom: 0; }
-  .lang-row {
-    display: flex; justify-content: space-between; align-items: center;
-    margin-bottom: 0.3rem;
+  /* ── SKILLS (label + value rows, ATS-parseable) ────── */
+  .skills-row {
+    display: flex; gap: 0.6rem; margin-bottom: 0.4rem;
+    font-size: 0.89rem; line-height: 1.55;
   }
-  .lang-name { font-size: 1rem; font-weight: 600; color: var(--ink); }
-  .lang-level { font-family: 'JetBrains Mono', monospace; font-size: 0.85rem; color: var(--ink-light); }
-  .lang-track { height: 3px; background: var(--rule); border-radius: 2px; overflow: hidden; }
-  .lang-fill  { height: 100%; background: var(--navy); border-radius: 2px; }
-
-  /* INTERESTS */
-  .interest-wrap { display: flex; flex-wrap: wrap; gap: 0.28rem; }
-  .interest-chip {
-    font-family: 'Inter', sans-serif;
-    font-size: 0.9rem;
-    padding: 0.2rem 0.6rem;
-    background: #fff;
-    border: 1px solid var(--rule-strong);
-    border-radius: 3px;
-    color: var(--ink-mid);
+  .skills-row:last-child { margin-bottom: 0; }
+  .skills-label {
+    flex: 0 0 128px;
+    font-weight: 700; color: var(--ink);
   }
+  .skills-val { color: var(--ink-mid); }
 
-  /* ── PRINT ───────────────────────────────────────────── */
+  /* ── PRINT ─────────────────────────────────────────── */
   @media print {
-    @page {
-      size: A4 portrait;
-      margin: 14mm 16mm 14mm 18mm;
-    }
-
-    html { font-size: 8.6px; }
+    @page { size: A4 portrait; margin: 14mm 15mm; }
+    html { font-size: 11px; }
     body { background: #fff; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
-
-    .toolbar { display: none !important; }
-
-    /* ── Convert two-column grid → single column ── */
     .page {
-      display: block;
-      width: 100%;
-      margin: 0;
-      min-height: auto;
+      width: 100%; min-height: auto; margin: 0; padding: 0;
       box-shadow: none;
-      background: #fff;
     }
-
-    .main {
-      padding: 0;
-      border-right: none;
-      width: 100%;
-    }
-
-    /* ── Sidebar becomes a compact footer row ── */
-    .sidebar {
-      display: grid;
-      grid-template-columns: repeat(3, 1fr);
-      gap: 0 2.4rem;
-      padding: 1.8rem 0 0 0;
-      margin-top: 2rem;
-      border-top: 2px solid var(--navy);
-      background: transparent;
-      break-before: avoid;
-    }
-
-    /* Each sidebar section spans normally */
-    .ss { break-inside: avoid; }
-
-    /* Hide interests in sidebar for print */
-    .ss-interests { display: none; }
-
-    /* ── Page break rules ── */
-    .name-block  { break-after: avoid; }
-    .sec-title   { break-after: avoid; }
-    .ei          { break-inside: avoid; }
-    .ei-header   { break-after: avoid; }
-    .sec         { break-inside: auto; }
-
-    /* ── Tighten spacing for print ── */
-    .name-block  { padding-bottom: 1.4rem; margin-bottom: 1.6rem; }
-    .cv-name     { font-size: 3.6rem; }
-    .cv-title    { font-size: 1.0rem; margin-bottom: 0.7rem; }
-    .cv-contacts { gap: 0.3rem 1.6rem; }
-
-    .sec         { margin-bottom: 1.5rem; }
-    .sec-title   { margin-bottom: 0.9rem; padding-bottom: 0.35rem; }
-
-    .summary-p   { font-size: 1.35rem; }
-
-    .ei          { margin-bottom: 1.1rem; padding-bottom: 1.1rem; }
-    .ei-role     { font-size: 1.15rem; }
-    .ei-company  { font-size: 1.0rem; }
-    .ei-meta     { margin-bottom: 0.5rem; }
-    .ei-ul li    { font-size: 1.0rem; margin-bottom: 0.18rem; }
-    .ei-tags     { display: none; }
-
-    .ss-title    { font-size: 0.88rem; margin-bottom: 0.7rem; padding-bottom: 0.3rem; }
-    .edu-degree  { font-size: 1.05rem; }
-    .edu-school  { font-size: 0.95rem; }
-    .lang-item   { margin-bottom: 0.6rem; }
-    .skill-block { margin-bottom: 0.7rem; }
-    .skill-cat   { font-size: 0.88rem; }
-    .skill-pill  { font-size: 0.85rem; padding: 0.12rem 0.45rem; }
+    .entry { break-inside: avoid; }
+    .blk-title { break-after: avoid; }
+    section.blk { break-inside: auto; }
   }
 
-  /* ── MOBILE / SMALL SCREENS ──────────────────────────── */
-  @media screen and (max-width: 900px) {
-    .page {
-      width: 100%;
-      min-height: auto;
-      display: block;
-      margin: 0 0 2rem;
-      box-shadow: none;
-    }
-    .main { padding: 2.4rem 1.8rem; border-right: none; }
-    .sidebar { padding: 2.2rem 1.8rem 3rem; border-top: 1px solid var(--rule); }
-    .cv-name { font-size: 3.4rem; }
-    .toolbar { padding: 0.8rem 1.6rem; flex-wrap: wrap; gap: 0.6rem; }
-    .ei-header { flex-wrap: wrap; }
-    .ei-date { padding-top: 0; }
+  /* ── MOBILE ────────────────────────────────────────── */
+  @media screen and (max-width: 820px) {
+    .page { width: 100%; min-height: auto; margin: 0 0 2rem; padding: 2rem 1.4rem; box-shadow: none; }
+    .cv-name { font-size: 2.1rem; }
+    .skills-row { flex-direction: column; gap: 0.1rem; }
+    .skills-label { flex-basis: auto; }
+    .entry-head { flex-direction: column; gap: 0.1rem; }
   }
   </style>
 </head>
@@ -470,7 +186,7 @@
 
 <!-- TOOLBAR -->
 <div class="toolbar">
-  <div class="tb-title"><span>Ekin Sarı</span> — Curriculum Vitae</div>
+  <div class="tb-title"><span>Ekin Sarı</span> — Curriculum Vitae (ATS-friendly)</div>
   <div class="tb-actions">
     <a href="index.html" class="tb-btn tb-back">← Portfolio</a>
     <a href="Ekin_Sari_CV.pdf" class="tb-btn tb-print" download>Download PDF</a>
@@ -481,239 +197,148 @@
 <!-- A4 PAGE -->
 <div class="page">
 
-  <!-- ════════════════ MAIN COLUMN ════════════════ -->
-  <main class="main">
+  <!-- HEADER -->
+  <header class="cv-header">
+    <h1 class="cv-name">Ekin Sarı</h1>
+    <p class="cv-role">Computer Engineering Student — Software Support &amp; Development</p>
+    <p class="cv-contact">
+      İstanbul, Türkiye
+      <span class="dot">•</span>
+      <a href="mailto:sariekin30@gmail.com">sariekin30@gmail.com</a>
+      <span class="dot">•</span>
+      +90 535 237 36 08
+      <span class="dot">•</span>
+      <a href="https://www.linkedin.com/in/ekin-sar%C4%B1-50ab0b2b4/" target="_blank" rel="noopener noreferrer">linkedin.com/in/ekin-sarı</a>
+      <span class="dot">•</span>
+      <a href="https://anllkvk.github.io/ekin/" target="_blank" rel="noopener noreferrer">anllkvk.github.io/ekin</a>
+    </p>
+  </header>
 
-    <!-- NAME BLOCK -->
-    <header class="name-block">
-      <div class="cv-name">Ekin Sarı</div>
-      <div class="cv-title">Computer Engineering · Software Support &amp; Development · Problem Solving</div>
-      <div class="cv-contacts">
+  <!-- SUMMARY -->
+  <section class="blk">
+    <h2 class="blk-title">Summary</h2>
+    <p class="summary">
+      Computer Engineering student at Bahçeşehir University on a full scholarship, with hands-on
+      internship experience in software support, web development, and data operations. Skilled in
+      C++, Python, Java, and SQL, with proven strengths in teamwork, project management, and problem
+      solving. Seeking a software engineering internship or early-career role where I can contribute
+      to a team and keep growing as an engineer.
+    </p>
+  </section>
 
-        <a href="mailto:sariekin30@gmail.com" class="cv-contact-item">
-          <!-- email icon -->
-          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
-            <rect x="2" y="4" width="20" height="16" rx="2"/><path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"/>
-          </svg>
-          sariekin30@gmail.com
-        </a>
+  <!-- SKILLS -->
+  <section class="blk">
+    <h2 class="blk-title">Skills</h2>
+    <div class="skills-row">
+      <span class="skills-label">Programming</span>
+      <span class="skills-val">C++, Python, Java, SQL, HTML</span>
+    </div>
+    <div class="skills-row">
+      <span class="skills-label">Tools &amp; Software</span>
+      <span class="skills-val">Git, Microsoft Excel, Adobe</span>
+    </div>
+    <div class="skills-row">
+      <span class="skills-label">Technical Areas</span>
+      <span class="skills-val">Software Support, Troubleshooting, Web Development, Technical Documentation</span>
+    </div>
+    <div class="skills-row">
+      <span class="skills-label">Professional</span>
+      <span class="skills-val">Problem Solving, Project Management, Teamwork, Communication</span>
+    </div>
+    <div class="skills-row">
+      <span class="skills-label">Languages</span>
+      <span class="skills-val">Turkish (Native), English (Fluent)</span>
+    </div>
+  </section>
 
-        <a href="https://www.linkedin.com/in/ekin-sar%C4%B1-50ab0b2b4/" target="_blank" rel="noopener noreferrer" class="cv-contact-item">
-          <!-- linkedin icon -->
-          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
-            <path d="M16 8a6 6 0 0 1 6 6v7h-4v-7a2 2 0 0 0-2-2 2 2 0 0 0-2 2v7h-4v-7a6 6 0 0 1 6-6z"/>
-            <rect x="2" y="9" width="4" height="12"/><circle cx="4" cy="4" r="2"/>
-          </svg>
-          linkedin.com/in/ekin-sarı
-        </a>
+  <!-- EXPERIENCE -->
+  <section class="blk">
+    <h2 class="blk-title">Work Experience</h2>
 
-        <a href="https://anllkvk.github.io/ekin/" target="_blank" rel="noopener noreferrer" class="cv-contact-item">
-          <!-- globe icon -->
-          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
-            <circle cx="12" cy="12" r="10"/>
-            <path d="M2 12h20M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/>
-          </svg>
-          anllkvk.github.io/ekin
-        </a>
-
-        <span class="cv-contact-item">
-          <!-- pin icon -->
-          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
-            <path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0z"/><circle cx="12" cy="10" r="3"/>
-          </svg>
-          İstanbul, Türkiye
-        </span>
-
+    <div class="entry">
+      <div class="entry-head">
+        <span class="entry-role">Software Support Intern — <span class="entry-org">IdeaSoft</span></span>
+        <span class="entry-date">Jun 2025 – Oct 2025</span>
       </div>
-    </header>
-
-    <!-- PROFILE -->
-    <div class="sec">
-      <div class="sec-title">Profile</div>
-      <p class="summary-p">
-        Dedicated <strong>Computer Engineering student</strong> at Bahçeşehir University on a
-        <strong>full scholarship</strong>, with hands-on internship experience in
-        <strong>software support, web development, and data</strong>. Strong in teamwork and
-        project management, committed to solving complex problems and learning new technologies —
-        eager to apply technical and leadership skills to real-world challenges.
-      </p>
+      <p class="entry-sub">İstanbul, Türkiye</p>
+      <ul>
+        <li>Delivered software support by diagnosing and resolving platform issues on IdeaSoft's e-commerce systems, keeping live merchant stores running.</li>
+        <li>Documented technical findings to track recurring problems and accelerate resolution.</li>
+        <li>Collaborated with development teams to ensure the smooth operation of e-commerce platforms.</li>
+      </ul>
     </div>
 
-    <!-- EXPERIENCE -->
-    <div class="sec">
-      <div class="sec-title">Work Experience</div>
-
-      <div class="ei">
-        <div class="ei-header">
-          <div class="ei-role">Software Support Intern</div>
-          <div class="ei-date">Jun 2025 – Oct 2025</div>
-        </div>
-        <div class="ei-company">IdeaSoft</div>
-        <div class="ei-meta">Internship · İstanbul, Türkiye</div>
-        <ul class="ei-ul">
-          <li>Delivered software support by diagnosing and resolving platform issues on IdeaSoft's e-commerce systems.</li>
-          <li>Documented technical findings to track recurring problems and speed up resolution.</li>
-          <li>Collaborated with development teams to ensure smooth operation of live e-commerce platforms.</li>
-        </ul>
-        <div class="ei-tags">
-          <span class="ei-tag">Software Support</span>
-          <span class="ei-tag">Troubleshooting</span>
-          <span class="ei-tag">E-commerce</span>
-          <span class="ei-tag">Documentation</span>
-        </div>
+    <div class="entry">
+      <div class="entry-head">
+        <span class="entry-role">Web Design Intern — <span class="entry-org">Proxolab Software</span></span>
+        <span class="entry-date">Sep 2023 – Dec 2023</span>
       </div>
-
-      <div class="ei">
-        <div class="ei-header">
-          <div class="ei-role">Web Design Intern</div>
-          <div class="ei-date">Sep 2023 – Dec 2023</div>
-        </div>
-        <div class="ei-company">Proxolab Software</div>
-        <div class="ei-meta">Internship</div>
-        <ul class="ei-ul">
-          <li>Worked with HTML to build and adjust web pages, and solved minor problems in existing code.</li>
-        </ul>
-        <div class="ei-tags">
-          <span class="ei-tag">HTML</span>
-          <span class="ei-tag">Web Development</span>
-          <span class="ei-tag">Debugging</span>
-        </div>
-      </div>
-
-      <div class="ei">
-        <div class="ei-header">
-          <div class="ei-role">Marketing Intern</div>
-          <div class="ei-date">Jul 2023 – Aug 2023</div>
-        </div>
-        <div class="ei-company">Brandzone</div>
-        <div class="ei-meta">Internship · Remote</div>
-        <ul class="ei-ul">
-          <li>Handled data entry and product research tasks supporting the marketing team.</li>
-        </ul>
-        <div class="ei-tags">
-          <span class="ei-tag">Data Entry</span>
-          <span class="ei-tag">Product Research</span>
-        </div>
-      </div>
-
-      <div class="ei">
-        <div class="ei-header">
-          <div class="ei-role">Marketing Intern</div>
-          <div class="ei-date">Oct 2021 – Jun 2022</div>
-        </div>
-        <div class="ei-company">ARTYSMM LLC</div>
-        <div class="ei-meta">Internship · Remote</div>
-        <ul class="ei-ul">
-          <li>Managed product inspections and shipping processes using Adobe and Excel.</li>
-        </ul>
-        <div class="ei-tags">
-          <span class="ei-tag">Excel</span>
-          <span class="ei-tag">Adobe</span>
-          <span class="ei-tag">Operations</span>
-        </div>
-      </div>
-
-      <div class="ei">
-        <div class="ei-header">
-          <div class="ei-role">Organizer — WHYNOT Basketball Tournament</div>
-          <div class="ei-date">Aug 2022 &amp; Aug 2023</div>
-        </div>
-        <div class="ei-company">Community Event · Project Lead</div>
-        <ul class="ei-ul">
-          <li>Organized the WHYNOT basketball tournament in every aspect — planning, logistics, teams, and scheduling.</li>
-        </ul>
-        <div class="ei-tags">
-          <span class="ei-tag">Project Management</span>
-          <span class="ei-tag">Leadership</span>
-        </div>
-      </div>
-
+      <ul>
+        <li>Built and adjusted web pages using HTML; debugged and solved minor issues in existing code.</li>
+        <li>Learned real-world front-end development workflows alongside the development team.</li>
+      </ul>
     </div>
 
-  </main>
-
-  <!-- ════════════════ SIDEBAR ════════════════ -->
-  <aside class="sidebar">
-
-    <div class="ss">
-      <div class="ss-title">Education</div>
-      <div class="edu-entry">
-        <div class="edu-degree">Computer Engineering</div>
-        <div class="edu-school">Bahçeşehir University</div>
-        <div class="edu-year">2021 – Present · İstanbul</div>
-        <span class="edu-badge">Full Scholarship</span>
+    <div class="entry">
+      <div class="entry-head">
+        <span class="entry-role">Marketing Intern — <span class="entry-org">Brandzone</span></span>
+        <span class="entry-date">Jul 2023 – Aug 2023</span>
       </div>
-      <div class="edu-entry">
-        <div class="edu-degree">Science High School</div>
-        <div class="edu-school">Aydem Science High School</div>
-        <div class="edu-year">2016 – 2020 · Denizli</div>
-      </div>
+      <p class="entry-sub">Remote</p>
+      <ul>
+        <li>Performed data entry and product research to support marketing operations.</li>
+      </ul>
     </div>
 
-    <div class="ss">
-      <div class="ss-title">Technical Skills</div>
-
-      <div class="skill-block">
-        <div class="skill-cat">Programming</div>
-        <div class="skill-list">
-          <span class="skill-pill">C++</span>
-          <span class="skill-pill">Python</span>
-          <span class="skill-pill">Java</span>
-          <span class="skill-pill">SQL</span>
-          <span class="skill-pill">HTML</span>
-        </div>
+    <div class="entry">
+      <div class="entry-head">
+        <span class="entry-role">Marketing Intern — <span class="entry-org">ARTYSMM LLC</span></span>
+        <span class="entry-date">Oct 2021 – Jun 2022</span>
       </div>
-
-      <div class="skill-block">
-        <div class="skill-cat">Tools &amp; Software</div>
-        <div class="skill-list">
-          <span class="skill-pill">Excel</span>
-          <span class="skill-pill">Adobe</span>
-          <span class="skill-pill">Git</span>
-        </div>
-      </div>
-
-      <div class="skill-block">
-        <div class="skill-cat">Strengths</div>
-        <div class="skill-list">
-          <span class="skill-pill">Problem Solving</span>
-          <span class="skill-pill">Project Management</span>
-          <span class="skill-pill">Teamwork</span>
-          <span class="skill-pill">Technical Support</span>
-        </div>
-      </div>
-
+      <p class="entry-sub">Remote</p>
+      <ul>
+        <li>Managed product inspections and shipping processes using Adobe and Microsoft Excel.</li>
+      </ul>
     </div>
 
-    <div class="ss">
-      <div class="ss-title">Languages</div>
-      <div class="lang-item">
-        <div class="lang-row">
-          <span class="lang-name">Turkish</span>
-          <span class="lang-level">Native</span>
-        </div>
-        <div class="lang-track"><div class="lang-fill" style="width:100%"></div></div>
+    <div class="entry">
+      <div class="entry-head">
+        <span class="entry-role">Organizer — <span class="entry-org">WHYNOT Basketball Tournament</span></span>
+        <span class="entry-date">Aug 2022 &amp; Aug 2023</span>
       </div>
-      <div class="lang-item">
-        <div class="lang-row">
-          <span class="lang-name">English</span>
-          <span class="lang-level">Fluent</span>
-        </div>
-        <div class="lang-track"><div class="lang-fill" style="width:90%"></div></div>
-      </div>
+      <ul>
+        <li>Planned and ran a community basketball tournament end to end, coordinating teams, logistics, and scheduling across two years.</li>
+      </ul>
     </div>
 
-    <div class="ss ss-interests">
-      <div class="ss-title">Interests</div>
-      <div class="interest-wrap">
-        <span class="interest-chip">Basketball</span>
-        <span class="interest-chip">Reading</span>
-        <span class="interest-chip">Travel</span>
-        <span class="interest-chip">Chess</span>
+  </section>
+
+  <!-- EDUCATION -->
+  <section class="blk">
+    <h2 class="blk-title">Education</h2>
+
+    <div class="entry">
+      <div class="entry-head">
+        <span class="entry-role">B.Sc. in Computer Engineering — <span class="entry-org">Bahçeşehir University</span></span>
+        <span class="entry-date">2021 – Present</span>
       </div>
+      <p class="entry-sub">İstanbul, Türkiye — Full Scholarship</p>
     </div>
 
-  </aside>
+    <div class="entry">
+      <div class="entry-head">
+        <span class="entry-role">Science High School Diploma — <span class="entry-org">Aydem Science High School</span></span>
+        <span class="entry-date">2016 – 2020</span>
+      </div>
+      <p class="entry-sub">Denizli, Türkiye</p>
+    </div>
+  </section>
+
+  <!-- INTERESTS -->
+  <section class="blk">
+    <h2 class="blk-title">Interests</h2>
+    <p class="summary">Basketball, Reading, Travel, Chess</p>
+  </section>
 
 </div><!-- /page -->
 
