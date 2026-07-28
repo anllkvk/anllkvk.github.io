@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Anıl Kavak — Business & AI Analyst · Data, Automation & Commercial Operations · İstanbul</title>
+  <title>Anıl Kavak · Business & AI Analyst · Data, Automation & Commercial Operations · İstanbul</title>
   <meta name="description" content="Anıl Kavak combines business analysis, AI automation, and data to help commercial teams work smarter. MIS student on a 100% merit scholarship, shipped a live AI product, experienced in B2B marketing operations and sales. Open to Business Analyst, BI, and Revenue Operations roles." />
   <meta name="google" content="notranslate" />
   <meta name="theme-color" content="#f3f2ee" />
@@ -12,14 +12,14 @@
 
   <!-- Open Graph / LinkedIn -->
   <meta property="og:type" content="profile" />
-  <meta property="og:title" content="Anıl Kavak — Business & AI Analyst" />
+  <meta property="og:title" content="Anıl Kavak · Business & AI Analyst" />
   <meta property="og:description" content="Business analysis × AI automation × data. MIS student (100% merit scholarship) with a live AI product and hands-on B2B commercial experience. Open to Business Analyst, BI & RevOps roles." />
   <meta property="og:url" content="https://anllkvk.github.io/" />
   <meta property="og:image" content="https://anllkvk.github.io/og-image.png" />
   <meta property="og:image:width" content="1200" />
   <meta property="og:image:height" content="630" />
   <meta name="twitter:card" content="summary_large_image" />
-  <meta name="twitter:title" content="Anıl Kavak — Business & AI Analyst" />
+  <meta name="twitter:title" content="Anıl Kavak · Business & AI Analyst" />
   <meta name="twitter:description" content="Business analysis × AI automation × data. Open to Business Analyst, BI & Revenue Operations roles." />
   <meta name="twitter:image" content="https://anllkvk.github.io/og-image.png" />
 
@@ -38,7 +38,7 @@
     "sameAs": [
       "https://www.linkedin.com/in/an%C4%B1l-kavak-95045031b/",
       "https://github.com/anllkvk",
-      "https://medium.com/@agentflow"
+      "https://medium.com/@anllkvk"
     ]
   }
   </script>
@@ -255,7 +255,19 @@
   .aside-row + .aside-row { border-top: 1px solid var(--line); }
   .aside-k { font-size: 0.9rem; color: var(--muted); }
   .aside-v { font-family: 'Archivo', sans-serif; font-weight: 700; font-size: 0.95rem; color: var(--ink); text-align: right; }
-  @media (max-width: 860px) { .about-grid { grid-template-columns: 1fr; gap: 2.6rem; } }
+  .pf-photo {
+    position: relative; aspect-ratio: 4 / 5; width: 100%;
+    border-radius: 10px; overflow: hidden; margin-bottom: 1.5rem;
+    background: var(--ink); border: 1px solid var(--line);
+  }
+  .pf-photo img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; z-index: 1; }
+  .pf-monogram {
+    position: absolute; inset: 0; z-index: 0; display: flex; align-items: center; justify-content: center;
+    font-family: 'Archivo', sans-serif; font-weight: 900; font-size: 3rem; letter-spacing: 0.05em;
+    color: rgba(255,255,255,0.9);
+    background: linear-gradient(135deg, #1b1b22 0%, #2a2a34 100%);
+  }
+  @media (max-width: 860px) { .about-grid { grid-template-columns: 1fr; gap: 2.6rem; } .pf-photo { max-width: 320px; } }
 
   /* ─── EXPERIENCE ─────────────────────────────────────── */
   .exp-list { border-top: 1px solid var(--line-2); }
@@ -276,6 +288,11 @@
   .exp-ul li::before { content: ''; position: absolute; left: 0; top: 0.7em; width: 7px; height: 1px; background: var(--accent); }
   .exp-ul li:last-child { margin-bottom: 0; }
   .exp-ul strong { color: var(--ink); font-weight: 700; }
+  .exp-gallery { display: flex; gap: 0.7rem; flex-wrap: wrap; margin-top: 1.3rem; }
+  .exp-shot { display: block; width: 148px; height: 108px; border-radius: 9px; overflow: hidden; border: 1px solid var(--line); background: var(--paper); }
+  .exp-shot img { width: 100%; height: 100%; object-fit: cover; display: block; transition: transform 0.35s ease; }
+  .exp-shot:hover img { transform: scale(1.06); }
+  @media (max-width: 460px) { .exp-shot { width: 100%; height: 180px; } }
   @media (max-width: 700px) {
     .exp-item { grid-template-columns: 1fr; gap: 0.6rem; }
     .exp-item:hover { padding-left: 0; }
@@ -398,7 +415,7 @@
 
 <header class="site" id="site-header">
   <div class="nav-row">
-    <a href="#top" class="brand" translate="no" aria-label="Anıl Kavak — home">
+    <a href="#top" class="brand" translate="no" aria-label="Anıl Kavak, home">
       <span class="brand-name">Anıl Kavak<span class="dot">.</span></span>
       <span class="brand-sub">Business · AI · Data</span>
     </a>
@@ -444,7 +461,7 @@
     <p class="hero-lead">
       Business &amp; AI Analyst working where commercial judgment meets technology.
       Management Information Systems student on a <strong>100% merit scholarship</strong>,
-      with hands-on experience across B2B marketing operations and sales — and a
+      with hands-on experience across B2B marketing operations and sales, plus a
       <strong>live AI product shipped end to end</strong>.
     </p>
 
@@ -461,7 +478,7 @@
       <div class="hstat" role="listitem"><div class="hstat-n">100%</div><div class="hstat-l">merit scholarship</div></div>
       <div class="hstat" role="listitem"><div class="hstat-n">1</div><div class="hstat-l">AI product live in production</div></div>
       <div class="hstat" role="listitem"><div class="hstat-n">6</div><div class="hstat-l">roles across commercial &amp; tech</div></div>
-      <div class="hstat" role="listitem"><div class="hstat-n">2</div><div class="hstat-l">languages — TR native, EN pro</div></div>
+      <div class="hstat" role="listitem"><div class="hstat-n">2</div><div class="hstat-l">languages · TR native, EN professional</div></div>
     </div>
   </div>
 </section>
@@ -479,11 +496,15 @@
     <div class="about-grid">
       <div class="about-text reveal">
         <p>Most analysts read the data. Fewer can also <strong>build the tooling that produces it</strong>. I work in that overlap: framing a business problem, finding the signal in the data, and automating the workflow with AI so the improvement sticks.</p>
-        <p>At <strong>TDG</strong>, I support the commercial engine directly — capturing and qualifying B2B leads at trade fairs, keeping CRM data clean, and coordinating outreach that feeds the sales pipeline. Before that, I exceeded sales targets on the retail floor at <strong>Swarovski</strong> and <strong>Calvin Klein Jeans</strong>, where I learned how revenue is actually made: one qualified conversation at a time.</p>
-        <p>On the technical side, I designed, built, and deployed an <strong>AI-powered study assistant</strong> as my undergraduate thesis — live in production today — and I write <strong>AgentFlow</strong>, a Medium publication analyzing what AI agents change for startups and business operations.</p>
+        <p>At <strong>TDG</strong>, I support the commercial engine directly: capturing and qualifying B2B leads at trade fairs, keeping CRM data clean, and coordinating outreach that feeds the sales pipeline. Before that, I exceeded sales targets on the retail floor at <strong>Swarovski</strong> and <strong>Calvin Klein Jeans</strong>, where I learned how revenue is actually made, one qualified conversation at a time.</p>
+        <p>On the technical side, I designed, built, and deployed an <strong>AI-powered study assistant</strong> as my undergraduate thesis, now live in production. I also write <strong>AgentFlow</strong>, a Medium publication analyzing what AI agents change for startups and business operations.</p>
         <p>I'm targeting <strong>Business Analyst, AI Business Analyst, BI, and Revenue Operations</strong> roles at international companies, where that combination compounds.</p>
       </div>
       <div class="about-aside reveal">
+        <div class="pf-photo">
+          <span class="pf-monogram" aria-hidden="true">AK</span>
+          <img src="images/anil-kavak.jpg" alt="Portrait of Anıl Kavak" loading="lazy" onerror="this.remove()" />
+        </div>
         <p class="aside-title">At a glance</p>
         <div class="aside-row"><span class="aside-k">Location</span><span class="aside-v">İstanbul, Türkiye</span></div>
         <div class="aside-row"><span class="aside-k">Focus</span><span class="aside-v">Analysis · AI · Data</span></div>
@@ -503,7 +524,7 @@
         <p class="s-eyebrow">Experience</p>
         <h2 class="s-title">Where I've delivered</h2>
       </div>
-      <p class="s-sub">Six roles across the commercial value chain — from the sales floor to marketing operations. Each taught a different part of how businesses generate revenue.</p>
+      <p class="s-sub">Six roles across the commercial value chain, from the sales floor to marketing operations. Each taught a different part of how businesses generate revenue.</p>
     </div>
 
     <div class="exp-list">
@@ -524,13 +545,21 @@
       <div class="exp-item reveal">
         <div class="exp-when"><span class="live">Sep 2024 · Now</span></div>
         <div>
-          <h3 class="exp-role">PR &amp; Event Communications Coordinator</h3>
+          <h3 class="exp-role">PR &amp; Event Communications</h3>
           <p class="exp-co">Metin Gürsoy Brand Management &amp; Marketing</p>
-          <p class="exp-meta">Freelance</p>
+          <p class="exp-meta">Freelance · İstanbul</p>
           <ul class="exp-ul">
-            <li>Deliver PR and communications support for brand campaigns; regular contributor at <strong>Hermes Events</strong>.</li>
-            <li>Coordinate media partnerships and stakeholder relationships across concurrent projects.</li>
+            <li>Support <strong>PR activities during brand events</strong> and assist with on-site production coordination to help ensure smooth event execution.</li>
+            <li>Coordinate communication and organization across concurrent brand projects, working alongside production teams and event stakeholders.</li>
           </ul>
+          <div class="exp-gallery" data-gallery aria-label="Event work at Metin Gürsoy">
+            <a href="images/metin-gursoy-1.jpg" target="_blank" rel="noopener noreferrer" class="exp-shot">
+              <img src="images/metin-gursoy-1.jpg" alt="On-site production coordination at a brand event, Metin Gürsoy" loading="lazy" onerror="galleryImgFail(this)" />
+            </a>
+            <a href="images/metin-gursoy-2.jpg" target="_blank" rel="noopener noreferrer" class="exp-shot">
+              <img src="images/metin-gursoy-2.jpg" alt="Brand event venue, Metin Gürsoy project" loading="lazy" onerror="galleryImgFail(this)" />
+            </a>
+          </div>
         </div>
       </div>
 
@@ -595,7 +624,7 @@
         <p class="s-eyebrow">Selected Work</p>
         <h2 class="s-title">Business problems,<br />shipped solutions</h2>
       </div>
-      <p class="s-sub">Not portfolio pieces — working products and published research, framed the way I approach any problem: problem, solution, impact, lessons.</p>
+      <p class="s-sub">Not portfolio pieces, but working products and published research, framed the way I approach any problem: problem, solution, impact, lessons.</p>
     </div>
     <div class="case-grid">
 
@@ -605,9 +634,9 @@
           <h3 class="case-name">Cognitive Study Assistant</h3>
           <a href="https://bilissel-asistan.onrender.com/" target="_blank" rel="noopener noreferrer" class="case-link" aria-label="Open Cognitive Study Assistant (live product)">Live ↗</a>
         </div>
-        <div class="cs-block"><h4>Problem</h4><p>Students default to one study method regardless of their mental state, so focus and retention suffer — a behavior-change problem, not an information problem.</p></div>
+        <div class="cs-block"><h4>Problem</h4><p>Students default to one study method regardless of their mental state, so focus and retention suffer. This is a behavior-change problem, not an information problem.</p></div>
         <div class="cs-block"><h4>Solution</h4><p>A web app that selects the right study protocol (Deep Work vs. Pomodoro) from the user's sleep data, primes focus with AI-generated warm-up questions, and scores retention through active-recall analysis.</p></div>
-        <div class="cs-block"><h4>Impact</h4><p>Live in production on zero-cost infrastructure. Privacy-first by design: no accounts, no stored personal data — which removed the biggest adoption barrier.</p></div>
+        <div class="cs-block"><h4>Impact</h4><p>Live in production on zero-cost infrastructure. Privacy-first by design, with no accounts and no stored personal data, which removed the biggest adoption barrier.</p></div>
         <div class="case-stack">
           <span class="stack-chip">Python</span><span class="stack-chip">LLM APIs</span><span class="stack-chip">Web App</span><span class="stack-chip">Render</span>
         </div>
@@ -617,11 +646,11 @@
         <p class="case-type">Research Publication · Founder &amp; Author</p>
         <div class="case-head">
           <h3 class="case-name">AgentFlow</h3>
-          <a href="https://medium.com/@agentflow" target="_blank" rel="noopener noreferrer" class="case-link" aria-label="Open AgentFlow on Medium">Medium ↗</a>
+          <a href="https://medium.com/@anllkvk" target="_blank" rel="noopener noreferrer" class="case-link" aria-label="Open AgentFlow on Medium">Medium ↗</a>
         </div>
-        <div class="cs-block"><h4>Problem</h4><p>Business leaders struggle to separate AI-agent hype from operational value — most coverage is either too technical or too promotional to support real decisions.</p></div>
-        <div class="cs-block"><h4>Solution</h4><p>A Medium publication analyzing AI agent frameworks, multi-agent coordination, and adoption strategy — written from a business-operations perspective rather than an engineering one.</p></div>
-        <div class="cs-block"><h4>Impact</h4><p>A public, growing body of work that documents how I think about AI in business terms — the same lens I bring to analyst work.</p></div>
+        <div class="cs-block"><h4>Problem</h4><p>Business leaders struggle to separate AI-agent hype from operational value, because most coverage is either too technical or too promotional to support real decisions.</p></div>
+        <div class="cs-block"><h4>Solution</h4><p>A Medium publication analyzing AI agent frameworks, multi-agent coordination, and adoption strategy, written from a business-operations perspective rather than an engineering one.</p></div>
+        <div class="cs-block"><h4>Impact</h4><p>A public, growing body of work that documents how I think about AI in business terms, the same lens I bring to analyst work.</p></div>
         <div class="case-stack">
           <span class="stack-chip">AI Agents</span><span class="stack-chip">Research</span><span class="stack-chip">Business Strategy</span>
         </div>
@@ -639,7 +668,7 @@
         <p class="s-eyebrow">Skills</p>
         <h2 class="s-title">The toolkit</h2>
       </div>
-      <p class="s-sub">Built across coursework, six professional roles, and shipping a real product — grouped the way analyst teams actually use them.</p>
+      <p class="s-sub">Built across coursework, six professional roles, and shipping a real product, grouped the way analyst teams actually use them.</p>
     </div>
     <div class="skills-grid reveal">
       <div class="sk-group">
@@ -669,8 +698,8 @@
       <div class="sk-group">
         <h3>Languages</h3>
         <div class="sk-chips">
-          <span class="sk-chip">Turkish — Native</span>
-          <span class="sk-chip">English — Professional</span>
+          <span class="sk-chip">Turkish · Native</span>
+          <span class="sk-chip">English · Professional</span>
         </div>
       </div>
     </div>
@@ -685,7 +714,7 @@
         <p class="s-eyebrow">Education</p>
         <h2 class="s-title">Academic foundation</h2>
       </div>
-      <p class="s-sub">MIS sits exactly where I work — half business administration, half information systems.</p>
+      <p class="s-sub">MIS sits exactly where I work: half business administration, half information systems.</p>
     </div>
     <div class="edu-card reveal">
       <div class="edu-mark" aria-hidden="true">İÜ</div>
@@ -707,12 +736,12 @@
         <p class="s-eyebrow">Contact</p>
         <h2 class="s-title">Let's talk</h2>
       </div>
-      <p class="s-sub">Open to internships and early-career analyst roles — Business Analysis, BI, Revenue Operations, AI Business Operations — in Türkiye and internationally.</p>
+      <p class="s-sub">Open to internships and early-career analyst roles across Business Analysis, BI, Revenue Operations, and AI Business Operations, in Türkiye and internationally.</p>
     </div>
     <div class="contact-grid">
       <div class="contact-text reveal">
-        <p class="contact-lead">If business judgment, data fluency &amp; AI need to live in one person — let's talk.</p>
-        <p>Based in <strong>İstanbul, Türkiye</strong> — open to on-site, hybrid, and remote work with international teams. The fastest way to reach me is <strong>email or LinkedIn</strong>.</p>
+        <p class="contact-lead">If business judgment, data fluency, and AI need to live in one person, let's talk.</p>
+        <p>Based in <strong>İstanbul, Türkiye</strong>, and open to on-site, hybrid, and remote work with international teams. The fastest way to reach me is <strong>email or LinkedIn</strong>.</p>
         <p><a href="Anil_Kavak_CV.pdf" download="Anil_Kavak_CV.pdf" style="color:var(--accent-ink);font-weight:700;">↓ Download my CV (PDF)</a></p>
       </div>
       <div class="c-links reveal">
@@ -728,9 +757,9 @@
           <span class="c-ico" aria-hidden="true">&lt;/&gt;</span>
           <span><span class="c-label">GitHub</span><br /><span class="c-val">github.com/anllkvk</span></span>
         </a>
-        <a href="https://medium.com/@agentflow" target="_blank" rel="noopener noreferrer" class="c-card">
+        <a href="https://medium.com/@anllkvk" target="_blank" rel="noopener noreferrer" class="c-card">
           <span class="c-ico" aria-hidden="true">M</span>
-          <span><span class="c-label">AgentFlow on Medium</span><br /><span class="c-val">medium.com/@agentflow</span></span>
+          <span><span class="c-label">AgentFlow on Medium</span><br /><span class="c-val">medium.com/@anllkvk</span></span>
         </a>
       </div>
     </div>
@@ -760,7 +789,7 @@
         <h4>Elsewhere</h4>
         <a href="https://www.linkedin.com/in/an%C4%B1l-kavak-95045031b/" target="_blank" rel="noopener noreferrer">LinkedIn</a>
         <a href="https://github.com/anllkvk" target="_blank" rel="noopener noreferrer">GitHub</a>
-        <a href="https://medium.com/@agentflow" target="_blank" rel="noopener noreferrer">Medium — AgentFlow</a>
+        <a href="https://medium.com/@anllkvk" target="_blank" rel="noopener noreferrer">Medium · AgentFlow</a>
       </div>
     </div>
     <div class="foot-bottom">
@@ -788,6 +817,21 @@ document.documentElement.classList.add('js');
     });
   });
 })();
+
+/* Event gallery: drop a shot whose image is missing, hide the gallery if empty.
+   Defined globally so inline onerror handlers can call it at any time. */
+function galleryImgFail(img) {
+  var shot = img.closest('.exp-shot');
+  var gal = img.closest('[data-gallery]');
+  if (shot) shot.remove();
+  if (gal && !gal.querySelector('.exp-shot')) gal.style.display = 'none';
+}
+window.galleryImgFail = galleryImgFail;
+window.addEventListener('load', function () {
+  document.querySelectorAll('[data-gallery]').forEach(function (g) {
+    if (!g.querySelector('.exp-shot')) g.style.display = 'none';
+  });
+});
 
 /* Scroll-spy — highlight the nav link for the section in view */
 (function () {
