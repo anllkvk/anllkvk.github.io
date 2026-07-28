@@ -85,6 +85,8 @@
   .skip-link:focus { top: 1rem; }
   .wrap { max-width: var(--maxw); margin: 0 auto; padding: 0 32px; }
 
+  section[id], [id="top"] { scroll-margin-top: 88px; }
+
   .display { font-family: 'Archivo', 'Inter', sans-serif; }
 
   /* ─── HEADER / NAV ───────────────────────────────────── */
@@ -118,6 +120,8 @@
     transition: color 0.18s, background 0.18s;
   }
   .nav-mid a:hover { color: var(--accent); }
+  .nav-mid a.active { color: var(--accent); }
+  .nav-mid a.active::after { content: ''; display: block; height: 2px; background: var(--accent); margin-top: 3px; border-radius: 2px; }
   .nav-right { display: flex; align-items: center; gap: 0.6rem; }
   .nav-cta {
     display: inline-flex; align-items: center; gap: 0.5rem;
@@ -782,6 +786,27 @@ document.documentElement.classList.add('js');
       header.classList.remove('open');
       toggle.setAttribute('aria-expanded', 'false');
     });
+  });
+})();
+
+/* Scroll-spy — highlight the nav link for the section in view */
+(function () {
+  if (!('IntersectionObserver' in window)) return;
+  var links = {};
+  document.querySelectorAll('.nav-mid a').forEach(function (a) {
+    var id = a.getAttribute('href').slice(1);
+    if (id) links[id] = a;
+  });
+  var spy = new IntersectionObserver(function (entries) {
+    entries.forEach(function (e) {
+      if (!e.isIntersecting) return;
+      var id = e.target.id;
+      Object.keys(links).forEach(function (k) { links[k].classList.toggle('active', k === id); });
+    });
+  }, { rootMargin: '-45% 0px -50% 0px', threshold: 0 });
+  ['profile','experience','work','skills','contact'].forEach(function (id) {
+    var el = document.getElementById(id);
+    if (el) spy.observe(el);
   });
 })();
 
