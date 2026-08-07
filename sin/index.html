@@ -78,7 +78,9 @@
     .btn-ghost{background:transparent;color:var(--navy);border-color:var(--line)}
     .btn-ghost:hover{background:var(--navy);color:var(--cream);transform:translateY(-3px)}
     .logo{color:var(--navy)}
-    .logo svg{height:52px;width:auto;display:block}
+    .wordmark{display:flex;flex-direction:column;line-height:1;text-align:center}
+    .wordmark .wm-main{font-family:var(--serif);font-weight:600;font-size:1.7rem;letter-spacing:.32em;padding-left:.32em;color:currentColor}
+    .wordmark .wm-sub{font-family:var(--sans);font-weight:500;font-size:.56rem;letter-spacing:.42em;padding-left:.42em;text-transform:uppercase;color:currentColor;opacity:.85;margin-top:4px}
 
     /* ANNOUNCEMENT BAR */
     .topbar{background:var(--navy-3);color:var(--cream);font-size:.86rem}
@@ -307,17 +309,9 @@
   <header class="nav" id="nav">
     <div class="wrap">
       <div class="nav-pill">
-        <a href="#top" class="logo" aria-label="SIN Beauty Bar">
-          <svg viewBox="0 0 220 128" role="img" aria-label="SIN Beauty Bar logo">
-            <path d="M34 46 C74 22 150 22 186 42" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
-            <path d="M54 36 C90 20 140 22 176 35" fill="none" stroke="currentColor" stroke-width="1" opacity=".55" stroke-linecap="round"/>
-            <circle cx="28" cy="50" r="1.7" fill="currentColor"/><circle cx="192" cy="45" r="1.7" fill="currentColor"/>
-            <line x1="44" y1="72" x2="78" y2="72" stroke="currentColor" stroke-width="1"/>
-            <line x1="142" y1="72" x2="176" y2="72" stroke="currentColor" stroke-width="1"/>
-            <text x="110" y="83" text-anchor="middle" font-family="Playfair Display, serif" font-size="34" letter-spacing="7" fill="currentColor">SIN</text>
-            <text x="110" y="104" text-anchor="middle" font-family="Jost, sans-serif" font-size="12" letter-spacing="6" fill="currentColor">BEAUTY BAR</text>
-            <path d="M34 90 C74 114 150 114 186 92" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
-          </svg>
+        <a href="#top" class="logo wordmark" aria-label="SIN Beauty Bar">
+          <span class="wm-main">SIN</span>
+          <span class="wm-sub">Beauty Bar</span>
         </a>
         <nav class="menu" id="menu">
           <a class="navlink" href="#top">Anasayfa</a>
@@ -535,15 +529,9 @@
     <div class="wrap">
       <div class="foot-grid">
         <div>
-          <a href="#top" class="logo" aria-label="SIN Beauty Bar">
-            <svg viewBox="0 0 220 128" style="height:64px" role="img" aria-label="SIN Beauty Bar">
-              <path d="M34 46 C74 22 150 22 186 42" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
-              <line x1="44" y1="72" x2="78" y2="72" stroke="currentColor" stroke-width="1"/>
-              <line x1="142" y1="72" x2="176" y2="72" stroke="currentColor" stroke-width="1"/>
-              <text x="110" y="83" text-anchor="middle" font-family="Playfair Display, serif" font-size="34" letter-spacing="7" fill="currentColor">SIN</text>
-              <text x="110" y="104" text-anchor="middle" font-family="Jost, sans-serif" font-size="12" letter-spacing="6" fill="currentColor">BEAUTY BAR</text>
-              <path d="M34 90 C74 114 150 114 186 92" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
-            </svg>
+          <a href="#top" class="logo wordmark" style="align-items:flex-start;text-align:left" aria-label="SIN Beauty Bar">
+            <span class="wm-main">SIN</span>
+            <span class="wm-sub">Beauty Bar</span>
           </a>
           <p class="foot-desc">Antalya Konyaaltı'nda nail art ve tırnak bakımının güvenilir adresi. Titiz işçilik, hijyen ve size özel tasarım.</p>
           <div class="socials">
