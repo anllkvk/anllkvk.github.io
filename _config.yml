@@ -7,3 +7,4 @@ exclude:
   - sin/README.md
   - sin/docs
   - sin/img/README.md
+  - g13/img/README.md

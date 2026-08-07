@@ -1,0 +1,605 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Gizem Uçak | Interiors · Antalya İç Mimarlık & 3D Görselleştirme Stüdyosu</title>
+  <meta name="description" content="Gizem Uçak | Interiors (G13 Interior Design Studio) — Antalya merkezli iç mimarlık ve 3D görselleştirme stüdyosu. Villa, lüks konut, ofis ve ticari mekân projelerinde konseptten uygulamaya kusursuz tasarım." />
+  <meta name="theme-color" content="#1a1815" />
+  <link rel="canonical" href="https://anllkvk.github.io/g13/" />
+  <link rel="icon" type="image/svg+xml" href="favicon.svg" />
+  <link rel="apple-touch-icon" href="favicon.svg" />
+  <meta name="author" content="Gizem Uçak Interiors" />
+  <meta name="robots" content="index, follow, max-image-preview:large" />
+  <meta name="keywords" content="Antalya iç mimar, iç mimarlık, 3D görselleştirme, villa tasarımı, ofis tasarımı, mağaza tasarımı, Gizem Uçak, G13 Interiors" />
+  <meta name="geo.region" content="TR-07" />
+  <meta name="geo.placename" content="Antalya" />
+
+  <meta property="og:type" content="website" />
+  <meta property="og:title" content="Gizem Uçak | Interiors · Antalya İç Mimarlık Stüdyosu" />
+  <meta property="og:description" content="Villa, konut, ofis ve ticari mekânlarda konseptten uygulamaya iç mimarlık ve 3D görselleştirme. Antalya · 2022'den beri." />
+  <meta property="og:url" content="https://anllkvk.github.io/g13/" />
+  <meta property="og:locale" content="tr_TR" />
+
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;1,400;1,500&family=Jost:wght@300;400;500&display=swap" rel="stylesheet" />
+
+  <script type="application/ld+json">
+  {
+    "@context":"https://schema.org","@type":"ProfessionalService",
+    "name":"Gizem Uçak | Interiors","alternateName":"G13 Interior Design Studio",
+    "url":"https://anllkvk.github.io/g13/","areaServed":"Antalya, Türkiye",
+    "description":"İç mimarlık ve 3D görselleştirme stüdyosu.",
+    "founder":{"@type":"Person","name":"Gizem Uçak","jobTitle":"İç Mimar"},
+    "sameAs":["https://www.instagram.com/gizemucak.interiors/","https://www.linkedin.com/in/gizem-u%C3%A7ak-318744180/"],
+    "address":{"@type":"PostalAddress","addressLocality":"Antalya","addressCountry":"TR"}
+  }
+  </script>
+
+  <style>
+    :root{
+      --bg:#f4f1ea; --bg-2:#eae4d9; --card:#fbf9f4;
+      --ink:#201c17; --charcoal:#1a1714; --charcoal-2:#241f1a;
+      --muted:#7c7367; --line:rgba(32,28,23,.13);
+      --accent:#9e7c4f; --accent-2:#b7955f; --accent-soft:#d8c3a3;
+      --shadow:0 30px 70px -34px rgba(26,23,20,.5);
+      --maxw:1240px;
+      --serif:'Cormorant Garamond',Georgia,serif;
+      --sans:'Jost',-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;
+    }
+    *{box-sizing:border-box;margin:0;padding:0}
+    html{scroll-behavior:smooth}
+    body{font-family:var(--sans);color:var(--ink);background:var(--bg);line-height:1.7;-webkit-font-smoothing:antialiased;overflow-x:hidden}
+    h1,h2,h3,h4{font-family:var(--serif);font-weight:500;line-height:1.08}
+    a{color:inherit;text-decoration:none}
+    img{max-width:100%;display:block}
+    .wrap{max-width:var(--maxw);margin:0 auto;padding:0 30px}
+    .skip{position:absolute;left:-999px;top:0;z-index:300;background:var(--charcoal);color:#fff;padding:12px 20px}
+    .skip:focus{left:0}
+    :focus-visible{outline:2px solid var(--accent);outline-offset:3px}
+    .eyebrow{font-family:var(--sans);font-size:.72rem;letter-spacing:.34em;text-transform:uppercase;font-weight:500;color:var(--accent)}
+    .accent{color:var(--accent)}
+    .btn{display:inline-flex;align-items:center;gap:.55em;font-family:var(--sans);font-weight:400;font-size:.86rem;letter-spacing:.14em;text-transform:uppercase;padding:1em 1.9em;cursor:pointer;border:1px solid var(--ink);color:var(--ink);background:transparent;transition:.3s;border-radius:0}
+    .btn:hover{background:var(--ink);color:var(--bg)}
+    .btn-solid{background:var(--accent);border-color:var(--accent);color:#fff}
+    .btn-solid:hover{background:var(--ink);border-color:var(--ink);color:var(--bg)}
+    .btn-light{border-color:rgba(255,255,255,.6);color:#fff}
+    .btn-light:hover{background:#fff;color:var(--ink);border-color:#fff}
+
+    /* wordmark */
+    .wordmark{display:flex;flex-direction:column;line-height:1;color:currentColor}
+    .wm-main{font-family:var(--serif);font-weight:500;font-size:1.5rem;letter-spacing:.06em}
+    .wm-sub{font-family:var(--sans);font-weight:400;font-size:.54rem;letter-spacing:.44em;text-transform:uppercase;margin-top:5px;opacity:.85}
+
+    /* topbar */
+    .topbar{position:relative;z-index:40;background:var(--charcoal);color:rgba(244,241,234,.7);font-size:.74rem;letter-spacing:.08em}
+    .topbar .wrap{display:flex;justify-content:space-between;align-items:center;padding:8px 30px}
+    .topbar .soc{display:flex;gap:16px}
+    .topbar .soc a{text-transform:uppercase;letter-spacing:.16em;transition:color .2s}
+    .topbar .soc a:hover{color:var(--accent-soft)}
+
+    /* nav */
+    header.nav{position:absolute;top:33px;left:0;right:0;z-index:50;transition:.35s}
+    header.nav.solid{position:fixed;top:0;background:rgba(244,241,234,.92);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);box-shadow:0 10px 30px -20px rgba(26,23,20,.5)}
+    .nav-inner{display:flex;align-items:center;justify-content:space-between;padding:22px 30px;max-width:var(--maxw);margin:0 auto;transition:padding .3s}
+    header.nav.solid .nav-inner{padding:14px 30px}
+    .nav-inner,.nav-inner a{color:#fff}
+    header.nav.solid .nav-inner,header.nav.solid .nav-inner a{color:var(--ink)}
+    nav.menu{display:flex;gap:34px}
+    nav.menu a{font-size:.8rem;letter-spacing:.18em;text-transform:uppercase;position:relative;padding:4px 0;opacity:.92;transition:opacity .2s}
+    nav.menu a::after{content:"";position:absolute;left:0;bottom:-2px;width:0;height:1px;background:var(--accent);transition:width .3s}
+    nav.menu a:hover{opacity:1}
+    nav.menu a:hover::after{width:100%}
+    .nav-right{display:flex;align-items:center;gap:22px}
+    .nav-cta{font-size:.78rem;letter-spacing:.16em;text-transform:uppercase;border:1px solid currentColor;padding:.7em 1.3em;transition:.3s}
+    .nav-cta:hover{background:var(--accent);border-color:var(--accent);color:#fff!important}
+    .burger{display:none;flex-direction:column;gap:5px;background:none;border:none;cursor:pointer;padding:8px}
+    .burger span{width:26px;height:2px;background:currentColor;transition:.3s}
+
+    /* HERO CAROUSEL */
+    .hero{position:relative;height:100vh;min-height:600px;overflow:hidden;background:var(--charcoal)}
+    .slides{position:absolute;inset:0}
+    .slide{position:absolute;inset:0;opacity:0;transition:opacity 1.2s ease;pointer-events:none}
+    .slide.active{opacity:1;pointer-events:auto}
+    .slide .ph,.slide .fb{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
+    .slide.active .ph,.slide.active .fb{animation:kenburns 7s ease-out forwards}
+    @keyframes kenburns{from{transform:scale(1.04)}to{transform:scale(1.13)}}
+    .slide::after{content:"";position:absolute;inset:0;background:linear-gradient(180deg,rgba(20,17,14,.35),rgba(20,17,14,.15) 40%,rgba(20,17,14,.72))}
+    .fb-a{background:linear-gradient(135deg,#6f6656,#332e27)}
+    .fb-b{background:linear-gradient(135deg,#8a7d68,#403a30)}
+    .fb-c{background:linear-gradient(135deg,#9e7c4f,#2c2620)}
+    .fb-d{background:linear-gradient(135deg,#7d8577,#2f312b)}
+    .fb-e{background:linear-gradient(135deg,#b7955f,#4a4034)}
+    .fb-f{background:linear-gradient(135deg,#6b7079,#2b2d30)}
+    .slide-cap{position:absolute;left:0;right:0;bottom:12%;z-index:3;max-width:var(--maxw);margin:0 auto;padding:0 30px;color:#fff}
+    .slide-cap .tag{font-size:.74rem;letter-spacing:.28em;text-transform:uppercase;color:var(--accent-soft)}
+    .slide-cap h2{font-size:clamp(2.6rem,6vw,5rem);font-weight:400;margin:.16em 0 .1em;text-shadow:0 2px 30px rgba(0,0,0,.4)}
+    .slide-cap p{font-family:var(--serif);font-style:italic;font-size:1.3rem;opacity:.9}
+    .hero-tagline{position:absolute;top:22%;left:0;right:0;z-index:3;max-width:var(--maxw);margin:0 auto;padding:0 30px;color:#fff}
+    .hero-tagline .eyebrow{color:var(--accent-soft)}
+    .hero-tagline h1{font-size:clamp(1.6rem,3vw,2.4rem);font-weight:400;max-width:16ch;margin-top:.4em;opacity:.96;font-style:italic}
+    .arrow{position:absolute;top:50%;transform:translateY(-50%);z-index:5;width:54px;height:54px;border:1px solid rgba(255,255,255,.45);background:rgba(20,17,14,.15);color:#fff;font-size:1.5rem;cursor:pointer;display:grid;place-items:center;transition:.3s;backdrop-filter:blur(4px)}
+    .arrow:hover{background:var(--accent);border-color:var(--accent)}
+    .arrow.prev{left:26px}.arrow.next{right:26px}
+    .dots{position:absolute;bottom:34px;left:50%;transform:translateX(-50%);z-index:5;display:flex;gap:10px}
+    .dots button{width:32px;height:3px;border:none;background:rgba(255,255,255,.4);cursor:pointer;padding:0;transition:.3s}
+    .dots button.on{background:var(--accent-soft);width:48px}
+    .scrollcue{position:absolute;bottom:30px;right:30px;z-index:5;color:rgba(255,255,255,.7);font-size:.7rem;letter-spacing:.2em;text-transform:uppercase;writing-mode:vertical-rl}
+
+    /* sections */
+    section{padding:clamp(70px,9vw,130px) 0}
+    .sec-head{max-width:680px;margin-bottom:60px}
+    .sec-head.center{margin-left:auto;margin-right:auto;text-align:center}
+    .sec-head h2{font-size:clamp(2.2rem,5vw,3.6rem);font-weight:400;margin:.3em 0 .35em;color:var(--ink)}
+    .sec-head p{color:var(--muted);font-size:1.06rem}
+
+    /* statement / intro */
+    .statement{text-align:center;background:var(--bg)}
+    .statement .big{font-family:var(--serif);font-size:clamp(1.8rem,4.4vw,3.2rem);font-weight:400;font-style:italic;color:var(--ink);max-width:20ch;margin:0 auto .5em;line-height:1.25}
+    .statement p{color:var(--muted);max-width:60ch;margin:0 auto}
+    .stats{display:flex;justify-content:center;gap:clamp(30px,6vw,90px);margin-top:60px;flex-wrap:wrap}
+    .stats .n{font-family:var(--serif);font-size:3rem;color:var(--accent);line-height:1}
+    .stats .l{font-size:.74rem;letter-spacing:.16em;text-transform:uppercase;color:var(--muted);margin-top:8px}
+
+    /* services */
+    #hizmetler{background:var(--card)}
+    .svc-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:0;border-top:1px solid var(--line);border-left:1px solid var(--line)}
+    .svc{padding:44px 36px;border-right:1px solid var(--line);border-bottom:1px solid var(--line);transition:background .3s}
+    .svc:hover{background:var(--bg)}
+    .svc .num{font-family:var(--serif);font-size:1rem;color:var(--accent);letter-spacing:.1em}
+    .svc h3{font-size:1.7rem;font-weight:400;margin:14px 0 12px;color:var(--ink)}
+    .svc p{color:var(--muted);font-size:.96rem}
+
+    /* projects */
+    .proj-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:18px}
+    .proj{position:relative;aspect-ratio:4/5;overflow:hidden;cursor:pointer;background:var(--charcoal)}
+    .proj.wide{grid-column:span 2;aspect-ratio:auto}
+    .proj .ph,.proj .fb{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;transition:transform .8s}
+    .proj:hover .ph,.proj:hover .fb{transform:scale(1.07)}
+    .proj .cap{position:absolute;inset:0;z-index:3;display:flex;flex-direction:column;justify-content:flex-end;padding:26px;background:linear-gradient(transparent 45%,rgba(20,17,14,.78));color:#fff}
+    .proj .cap .tag{font-size:.68rem;letter-spacing:.24em;text-transform:uppercase;color:var(--accent-soft);opacity:0;transform:translateY(8px);transition:.4s}
+    .proj .cap h3{font-size:1.7rem;font-weight:400;margin-top:6px}
+    .proj:hover .cap .tag{opacity:1;transform:none}
+    .proj .plus{position:absolute;top:20px;right:20px;z-index:3;width:40px;height:40px;border:1px solid rgba(255,255,255,.5);border-radius:50%;display:grid;place-items:center;color:#fff;opacity:0;transform:scale(.8);transition:.4s}
+    .proj:hover .plus{opacity:1;transform:none}
+
+    /* process */
+    #surec{background:var(--charcoal);color:var(--bg)}
+    #surec .sec-head h2{color:var(--bg)}
+    #surec .sec-head p{color:rgba(244,241,234,.7)}
+    #surec .eyebrow{color:var(--accent-soft)}
+    .steps{display:grid;grid-template-columns:repeat(5,1fr);gap:24px}
+    .step{padding-top:26px;border-top:1px solid rgba(244,241,234,.2)}
+    .step .n{font-family:var(--serif);font-size:1.1rem;color:var(--accent-soft)}
+    .step h4{font-size:1.35rem;font-weight:400;margin:12px 0 8px;color:var(--bg)}
+    .step p{font-size:.88rem;color:rgba(244,241,234,.62)}
+
+    /* about founder */
+    .about-grid{display:grid;grid-template-columns:.85fr 1.15fr;gap:64px;align-items:center}
+    .about-portrait{position:relative;aspect-ratio:4/5;overflow:hidden;background:var(--bg-2)}
+    .about-portrait .ph{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
+    .about-portrait .fb{position:absolute;inset:0;background:linear-gradient(150deg,#cdbfa8,#8a7d68)}
+    .about-portrait .fb::after{content:"GU";position:absolute;inset:0;display:grid;place-items:center;font-family:var(--serif);font-size:5rem;color:rgba(255,255,255,.35)}
+    .about-body h2{font-size:clamp(2rem,4vw,3.2rem);font-weight:400;margin:.2em 0 .1em;color:var(--ink)}
+    .about-body .role{font-family:var(--serif);font-style:italic;font-size:1.3rem;color:var(--accent);margin-bottom:1em}
+    .about-body p{color:var(--muted);margin-bottom:1em}
+    .about-body .sign{font-family:var(--serif);font-size:1.6rem;color:var(--ink);margin-top:.4em}
+    .about-quote{font-family:var(--serif);font-style:italic;font-size:1.4rem;color:var(--ink);border-left:2px solid var(--accent);padding-left:1em;margin:1.2em 0}
+
+    /* CTA band */
+    .cta{position:relative;background:var(--charcoal);color:#fff;text-align:center;overflow:hidden}
+    .cta .fb{position:absolute;inset:0;background:linear-gradient(135deg,#3a342b,#1a1714);opacity:.9}
+    .cta .wrap{position:relative;z-index:2}
+    .cta h2{font-size:clamp(2rem,4.4vw,3.4rem);font-weight:400;margin-bottom:.4em}
+    .cta p{color:rgba(244,241,234,.75);max-width:54ch;margin:0 auto 2em}
+
+    /* contact */
+    #iletisim{background:var(--bg-2)}
+    .contact-grid{display:grid;grid-template-columns:1fr 1fr;gap:56px;align-items:start}
+    .contact-body .line{display:flex;gap:16px;padding:18px 0;border-bottom:1px solid var(--line)}
+    .contact-body .line .t{font-size:.72rem;letter-spacing:.16em;text-transform:uppercase;color:var(--muted);margin-bottom:3px}
+    .contact-body .line .v{font-size:1.05rem;color:var(--ink)}
+    .contact-body .line .v a:hover{color:var(--accent)}
+    .rform{display:grid;gap:16px}
+    .rform .row{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+    .rform label{font-size:.7rem;letter-spacing:.14em;text-transform:uppercase;color:var(--muted);display:block;margin-bottom:6px}
+    .rform input,.rform select,.rform textarea{width:100%;font-family:var(--sans);font-size:.98rem;color:var(--ink);padding:.85em 1em;border:1px solid var(--line);background:var(--card);border-radius:0;transition:border-color .2s}
+    .rform input:focus,.rform select:focus,.rform textarea:focus{outline:none;border-color:var(--accent)}
+    .rform textarea{resize:vertical;min-height:110px}
+    .form-note{font-size:.82rem;color:var(--muted);margin-top:4px}
+    .form-ok{display:none;padding:16px;background:var(--card);border:1px solid var(--accent);color:var(--ink);font-size:.95rem}
+    .form-ok.show{display:block}
+
+    /* footer */
+    footer{background:var(--charcoal);color:rgba(244,241,234,.66);padding:70px 0 28px}
+    .foot-grid{display:grid;grid-template-columns:1.6fr 1fr 1fr;gap:46px;padding-bottom:40px;border-bottom:1px solid rgba(244,241,234,.14)}
+    footer .wordmark{color:var(--bg)}
+    footer h4{color:var(--bg);font-family:var(--sans);font-size:.74rem;letter-spacing:.2em;text-transform:uppercase;margin-bottom:18px}
+    footer ul{list-style:none}
+    footer li{margin-bottom:10px}
+    footer a:hover{color:var(--accent-soft)}
+    .foot-desc{max-width:36ch;margin:16px 0;font-size:.94rem}
+    .foot-bottom{display:flex;justify-content:space-between;flex-wrap:wrap;gap:10px;padding-top:24px;font-size:.8rem;color:rgba(244,241,234,.45)}
+
+    /* floating + lightbox + toTop */
+    .float{position:fixed;right:20px;top:50%;transform:translateY(-50%);z-index:60;display:flex;flex-direction:column;gap:12px}
+    .float a{width:48px;height:48px;border-radius:50%;display:grid;place-items:center;background:var(--charcoal);color:var(--bg);transition:.3s}
+    .float a:hover{background:var(--accent);transform:scale(1.08)}
+    .toTop{position:fixed;right:20px;bottom:20px;z-index:60;width:48px;height:48px;border-radius:50%;background:var(--accent);color:#fff;border:none;cursor:pointer;display:grid;place-items:center;opacity:0;pointer-events:none;transition:.3s}
+    .toTop.show{opacity:1;pointer-events:auto}
+    .lb{position:fixed;inset:0;z-index:120;background:rgba(20,17,14,.92);display:none;align-items:center;justify-content:center;padding:26px}
+    .lb.open{display:flex}
+    .lb figure{max-width:900px;width:100%}
+    .lb img{width:100%;max-height:80vh;object-fit:contain}
+    .lb .fbbig{width:100%;aspect-ratio:16/10}
+    .lb figcaption{color:var(--bg);text-align:center;margin-top:16px;font-family:var(--serif);font-style:italic;font-size:1.3rem}
+    .lb .close{position:absolute;top:20px;right:26px;background:none;border:none;color:#fff;font-size:2.2rem;cursor:pointer;line-height:1}
+
+    .reveal{opacity:0;transform:translateY(30px);transition:opacity .8s cubic-bezier(.2,.7,.2,1),transform .8s cubic-bezier(.2,.7,.2,1)}
+    .reveal.in{opacity:1;transform:none}
+    @media(prefers-reduced-motion:reduce){.reveal{opacity:1;transform:none;transition:none}.slide.active .ph,.slide.active .fb{animation:none}}
+    .no-js .reveal{opacity:1;transform:none}
+
+    @media(max-width:960px){
+      .svc-grid,.steps{grid-template-columns:1fr 1fr}
+      .proj-grid{grid-template-columns:1fr 1fr}
+      .proj.wide{grid-column:span 2}
+      .about-grid,.contact-grid{grid-template-columns:1fr;gap:40px}
+      .about-portrait{max-width:420px}
+      .foot-grid{grid-template-columns:1fr 1fr}
+      .hero-tagline{top:18%}
+    }
+    @media(max-width:680px){
+      nav.menu{display:none}
+      nav.menu.open{display:flex;position:fixed;inset:0;background:var(--charcoal);flex-direction:column;justify-content:center;align-items:center;gap:26px;z-index:55}
+      nav.menu.open a{color:#fff;font-size:1rem}
+      .burger{display:flex}
+      header.nav .nav-cta{display:none}
+      .svc-grid,.steps,.proj-grid{grid-template-columns:1fr}
+      .proj.wide{grid-column:span 1}
+      .rform .row{grid-template-columns:1fr}
+      .foot-grid{grid-template-columns:1fr}
+      .topbar .wrap{font-size:.68rem}
+      .arrow{width:44px;height:44px}
+      .float{right:12px}
+    }
+  </style>
+</head>
+<body>
+  <noscript><style>.reveal{opacity:1!important;transform:none!important}</style></noscript>
+  <a href="#hizmetler" class="skip">İçeriğe geç</a>
+
+  <!-- TOPBAR -->
+  <div class="topbar">
+    <div class="wrap">
+      <span>İç Mimarlık &amp; 3D Görselleştirme · Antalya</span>
+      <span class="soc">
+        <a href="https://www.instagram.com/gizemucak.interiors/" target="_blank" rel="noopener">Instagram</a>
+        <a href="https://www.linkedin.com/in/gizem-u%C3%A7ak-318744180/" target="_blank" rel="noopener">LinkedIn</a>
+      </span>
+    </div>
+  </div>
+
+  <!-- NAV -->
+  <header class="nav" id="nav">
+    <div class="nav-inner">
+      <a href="#anasayfa" class="wordmark" aria-label="Gizem Uçak Interiors">
+        <span class="wm-main">Gizem Uçak</span><span class="wm-sub">Interiors</span>
+      </a>
+      <nav class="menu" id="menu">
+        <a href="#anasayfa">Ana Sayfa</a>
+        <a href="#hakkimizda">Hakkımızda</a>
+        <a href="#projeler">Projeler</a>
+        <a href="#hizmetler">Hizmetler</a>
+        <a href="#iletisim">İletişim</a>
+      </nav>
+      <div class="nav-right">
+        <a href="#iletisim" class="nav-cta">Teklif Alın</a>
+        <button class="burger" id="burger" aria-label="Menü" aria-expanded="false"><span></span><span></span><span></span></button>
+      </div>
+    </div>
+  </header>
+
+  <!-- HERO CAROUSEL -->
+  <section class="hero" id="anasayfa" aria-label="Öne çıkan projeler">
+    <div class="slides" id="slides">
+      <article class="slide active">
+        <div class="fb fb-c"></div><img class="ph" src="img/proj-1.jpg" alt="Eczane projesi" onerror="this.remove()">
+        <div class="slide-cap"><span class="tag">Ticari · Antalya</span><h2>Eczane Projesi</h2><p>2026</p></div>
+      </article>
+      <article class="slide">
+        <div class="fb fb-b"></div><img class="ph" src="img/proj-2.jpg" alt="Özkaymak Falez Hotel" onerror="this.remove()">
+        <div class="slide-cap"><span class="tag">Konaklama · Antalya</span><h2>Özkaymak Falez Hotel</h2><p>2025</p></div>
+      </article>
+      <article class="slide">
+        <div class="fb fb-e"></div><img class="ph" src="img/proj-3.jpg" alt="Paninaro Social Club" onerror="this.remove()">
+        <div class="slide-cap"><span class="tag">Ticari · Antalya</span><h2>Paninaro Social Club</h2><p>2024</p></div>
+      </article>
+      <article class="slide">
+        <div class="fb fb-a"></div><img class="ph" src="img/proj-4.jpg" alt="Modern villa" onerror="this.remove()">
+        <div class="slide-cap"><span class="tag">Konut · Antalya</span><h2>Modern Villa</h2><p>2024</p></div>
+      </article>
+      <article class="slide">
+        <div class="fb fb-d"></div><img class="ph" src="img/proj-5.jpg" alt="Diyetisyen ofisi" onerror="this.remove()">
+        <div class="slide-cap"><span class="tag">Ofis · Antalya</span><h2>Diyetisyen Ofisi</h2><p>2025</p></div>
+      </article>
+    </div>
+    <div class="hero-tagline">
+      <span class="eyebrow">Gizem Uçak · Interiors</span>
+      <h1>Sadece bir mekân değil; bir yaşam biçimi tasarlıyoruz.</h1>
+    </div>
+    <button class="arrow prev" id="prev" aria-label="Önceki">‹</button>
+    <button class="arrow next" id="next" aria-label="Sonraki">›</button>
+    <div class="dots" id="dots" role="tablist" aria-label="Slaytlar"></div>
+    <span class="scrollcue">Kaydırın</span>
+  </section>
+
+  <!-- STATEMENT -->
+  <section class="statement">
+    <div class="wrap reveal">
+      <p class="big">Gerçek lüks; gösterişte değil, kusursuz planlanmış detaylarda saklıdır.</p>
+      <p>2022 yılından bu yana villa, lüks konut, ofis ve ticari mekân projelerinde; modern mimari çizgileri, seçkin malzeme kullanımı ve kusursuz detay anlayışıyla buluşturuyoruz. Her projede mimariyi, yaşam alışkanlıklarını ve kişisel zevkleri bir araya getirerek, zamana meydan okuyan mekânlar tasarlıyoruz.</p>
+      <div class="stats">
+        <div><div class="n">2022</div><div class="l">Kuruluş</div></div>
+        <div><div class="n">40+</div><div class="l">Tamamlanan Proje</div></div>
+        <div><div class="n">3D</div><div class="l">Görselleştirme</div></div>
+        <div><div class="n">Antalya</div><div class="l">Merkez</div></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- PROJECTS -->
+  <section id="projeler">
+    <div class="wrap">
+      <div class="sec-head reveal">
+        <span class="eyebrow">Seçili Projeler</span>
+        <h2>Her proje, bir <span class="accent">yaşam alanı</span> hikâyesi</h2>
+        <p>Konsept tasarımından 3D görselleştirmeye ve uygulamaya kadar hayata geçirdiğimiz mekânlardan bir seçki. Büyütmek için görsele tıklayın.</p>
+      </div>
+      <div class="proj-grid">
+        <div class="proj wide reveal" data-cap="Eczane Projesi · Antalya, 2026" data-src="img/proj-1.jpg">
+          <div class="fb fb-c"></div><img class="ph" src="img/proj-1.jpg" alt="Eczane projesi" loading="lazy" onerror="this.remove()">
+          <span class="plus">＋</span><div class="cap"><span class="tag">Ticari</span><h3>Eczane Projesi</h3></div>
+        </div>
+        <div class="proj reveal" data-cap="Paninaro Social Club · Antalya, 2024" data-src="img/proj-3.jpg">
+          <div class="fb fb-e"></div><img class="ph" src="img/proj-3.jpg" alt="Paninaro Social Club" loading="lazy" onerror="this.remove()">
+          <span class="plus">＋</span><div class="cap"><span class="tag">Ticari</span><h3>Paninaro Social Club</h3></div>
+        </div>
+        <div class="proj reveal" data-cap="Modern Villa · Antalya, 2024" data-src="img/proj-4.jpg">
+          <div class="fb fb-a"></div><img class="ph" src="img/proj-4.jpg" alt="Modern villa" loading="lazy" onerror="this.remove()">
+          <span class="plus">＋</span><div class="cap"><span class="tag">Konut</span><h3>Modern Villa</h3></div>
+        </div>
+        <div class="proj reveal" data-cap="Özkaymak Falez Hotel · Antalya, 2025" data-src="img/proj-2.jpg">
+          <div class="fb fb-b"></div><img class="ph" src="img/proj-2.jpg" alt="Özkaymak Falez Hotel" loading="lazy" onerror="this.remove()">
+          <span class="plus">＋</span><div class="cap"><span class="tag">Konaklama</span><h3>Özkaymak Falez Hotel</h3></div>
+        </div>
+        <div class="proj wide reveal" data-cap="B — Event Hall · Antalya, 2024" data-src="img/proj-6.jpg">
+          <div class="fb fb-f"></div><img class="ph" src="img/proj-6.jpg" alt="B Event Hall" loading="lazy" onerror="this.remove()">
+          <span class="plus">＋</span><div class="cap"><span class="tag">Etkinlik</span><h3>B — Event Hall</h3></div>
+        </div>
+        <div class="proj reveal" data-cap="Yatak Odası Tasarımı · Antalya" data-src="img/proj-7.jpg">
+          <div class="fb fb-d"></div><img class="ph" src="img/proj-7.jpg" alt="Yatak odası tasarımı" loading="lazy" onerror="this.remove()">
+          <span class="plus">＋</span><div class="cap"><span class="tag">Konut</span><h3>Yatak Odası</h3></div>
+        </div>
+        <div class="proj reveal" data-cap="Diyetisyen Ofisi · Antalya, 2025" data-src="img/proj-5.jpg">
+          <div class="fb fb-e"></div><img class="ph" src="img/proj-5.jpg" alt="Diyetisyen ofisi" loading="lazy" onerror="this.remove()">
+          <span class="plus">＋</span><div class="cap"><span class="tag">Ofis</span><h3>Diyetisyen Ofisi</h3></div>
+        </div>
+        <div class="proj reveal" data-cap="Sedir · Antalya, 2023" data-src="img/proj-8.jpg">
+          <div class="fb fb-a"></div><img class="ph" src="img/proj-8.jpg" alt="Sedir projesi" loading="lazy" onerror="this.remove()">
+          <span class="plus">＋</span><div class="cap"><span class="tag">Konut</span><h3>Sedir</h3></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- SERVICES -->
+  <section id="hizmetler">
+    <div class="wrap">
+      <div class="sec-head reveal">
+        <span class="eyebrow">Hizmetlerimiz</span>
+        <h2>Konseptten uygulamaya, <span class="accent">uçtan uca</span></h2>
+        <p>Tasarım sürecinin her aşamasında; estetik, işlevsellik ve kusursuz detayı bir arada sunuyoruz.</p>
+      </div>
+    </div>
+    <div class="wrap">
+      <div class="svc-grid">
+        <article class="svc reveal"><div class="num">01</div><h3>Konut &amp; Villa</h3><p>Yaşam alışkanlıklarınıza göre kurgulanan, karakter sahibi ve uzun ömürlü konut iç mekân tasarımları.</p></article>
+        <article class="svc reveal"><div class="num">02</div><h3>Ofis &amp; Ticari</h3><p>Marka kimliğini yansıtan, verimli ve etkileyici ofis, mağaza ve ticari mekân çözümleri.</p></article>
+        <article class="svc reveal"><div class="num">03</div><h3>3D Görselleştirme</h3><p>Uygulamadan önce projenizi gerçekçi 3D görsellerle deneyimleyin; her detayı önceden görün.</p></article>
+        <article class="svc reveal"><div class="num">04</div><h3>Konsept &amp; Danışmanlık</h3><p>Mekânın ruhunu tanımlayan konsept geliştirme, malzeme ve renk kurgusu danışmanlığı.</p></article>
+        <article class="svc reveal"><div class="num">05</div><h3>Uygulama &amp; Proje Yönetimi</h3><p>Tasarımın sahada birebir hayata geçmesi için profesyonel uygulama ve süreç yönetimi.</p></article>
+        <article class="svc reveal"><div class="num">06</div><h3>Mağaza &amp; Konaklama</h3><p>Otel, restoran ve perakende mekânlarında deneyim odaklı, davetkâr tasarımlar.</p></article>
+      </div>
+    </div>
+  </section>
+
+  <!-- PROCESS -->
+  <section id="surec">
+    <div class="wrap">
+      <div class="sec-head reveal">
+        <span class="eyebrow">Çalışma Sürecimiz</span>
+        <h2>Titizlikle planlanan bir yolculuk</h2>
+      </div>
+      <div class="steps">
+        <div class="step reveal"><div class="n">01</div><h4>Keşif</h4><p>İhtiyaç, yaşam tarzı ve beklentilerin dinlendiği ilk görüşme ve mekân analizi.</p></div>
+        <div class="step reveal"><div class="n">02</div><h4>Konsept</h4><p>Mekânın kimliğini tanımlayan tasarım dili, malzeme ve renk kurgusu.</p></div>
+        <div class="step reveal"><div class="n">03</div><h4>3D Görsel</h4><p>Fikrin gerçekçi görsellerle hayata geçirildiği, birebir onay aşaması.</p></div>
+        <div class="step reveal"><div class="n">04</div><h4>Uygulama</h4><p>Sahada profesyonel ekiplerle kusursuz ve zamanında uygulama.</p></div>
+        <div class="step reveal"><div class="n">05</div><h4>Teslim</h4><p>İlk günkü gibi keyifle kullanacağınız, tamamlanmış yaşam alanı.</p></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ABOUT -->
+  <section id="hakkimizda">
+    <div class="wrap about-grid">
+      <div class="reveal">
+        <div class="about-portrait">
+          <div class="fb"></div>
+          <img class="ph" src="img/gizem.jpg" alt="Gizem Uçak" loading="lazy" onerror="this.remove()">
+        </div>
+      </div>
+      <div class="about-body reveal">
+        <span class="eyebrow">Hakkımızda</span>
+        <h2>Gizem Uçak</h2>
+        <div class="role">İç Mimar · Kurucu, G13 Interiors</div>
+        <p>G13 Interiors olarak tasarımı, estetikten öte bir değer olarak görüyoruz. Her projede mimariyi, yaşam alışkanlıklarını ve kişisel zevkleri bir araya getirerek; zamana meydan okuyan, karakter sahibi yaşam alanları tasarlıyoruz.</p>
+        <p class="about-quote">Sadece bir mekân değil; yaşam biçimi tasarlıyoruz.</p>
+        <p>Modern çizgileri, minimalizmin yalın zarafetini ve lüks detayları harmanlıyor; her müşterimizin tarzına özel, uzun ömürlü ve estetik mekânlar yaratıyoruz. Her proje sizin için titizlikle planlanır, birebir ilgiyle 3D görsellerle hayata geçirilir ve profesyonel uygulama süreciyle tamamlanır.</p>
+        <div class="sign">Gizem Uçak</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- CTA -->
+  <section class="cta">
+    <div class="fb"></div>
+    <div class="wrap reveal">
+      <h2>Hayalinizdeki mekânı birlikte tasarlayalım</h2>
+      <p>Kendinizi ait hissedeceğiniz, yıllar boyu ilk günkü gibi keyifle kullanacağınız alanlar için buradayız. Projenizi konuşalım.</p>
+      <a href="#iletisim" class="btn btn-light">Teklif Alın</a>
+    </div>
+  </section>
+
+  <!-- CONTACT -->
+  <section id="iletisim">
+    <div class="wrap">
+      <div class="sec-head reveal">
+        <span class="eyebrow">İletişim</span>
+        <h2>Projenizi <span class="accent">konuşalım</span></h2>
+        <p>Hizmetlerimiz hakkında detaylı bilgi almak ya da iş birliği için bize ulaşın.</p>
+      </div>
+      <div class="contact-grid">
+        <div class="contact-body reveal">
+          <div class="line"><div><div class="t">Konum</div><div class="v">Antalya, Türkiye</div></div></div>
+          <div class="line"><div><div class="t">Instagram</div><div class="v"><a href="https://www.instagram.com/gizemucak.interiors/" target="_blank" rel="noopener">@gizemucak.interiors</a></div></div></div>
+          <div class="line"><div><div class="t">LinkedIn</div><div class="v"><a href="https://www.linkedin.com/in/gizem-u%C3%A7ak-318744180/" target="_blank" rel="noopener">Gizem Uçak</a></div></div></div>
+          <div class="line"><div><div class="t">Çalışma Alanları</div><div class="v">Villa · Konut · Ofis · Ticari · Konaklama</div></div></div>
+        </div>
+        <div class="reveal">
+          <form class="rform" id="cform">
+            <div class="row">
+              <div><label for="c-ad">Ad Soyad</label><input id="c-ad" type="text" required autocomplete="name"></div>
+              <div><label for="c-tel">Telefon / E-posta</label><input id="c-tel" type="text" autocomplete="email"></div>
+            </div>
+            <div><label for="c-tur">Proje Türü</label><select id="c-tur"><option>Konut / Villa</option><option>Ofis / Ticari</option><option>Mağaza / Konaklama</option><option>Yalnızca 3D Görselleştirme</option><option>Danışmanlık</option></select></div>
+            <div><label for="c-mesaj">Mesajınız</label><textarea id="c-mesaj" placeholder="Projeniz hakkında kısaca bahsedin..."></textarea></div>
+            <button type="submit" class="btn btn-solid">Gönder</button>
+            <p class="form-note">* Bu bir demo formdur. Yayına alındığında e-posta veya WhatsApp'a bağlanabilir.</p>
+            <div class="form-ok" id="cok">Teşekkürler! Mesajınız alındı. En kısa sürede size dönüş yapılacaktır. <em>(Demo)</em></div>
+          </form>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- FOOTER -->
+  <footer>
+    <div class="wrap">
+      <div class="foot-grid">
+        <div>
+          <a href="#anasayfa" class="wordmark"><span class="wm-main">Gizem Uçak</span><span class="wm-sub">Interiors</span></a>
+          <p class="foot-desc">Antalya merkezli iç mimarlık ve 3D görselleştirme stüdyosu. Villa, konut, ofis ve ticari mekânlarda konseptten uygulamaya kusursuz tasarım.</p>
+        </div>
+        <div><h4>Menü</h4><ul>
+          <li><a href="#hakkimizda">Hakkımızda</a></li>
+          <li><a href="#projeler">Projeler</a></li>
+          <li><a href="#hizmetler">Hizmetler</a></li>
+          <li><a href="#iletisim">İletişim</a></li>
+        </ul></div>
+        <div><h4>Takip Edin</h4><ul>
+          <li><a href="https://www.instagram.com/gizemucak.interiors/" target="_blank" rel="noopener">Instagram</a></li>
+          <li><a href="https://www.linkedin.com/in/gizem-u%C3%A7ak-318744180/" target="_blank" rel="noopener">LinkedIn</a></li>
+          <li>Antalya, Türkiye</li>
+        </ul></div>
+      </div>
+      <div class="foot-bottom">
+        <span>© <span id="year"></span> Gizem Uçak | Interiors · G13 Interior Design Studio</span>
+        <span>Antalya</span>
+      </div>
+    </div>
+  </footer>
+
+  <!-- FLOAT / TOP / LIGHTBOX -->
+  <div class="float">
+    <a href="https://www.instagram.com/gizemucak.interiors/" target="_blank" rel="noopener" aria-label="Instagram"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><rect x="2" y="2" width="20" height="20" rx="5.5"/><circle cx="12" cy="12" r="4.2"/><circle cx="17.5" cy="6.5" r="1.2" fill="currentColor" stroke="none"/></svg></a>
+    <a href="https://www.linkedin.com/in/gizem-u%C3%A7ak-318744180/" target="_blank" rel="noopener" aria-label="LinkedIn"><svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M4.98 3.5A2.5 2.5 0 1 0 5 8.5a2.5 2.5 0 0 0 0-5zM3 9h4v12H3zM9 9h3.8v1.7h.1c.5-1 1.8-2 3.6-2 3.9 0 4.6 2.5 4.6 5.8V21h-4v-5.3c0-1.3 0-2.9-1.8-2.9s-2 1.4-2 2.8V21H9z"/></svg></a>
+  </div>
+  <button class="toTop" id="toTop" aria-label="Yukarı çık">↑</button>
+
+  <div class="lb" id="lb" role="dialog" aria-modal="true" aria-label="Proje görseli">
+    <button class="close" id="lbClose" aria-label="Kapat">×</button>
+    <figure><span id="lbHolder"></span><figcaption id="lbCap"></figcaption></figure>
+  </div>
+
+  <script>
+    document.getElementById('year').textContent = new Date().getFullYear();
+
+    // nav solid on scroll + toTop
+    var nav = document.getElementById('nav'), toTop = document.getElementById('toTop');
+    addEventListener('scroll', function(){
+      var y = scrollY;
+      nav.classList.toggle('solid', y > window.innerHeight - 120);
+      toTop.classList.toggle('show', y > 600);
+    }, {passive:true});
+    toTop.addEventListener('click', function(){ scrollTo({top:0,behavior:'smooth'}); });
+
+    // mobile menu
+    var burger = document.getElementById('burger'), menu = document.getElementById('menu');
+    burger.addEventListener('click', function(){ var o = menu.classList.toggle('open'); burger.setAttribute('aria-expanded', o); });
+    menu.querySelectorAll('a').forEach(function(a){ a.addEventListener('click', function(){ menu.classList.remove('open'); }); });
+
+    // CAROUSEL
+    var slides = Array.prototype.slice.call(document.querySelectorAll('#slides .slide'));
+    var dotsWrap = document.getElementById('dots'), i = 0, timer;
+    slides.forEach(function(s, idx){
+      var b = document.createElement('button'); b.setAttribute('role','tab'); b.setAttribute('aria-label','Slayt ' + (idx+1));
+      if(idx===0) b.className = 'on';
+      b.addEventListener('click', function(){ go(idx); });
+      dotsWrap.appendChild(b);
+    });
+    var dots = Array.prototype.slice.call(dotsWrap.children);
+    function go(n){
+      slides[i].classList.remove('active'); dots[i].classList.remove('on');
+      i = (n + slides.length) % slides.length;
+      slides[i].classList.add('active'); dots[i].classList.add('on');
+      restart();
+    }
+    function next(){ go(i+1); } function prev(){ go(i-1); }
+    document.getElementById('next').addEventListener('click', next);
+    document.getElementById('prev').addEventListener('click', prev);
+    function restart(){ clearInterval(timer); timer = setInterval(next, 5500); }
+    restart();
+    var hero = document.getElementById('anasayfa');
+    hero.addEventListener('mouseenter', function(){ clearInterval(timer); });
+    hero.addEventListener('mouseleave', restart);
+    addEventListener('keydown', function(e){ if(e.key==='ArrowRight') next(); if(e.key==='ArrowLeft') prev(); });
+
+    // LIGHTBOX
+    var lb = document.getElementById('lb'), holder = document.getElementById('lbHolder'), cap = document.getElementById('lbCap');
+    document.querySelectorAll('.proj').forEach(function(p){
+      p.addEventListener('click', function(){
+        cap.textContent = p.getAttribute('data-cap') || ''; holder.innerHTML = '';
+        var img = p.querySelector('img.ph');
+        if(img){ var b=document.createElement('img'); b.src=p.getAttribute('data-src'); b.alt=cap.textContent; holder.appendChild(b); }
+        else { var fb=p.querySelector('.fb'); var d=document.createElement('div'); d.className='fbbig '+(fb?fb.className.replace('fb ',''):'fb-a'); holder.appendChild(d); }
+        lb.classList.add('open');
+      });
+    });
+    function closeLb(){ lb.classList.remove('open'); }
+    document.getElementById('lbClose').addEventListener('click', closeLb);
+    lb.addEventListener('click', function(e){ if(e.target===lb) closeLb(); });
+    addEventListener('keydown', function(e){ if(e.key==='Escape') closeLb(); });
+
+    // contact demo
+    var cf = document.getElementById('cform');
+    cf.addEventListener('submit', function(e){ e.preventDefault(); document.getElementById('cok').classList.add('show'); cf.querySelector('button').style.display='none'; });
+
+    // reveal
+    var io = new IntersectionObserver(function(en){ en.forEach(function(e){ if(e.isIntersecting){ e.target.classList.add('in'); io.unobserve(e.target); } }); }, {threshold:.12});
+    document.querySelectorAll('.reveal').forEach(function(el){ io.observe(el); });
+  </script>
+</body>
+</html>
