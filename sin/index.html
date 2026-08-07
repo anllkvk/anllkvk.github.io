@@ -8,6 +8,16 @@
   <meta name="theme-color" content="#2a1723" />
   <link rel="canonical" href="https://anllkvk.github.io/sin/" />
   <link rel="icon" type="image/svg+xml" href="favicon.svg" />
+  <link rel="apple-touch-icon" href="favicon.svg" />
+  <link rel="manifest" href="manifest.webmanifest" />
+  <meta name="author" content="SIN Beauty Studio" />
+  <meta name="robots" content="index, follow, max-image-preview:large" />
+  <meta name="keywords" content="Antalya nail art, Konyaaltı tırnak, kalıcı oje Antalya, protez tırnak Antalya, manikür pedikür Konyaaltı, SIN Beauty Studio" />
+  <!-- Geo -->
+  <meta name="geo.region" content="TR-07" />
+  <meta name="geo.placename" content="Konyaaltı, Antalya" />
+  <meta name="geo.position" content="36.873005;30.641085" />
+  <meta name="ICBM" content="36.873005, 30.641085" />
 
   <!-- Open Graph -->
   <meta property="og:type" content="business.business" />
@@ -15,6 +25,10 @@
   <meta property="og:description" content="Antalya Konyaaltı'nda nail art ve tırnak bakımı. Titiz işçilik, hijyenik ortam, 4.7/5 · 4.700+ yorum. Randevu: 0507 511 92 00" />
   <meta property="og:url" content="https://anllkvk.github.io/sin/" />
   <meta property="og:locale" content="tr_TR" />
+  <meta property="og:image" content="https://anllkvk.github.io/sin/favicon.svg" />
+  <meta name="twitter:card" content="summary" />
+  <meta name="twitter:title" content="SIN Beauty Studio · Antalya Nail Art" />
+  <meta name="twitter:description" content="Antalya Konyaaltı'nda nail art ve tırnak bakımı. 4.7/5 · 4.700+ yorum. Randevu: 0507 511 92 00" />
 
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
@@ -68,6 +82,10 @@
     }
     *{box-sizing:border-box;margin:0;padding:0}
     html{scroll-behavior:smooth}
+    .skip{position:absolute;left:-999px;top:0;z-index:200;background:var(--plum);color:#fff;padding:12px 20px;border-radius:0 0 12px 0}
+    .skip:focus{left:0}
+    :focus-visible{outline:2px solid var(--rose-deep);outline-offset:3px;border-radius:4px}
+    svg.art{position:absolute;inset:0;width:100%;height:100%}
     body{
       font-family:var(--font-sans);
       color:var(--ink);
@@ -242,6 +260,16 @@
     .map-wrap{border-radius:var(--radius);overflow:hidden;box-shadow:var(--shadow);min-height:420px;border:1px solid var(--line)}
     .map-wrap iframe{width:100%;height:100%;min-height:420px;border:0;display:block}
     .contact-actions{display:flex;gap:.8rem;flex-wrap:wrap;margin-top:26px}
+    .form-title{font-family:var(--font-serif);font-size:1.5rem;color:var(--plum);margin:26px 0 4px}
+    .rform{display:grid;gap:12px;margin-top:14px}
+    .rform label{font-size:.74rem;letter-spacing:.12em;text-transform:uppercase;color:var(--muted);margin-bottom:-6px}
+    .rform input,.rform select,.rform textarea{
+      font-family:var(--font-sans);font-size:.98rem;color:var(--plum);
+      padding:.8em 1em;border:1px solid var(--line);border-radius:12px;background:#fdfaf6;width:100%;transition:border-color .2s,box-shadow .2s;
+    }
+    .rform input:focus,.rform select:focus,.rform textarea:focus{outline:none;border-color:var(--rose-deep);box-shadow:0 0 0 3px rgba(181,107,100,.12)}
+    .rform textarea{resize:vertical;min-height:74px}
+    .rform .btn{justify-content:center;margin-top:4px}
 
     /* ---------- FOOTER ---------- */
     footer{background:var(--plum);color:rgba(247,240,232,.75);padding:64px 0 30px}
@@ -270,6 +298,7 @@
     .reveal{opacity:0;transform:translateY(28px);transition:opacity .7s cubic-bezier(.2,.7,.2,1),transform .7s cubic-bezier(.2,.7,.2,1)}
     .reveal.in{opacity:1;transform:none}
     @media(prefers-reduced-motion:reduce){.reveal{opacity:1;transform:none;transition:none}.marquee-track{animation:none}}
+    .no-js .reveal{opacity:1;transform:none}
 
     /* ---------- RESPONSIVE ---------- */
     @media(max-width:940px){
@@ -295,6 +324,8 @@
   </style>
 </head>
 <body>
+  <noscript><style>.reveal{opacity:1 !important;transform:none !important}</style></noscript>
+  <a href="#hizmetler" class="skip">İçeriğe geç</a>
 
   <!-- ============ NAV ============ -->
   <header class="nav">
@@ -345,11 +376,33 @@
       <div class="reveal">
         <div class="hero-visual">
           <div class="fallback"></div>
-          <!-- Sahibi: gerçek fotoğrafı buraya koyun -> src'yi güncelleyin -->
-          <img class="ph" alt="SIN Beauty nail art uygulaması"
-               src="https://images.unsplash.com/photo-1604654894610-df63bc536371?auto=format&fit=crop&w=900&q=80"
-               loading="eager"
-               onerror="this.style.display='none'">
+          <!-- Kendi kendine yeten SVG görsel. Gerçek foto için: bu <svg> yerine
+               <img class="ph" src="foto.jpg" alt="SIN Beauty nail art"> koyun. -->
+          <svg class="ph art" viewBox="0 0 400 500" preserveAspectRatio="xMidYMid slice" role="img" aria-label="Nail art illüstrasyonu">
+            <defs>
+              <linearGradient id="bottle" x1="0" y1="0" x2="1" y2="1">
+                <stop offset="0" stop-color="#f7ead9"/><stop offset="1" stop-color="#e9c9b6"/>
+              </linearGradient>
+              <linearGradient id="liquid" x1="0" y1="0" x2="0" y2="1">
+                <stop offset="0" stop-color="#d99a94"/><stop offset="1" stop-color="#8f4a52"/>
+              </linearGradient>
+            </defs>
+            <text x="200" y="300" text-anchor="middle" font-family="Cormorant Garamond, serif" font-size="230" font-style="italic" fill="rgba(255,255,255,.10)">S</text>
+            <g transform="translate(200 258)">
+              <rect x="-52" y="-118" width="104" height="150" rx="26" fill="url(#bottle)"/>
+              <path d="M-52 -34 h104 v40 a26 26 0 0 1 -26 26 h-52 a26 26 0 0 1 -26 -26 z" fill="url(#liquid)"/>
+              <rect x="-52" y="-40" width="104" height="10" fill="rgba(143,74,82,.35)"/>
+              <rect x="-20" y="-166" width="40" height="52" rx="10" fill="#2a1723"/>
+              <rect x="-8" y="-116" width="16" height="14" fill="#3a2130"/>
+              <ellipse cx="-24" cy="-92" rx="10" ry="34" fill="rgba(255,255,255,.35)"/>
+            </g>
+            <g fill="#e3c98d">
+              <path d="M92 96 l6 16 16 6 -16 6 -6 16 -6 -16 -16 -6 16 -6 z"/>
+              <path d="M320 150 l5 13 13 5 -13 5 -5 13 -5 -13 -13 -5 13 -5 z"/>
+              <path d="M300 380 l4 11 11 4 -11 4 -4 11 -4 -11 -11 -4 11 -4 z"/>
+              <circle cx="110" cy="360" r="4"/><circle cx="330" cy="300" r="5"/><circle cx="80" cy="260" r="3.5"/>
+            </g>
+          </svg>
           <div class="glow"></div>
           <div class="hero-badge">
             <div>
@@ -429,9 +482,16 @@
         <div class="reveal">
           <div class="about-visual">
             <div class="fallback"></div>
-            <img class="ph" alt="SIN Beauty Studio ortamı"
-                 src="https://images.unsplash.com/photo-1522337660859-02fbefca4702?auto=format&fit=crop&w=800&q=80"
-                 loading="lazy" onerror="this.style.display='none'">
+            <!-- Gerçek foto için bu <svg> yerine <img class="ph" src="..."> koyun. -->
+            <svg class="ph art" viewBox="0 0 400 400" preserveAspectRatio="xMidYMid slice" role="img" aria-label="SIN Beauty monogram">
+              <text x="200" y="270" text-anchor="middle" font-family="Cormorant Garamond, serif" font-size="240" font-style="italic" fill="rgba(255,255,255,.12)">S</text>
+              <g fill="#e3c98d" opacity=".9">
+                <path d="M120 90 l6 16 16 6 -16 6 -6 16 -6 -16 -16 -6 16 -6 z"/>
+                <path d="M300 300 l5 14 14 5 -14 5 -5 14 -5 -14 -14 -5 14 -5 z"/>
+                <circle cx="310" cy="110" r="4.5"/><circle cx="95" cy="300" r="4"/>
+              </g>
+              <text x="200" y="360" text-anchor="middle" font-family="Jost, sans-serif" font-size="17" letter-spacing="7" fill="rgba(247,240,232,.75)">BEAUTY STUDIO</text>
+            </svg>
           </div>
         </div>
         <div class="reveal">
@@ -557,6 +617,31 @@
             <a href="tel:+905075119200" class="btn btn-primary">📞 Ara</a>
             <a href="https://yandex.com.tr/maps/org/sin_beauty_studio/37023454281/" target="_blank" rel="noopener" class="btn btn-gold">🧭 Yol Tarifi</a>
           </div>
+
+          <h3 class="form-title">Hızlı Randevu</h3>
+          <p style="font-size:.9rem;color:var(--muted);margin-top:2px">Formu doldurun, WhatsApp üzerinden size dönelim.</p>
+          <form class="rform" id="randevuForm">
+            <div>
+              <label for="rf-ad">Adınız</label>
+              <input id="rf-ad" name="ad" type="text" required autocomplete="name" placeholder="Adınız Soyadınız">
+            </div>
+            <div>
+              <label for="rf-hizmet">Hizmet</label>
+              <select id="rf-hizmet" name="hizmet">
+                <option>Nail Art</option>
+                <option>Kalıcı Oje</option>
+                <option>Protez Tırnak</option>
+                <option>Manikür</option>
+                <option>Pedikür</option>
+                <option>Tırnak Bakımı & Onarım</option>
+              </select>
+            </div>
+            <div>
+              <label for="rf-not">Not / Tercih ettiğiniz gün</label>
+              <textarea id="rf-not" name="not" placeholder="Örn: Cumartesi öğleden sonra"></textarea>
+            </div>
+            <button type="submit" class="btn btn-primary">WhatsApp ile Gönder</button>
+          </form>
         </div>
         <div class="map-wrap reveal">
           <iframe
@@ -636,6 +721,22 @@
     var menu = document.getElementById('menu');
     burger.addEventListener('click', function(){ menu.classList.toggle('open'); });
     menu.querySelectorAll('a').forEach(function(a){ a.addEventListener('click', function(){ menu.classList.remove('open'); }); });
+
+    // randevu formu -> WhatsApp (backend gerektirmez; BACKEND.md'de alternatifler var)
+    var form = document.getElementById('randevuForm');
+    if(form){
+      form.addEventListener('submit', function(e){
+        e.preventDefault();
+        var ad = (document.getElementById('rf-ad').value || '').trim();
+        var hizmet = document.getElementById('rf-hizmet').value;
+        var not = (document.getElementById('rf-not').value || '').trim();
+        var msg = 'Merhaba, SIN Beauty Studio\'dan randevu almak istiyorum.\n\n'
+                + 'Ad: ' + ad + '\n'
+                + 'Hizmet: ' + hizmet
+                + (not ? '\nNot: ' + not : '');
+        window.open('https://wa.me/905075119200?text=' + encodeURIComponent(msg), '_blank', 'noopener');
+      });
+    }
 
     // scroll reveal
     var io = new IntersectionObserver(function(entries){

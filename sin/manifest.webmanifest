@@ -1,0 +1,14 @@
+{
+  "name": "SIN Beauty Studio",
+  "short_name": "SIN Beauty",
+  "description": "Antalya Konyaaltı'nda nail art, kalıcı oje ve tırnak bakımı.",
+  "lang": "tr",
+  "start_url": "/sin/",
+  "scope": "/sin/",
+  "display": "standalone",
+  "background_color": "#2a1723",
+  "theme_color": "#2a1723",
+  "icons": [
+    { "src": "favicon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any maskable" }
+  ]
+}

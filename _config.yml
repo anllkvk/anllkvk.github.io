@@ -4,3 +4,5 @@ exclude:
   - CAREER_POSITIONING.md
   - LINKEDIN_OPTIMIZATION.md
   - README.md
+  - sin/README.md
+  - sin/docs

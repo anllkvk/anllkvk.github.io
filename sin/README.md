@@ -5,7 +5,19 @@ Yayında: **https://anllkvk.github.io/sin/**
 
 ## İçerik
 - `index.html` — Tüm site (HTML + CSS + JS tek dosyada, harici bağımlılık yok)
-- `favicon.svg` — Site ikonu
+- `favicon.svg` — Site ikonu / logo
+- `manifest.webmanifest` — Telefona eklenebilir PWA manifesti
+- `docs/FRONTEND.md` — Ön yüz mimarisi ve düzenleme rehberi
+- `docs/BACKEND.md` — Randevu formu / backend entegrasyon seçenekleri
+- `docs/SEO.md` — SEO stratejisi ve yayın sonrası kontrol listesi
+
+## Yerel önizleme (canlıya almadan görmek için)
+```bash
+cd anllkvk.github.io
+python3 -m http.server 8000
+# Tarayıcıda açın:  http://localhost:8000/sin/
+```
+Build adımı yok — dosyayı kaydedip tarayıcıyı yenilemeniz yeterli.
 
 ## Gerçek fotoğrafları ekleme
 Site şu an zarif gradient görsellerle ve yedekli (fallback) Unsplash fotoğraflarıyla çalışır.
