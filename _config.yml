@@ -6,3 +6,4 @@ exclude:
   - README.md
   - sin/README.md
   - sin/docs
+  - sin/img/README.md

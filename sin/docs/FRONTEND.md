@@ -10,8 +10,9 @@ Bu doküman sitenin ön yüz (frontend) mimarisini, yapısını ve nasıl düzen
 |------|-------|-------|
 | Yapı | **Saf HTML + CSS + Vanilla JS** (tek dosya) | Sıfır build adımı, sıfır bağımlılık, çok hızlı yüklenir |
 | Barındırma | **GitHub Pages (Jekyll)** | Ücretsiz, otomatik yayın, SSL dahil |
-| Font | Google Fonts — *Cormorant Garamond* (başlık) + *Jost* (metin) | Zarif serif + modern sans; `display=swap` ile FOIT yok |
-| Görseller | **Inline SVG + CSS gradient** | Harici bağımlılık yok, hiçbir ağda kırılmaz, çok küçük |
+| Font | Google Fonts — *Playfair Display* (başlık) + *Jost* (metin) | Yüksek kontrastlı editorial serif + modern sans; `display=swap` |
+| Görseller | **`img/` klasöründeki foto + CSS gradient fallback** | Foto yoksa gradient; foto eklenince otomatik yüklenir, hiç bozulmaz |
+| Palet | Premium **lacivert + altın + krem** | Referans (Perla Nail Beauty) stilinde lüks görünüm |
 | İkonlar | Inline SVG + emoji | Ekstra istek yok |
 
 > **Prensip:** Site tamamen kendi kendine yeter. Google Fonts dışında hiçbir harici kaynağa (CDN, resim sunucusu) bağımlı değildir. Bu yüzden yerel önizleme, canlı yayınla birebir aynı görünür.
@@ -36,16 +37,18 @@ sin/
 
 ## 3. Sayfa Bölümleri (sıra ile)
 
-1. **Nav** — Yapışkan (sticky), cam efektli (glassmorphism) üst menü + mobil hamburger menü.
-2. **Hero** — Marka başlığı, alt metin, CTA butonları, istatistikler (4.7 / 4.700+ / 10+), SVG görsel + puan rozeti.
-3. **Marquee** — Kayan hizmet şeridi (Nail Art, Kalıcı Oje, …).
-4. **Hizmetler** (`#hizmetler`) — 6 kartlık grid (Nail Art, Kalıcı Oje, Protez Tırnak, Manikür, Pedikür, Bakım).
-5. **Hakkımızda** (`#hakkimizda`) — Alıntı + değer listesi + SVG monogram görseli.
-6. **Galeri** (`#galeri`) — 7 kutuluk masonry grid, Instagram'a link.
-7. **Yorumlar** (`#yorumlar`) — 4.7 özet + 3 gerçek Google yorumu.
-8. **İletişim** (`#iletisim`) — Adres/telefon/saatler kartı + **Hızlı Randevu formu** + Yandex harita.
-9. **Footer** — Logo, linkler, sosyal ikonlar.
-10. **Yüzen CTA** — Sağ altta sabit WhatsApp + Instagram butonları.
+1. **Duyuru barı** — "Son 2 randevu kaldı" + WhatsApp (kampanya/aciliyet).
+2. **Nav** — Altın çerçeveli pill menü; **Kurumsal** ve **Hizmetlerimiz** açılır menüleri, **TR·EN·RU·AR** dil seçici (TR aktif, diğerleri "yakında"), altın "Randevu Al", mobil hamburger.
+3. **Hero** — "Tırnak İşlemleri & Nail Art" başlığı (altın &), alt metin, CTA, istatistikler (4.7 / 4.700+ / 10+), foto/gradient görsel + puan rozeti.
+4. **Marquee** — Kayan hizmet şeridi.
+5. **İlham Galerisi** (`#galeri`) — 6 kutuluk masonry grid, tıklayınca **lightbox** ile büyütme ("İncele & Büyüt").
+6. **Hizmetler** (`#hizmetler`) — 6 kart (Nail Art, Kalıcı Oje, Protez Tırnak, Jel Güçlendirme, Manikür, Pedikür).
+7. **Hakkımızda** (`#hakkimizda`) — Lacivert bölüm, değer listesi + görsel.
+8. **Yorumlar** (`#yorumlar`) — 4.7 özet + 3 gerçek Google yorumu.
+9. **CTA bandı** — "Ellerinizi şımartmanın zamanı geldi" + WhatsApp.
+10. **İletişim** (`#iletisim`) — Adres/telefon/saatler + **Hızlı Randevu formu** + Yandex harita.
+11. **Footer** — Logo, Kurumsal/Hizmetler/İletişim, sosyal ikonlar.
+12. **Yüzen CTA** — Sağ altta sabit WhatsApp + telefon butonları.
 
 ---
 
@@ -54,16 +57,17 @@ sin/
 `index.html > <style> > :root` içinde tanımlıdır. Renk/ölçü değiştirmek için tek yer burasıdır:
 
 ```css
---plum:#2a1723;      /* koyu erik — koyu zeminler, başlıklar */
---cream:#f7f0e8;     /* krem — ana zemin */
---rose:#d99a94;      /* gül — vurgu */
---rose-deep:#b56b64; /* koyu gül — butonlar, linkler */
---gold:#c8a35a;      /* altın — yıldızlar, süsleme */
---radius:22px;       /* köşe yuvarlaklığı */
---maxw:1180px;       /* içerik genişliği */
+--navy:#0f2439;      /* lacivert — koyu zeminler (nav badge, about, footer, CTA) */
+--navy-2:#183350;    /* açık lacivert */
+--gold:#c9a24b;      /* altın — vurgu, çerçeve, butonlar */
+--gold-soft:#e7d09a; /* açık altın — koyu zemin üstü metin */
+--cream:#f7f2ea;     /* krem — ana zemin */
+--card:#fffdf9;      /* kart zemini */
+--radius:20px;       /* köşe yuvarlaklığı */
+--maxw:1200px;       /* içerik genişliği */
 ```
 
-**Tipografi:** `--font-serif` (başlıklar), `--font-sans` (metin). Başlık boyutları `clamp()` ile responsive.
+**Tipografi:** `--serif` = Playfair Display (başlıklar), `--sans` = Jost (metin). Başlık boyutları `clamp()` ile responsive.
 
 ---
 
@@ -82,21 +86,21 @@ sin/
 
 ---
 
-## 6. Gerçek Fotoğraf Ekleme
+## 6. Gerçek Fotoğraf Ekleme (kod gerektirmez)
 
-Şu an hero ve hakkımızda görselleri **inline SVG**'dir. Gerçek fotoğrafla değiştirmek için:
+Site, `img/` klasöründeki dosyaları **otomatik** yükler. Dosya yoksa zarif gradient gösterir (site asla bozuk görünmez), dosya eklenince otomatik görünür.
 
-1. Fotoğrafı `sin/` klasörüne koyun (örn. `hero.jpg`).
-2. İlgili `<svg class="ph art">…</svg>` bloğunu şununla değiştirin:
-   ```html
-   <img class="ph" src="hero.jpg" alt="SIN Beauty nail art" loading="lazy">
-   ```
-3. Galeride renkli kutuları (`<div class="ph g1"></div>`) değiştirmek için:
-   ```html
-   <img class="ph" src="galeri1.jpg" alt="Nail art" loading="lazy">
-   ```
+Beklenen dosya adları (tam liste `img/README.md` içinde):
 
-**Öneri:** Fotoğrafları yüklemeden önce boyutlandırın (genişlik ~1000–1400px, JPG/WebP, < 200 KB) — hız için önemli.
+| Dosya | Yer |
+|-------|-----|
+| `img/hero.jpg` | Hero büyük görsel |
+| `img/nail-1.jpg` … `img/nail-6.jpg` | İlham Galerisi |
+| `img/salon.jpg` | Hakkımızda görseli |
+
+**Ekleme:** GitHub'da `sin/img/` klasörü → *Add file → Upload files* → dosyaları bu adlarla yükleyip commit edin.
+
+**Öneri:** JPG/WebP, genişlik ~1000–1400px, < 250 KB (hız için). Galeri etiketlerini değiştirmek için `index.html`'deki `data-cap` değerlerini düzenleyin.
 
 ---
 
