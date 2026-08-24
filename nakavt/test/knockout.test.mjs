@@ -8,7 +8,7 @@ import { SHOT, SHOTPWR } from '../src/config.js';
 
 test('10 players spawn and queue is correct', () => {
   const rng = makeRng(1);
-  const roster = buildRoster(CHARACTERS, 'shooter', rng);
+  const roster = buildRoster(CHARACTERS, 'splash', rng);
   assert.equal(roster.length, 10);
   assert.equal(roster.filter((p) => p.isHuman).length, 1);
   const m = new KnockoutMatch(roster, { difficulty: DIFFICULTY.NORMAL, rng });
@@ -21,7 +21,7 @@ test('10 players spawn and queue is correct', () => {
 
 test('FRONT makes first -> nobody eliminated, front cycles to back', () => {
   const rng = makeRng(2);
-  const roster = buildRoster(CHARACTERS, 'ace', rng);
+  const roster = buildRoster(CHARACTERS, 'king', rng);
   const m = new KnockoutMatch(roster, { difficulty: DIFFICULTY.NORMAL, rng });
   const before = m.aliveCount;
   const frontId = m.queue[0];
@@ -33,7 +33,7 @@ test('FRONT makes first -> nobody eliminated, front cycles to back', () => {
 
 test('CHASER makes first -> front eliminated and removed entirely', () => {
   const rng = makeRng(3);
-  const roster = buildRoster(CHARACTERS, 'ace', rng);
+  const roster = buildRoster(CHARACTERS, 'king', rng);
   const m = new KnockoutMatch(roster, { difficulty: DIFFICULTY.NORMAL, rng });
   const frontId = m.queue[0];
   const chaserId = m.queue[1];
@@ -67,7 +67,7 @@ test('a full simulated match always ends with exactly one champion', () => {
 
 test('eliminations are unique and champion never in eliminated list', () => {
   const rng = makeRng(99);
-  const roster = buildRoster(CHARACTERS, 'clutch', rng);
+  const roster = buildRoster(CHARACTERS, 'mamba', rng);
   const m = new KnockoutMatch(roster, { difficulty: DIFFICULTY.HARD, rng });
   while (!m.isOver) m.resolve(m.simulateAiDuel(m.duel()).winner);
   assert.equal(new Set(m.eliminated).size, 9);

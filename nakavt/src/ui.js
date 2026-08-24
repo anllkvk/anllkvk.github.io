@@ -69,7 +69,7 @@ export class UI {
       cv.width = 180; cv.height = 152;
       card.append(cv);
       card.append(this._el('div', 'cname', c.name));
-      card.append(this._el('div', 'arch', c.archetype));
+      card.append(this._el('div', 'arch', `${c.team} · #${c.number}`));
       card.onclick = () => {
         this.selectedChar = c.id;
         grid.querySelectorAll('.card').forEach((n) => n.classList.remove('sel'));

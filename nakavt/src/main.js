@@ -247,6 +247,11 @@ function drawControls() {
   ctx.globalAlpha = 0.9; ctx.fillStyle = '#fff'; ctx.font = 'bold 13px system-ui'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
   ctx.fillText('SHOOT', sc.x, sc.y);
   ctx.restore();
+  // Keyboard hint (desktop)
+  ctx.save();
+  ctx.globalAlpha = 0.5; ctx.fillStyle = '#fff'; ctx.font = '11px system-ui'; ctx.textAlign = 'center'; ctx.textBaseline = 'bottom';
+  ctx.fillText('◄ ▲ ▼ ►  MOVE     ·     SPACE  SHOOT', W / 2, H - 6);
+  ctx.restore();
 }
 
 // ---- main loop ----

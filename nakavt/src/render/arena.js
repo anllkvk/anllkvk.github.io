@@ -60,21 +60,57 @@ export function drawArena(ctx, W, H, arena, t, opts = {}) {
   }
   ctx.globalAlpha = 1;
 
-  // Scoreboard (hangs from the rafters; y can be pushed down to clear the HUD)
-  const sbW = W * 0.5, sbH = H * 0.08, sbX = (W - sbW) / 2, sbY = opts.scoreboardY ?? H * 0.03;
+  // Scoreboard frame (hangs from the rafters; y can be pushed down to clear the HUD)
+  const sb = scoreboardRect(W, H, opts.scoreboardY);
   ctx.fillStyle = '#0a0a0f';
-  roundRect(ctx, sbX, sbY, sbW, sbH, 8); ctx.fill();
+  roundRect(ctx, sb.x, sb.y, sb.w, sb.h, 8); ctx.fill();
   ctx.strokeStyle = arena.accent; ctx.lineWidth = 2; ctx.stroke();
-  if (opts.scoreboard) {
-    ctx.fillStyle = arena.accent;
-    ctx.font = `bold ${sbH * 0.34}px "Courier New", monospace`;
-    ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
-    ctx.fillText(opts.scoreboard.top, sbX + sbW / 2, sbY + sbH * 0.32);
-    ctx.fillStyle = '#ff5a3d';
-    ctx.font = `bold ${sbH * 0.4}px "Courier New", monospace`;
-    ctx.fillText(opts.scoreboard.bottom, sbX + sbW / 2, sbY + sbH * 0.7);
-  }
+  // Text is dynamic (player count changes) — skip it when baking a static backdrop.
+  if (!opts.frameOnly && opts.scoreboard) drawScoreboardText(ctx, W, H, arena, opts);
 }
+
+function scoreboardRect(W, H, scoreboardY) {
+  const w = W * 0.5, h = H * 0.08;
+  return { x: (W - w) / 2, y: scoreboardY ?? H * 0.03, w, h };
+}
+
+/** Dynamic scoreboard text, drawn every frame over the (possibly cached) frame. */
+export function drawScoreboardText(ctx, W, H, arena, opts) {
+  if (!opts.scoreboard) return;
+  const sb = scoreboardRect(W, H, opts.scoreboardY);
+  ctx.fillStyle = arena.accent;
+  ctx.font = `bold ${sb.h * 0.34}px "Courier New", monospace`;
+  ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+  ctx.fillText(opts.scoreboard.top, sb.x + sb.w / 2, sb.y + sb.h * 0.32);
+  ctx.fillStyle = '#ff5a3d';
+  ctx.font = `bold ${sb.h * 0.4}px "Courier New", monospace`;
+  ctx.fillText(opts.scoreboard.bottom, sb.x + sb.w / 2, sb.y + sb.h * 0.7);
+}
+
+/**
+ * Cached arena+court backdrop. The static layers (wall, crowd, court, hoop,
+ * scoreboard frame) are baked to an offscreen canvas once per size/arena, then
+ * blitted each frame — only the dynamic scoreboard text is redrawn. This removes
+ * the heavy per-frame crowd/court work (a big 60 FPS win on mobile).
+ */
+let _backdrop = null;
+export function drawArenaScene(ctx, layout, arena, opts = {}) {
+  const { W, H } = layout;
+  const key = `${arena.id}|${Math.round(W)}x${Math.round(H)}|${Math.round(layout.floorY)}|${Math.round(opts.scoreboardY || 0)}`;
+  if (!_backdrop || _backdrop.key !== key) {
+    const oc = document.createElement('canvas');
+    oc.width = Math.max(1, Math.round(W)); oc.height = Math.max(1, Math.round(H));
+    const octx = oc.getContext('2d');
+    drawArena(octx, W, H, arena, 0, { scoreboardY: opts.scoreboardY, frameOnly: true });
+    drawCourt(octx, layout, arena, 0);
+    _backdrop = { key, canvas: oc };
+  }
+  ctx.drawImage(_backdrop.canvas, 0, 0, W, H);
+  drawScoreboardText(ctx, W, H, arena, opts);
+}
+
+/** Drop the cached backdrop (call on resize/arena change to force a rebuild). */
+export function invalidateArenaCache() { _backdrop = null; }
 
 export function drawCourt(ctx, layout, arena, t) {
   const { floorY, W, H, lineX, hoopX, hoopY } = layout;

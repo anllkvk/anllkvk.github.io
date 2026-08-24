@@ -21,6 +21,14 @@ Play it at **`/nakavt/`** on the site. Fully playable, mobile-first, 60 FPS targ
 - Chain Perfect shots for **🔥 HOT** and **🔥 ON FIRE** streaks.
 - Survive to the **FINAL DUEL** and win to become **NAKAVT CHAMPION**.
 
+## Building it as an agent studio
+
+See [`docs/AGENT_TEAM.md`](docs/AGENT_TEAM.md) for how this game is built by a team
+of specialized AI **agents** (each with a role + skills), the **architecture-first,
+optimize-last** phase plan, and how to package the web build into an installable PWA
+and native Android/iOS apps. Ready-to-use agent definitions are in
+[`.claude/agents/`](.claude/agents).
+
 ## Tech stack
 
 - **Vanilla ES modules** (no build step, no framework) — deploys as-is on GitHub Pages.

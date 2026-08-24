@@ -14,7 +14,7 @@ import { STATE, SHOT, STREAK, PACE, MOVE, SHOTPWR, EVENTS } from './config.js';
 import { resolvePowerShot, idealPowerForDistance } from './core/shot.js';
 import { resolveAiShot } from './core/shot.js';
 import { analytics } from './core/events.js';
-import { drawArena, drawCourt, drawBall } from './render/arena.js';
+import { drawArenaScene, drawBall, invalidateArenaCache } from './render/arena.js';
 import { drawCharacter } from './render/characters.js';
 
 const dist2 = (a, b) => Math.hypot(a.x - b.x, a.y - b.y);
@@ -55,7 +55,7 @@ export class Scene {
     };
   }
 
-  resize(dpr) { this.dpr = dpr; this._layout(); }
+  resize(dpr) { this.dpr = dpr; this._layout(); invalidateArenaCache(); }
 
   // ---- input API (wired from main.js) ----
   setMove(x, y) { this.move.x = x; this.move.y = y; }
@@ -437,12 +437,10 @@ export class Scene {
     ctx.save();
     if (this.finalDuel) { ctx.translate(W / 2, H * 0.55); ctx.scale(1.1, 1.1); ctx.translate(-W / 2, -H * 0.55); }
 
-    drawArena(ctx, W, H, this.arena, this.t, {
-      crowdCheer: this.state === STATE.VICTORY || this.finalDuel,
+    drawArenaScene(ctx, this.layout, this.arena, {
       scoreboardY: H * 0.115,
       scoreboard: { top: this.arena.name.toUpperCase(), bottom: `${this.match.aliveCount} LEFT` },
     });
-    drawCourt(ctx, this.layout, this.arena, this.t);
 
     // waiting queue
     const waiting = this.match.queue.slice(2);
