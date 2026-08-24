@@ -76,45 +76,43 @@ try {
   const startAlive = await page.evaluate(() => window.NAKAVT.game.match.aliveCount);
   if (startAlive !== 10) fail(`expected 10 players, got ${startAlive}`); else ok('10 players spawned');
 
-  // Play: tap repeatedly. Auto-tap into the perfect zone when the human is aiming
-  // to exercise makes; otherwise just tap to keep rebounds moving.
+  // Play with the new controls: hold SHOOT (right side), release when the power
+  // is inside the yellow band; loose balls auto-return so no movement is needed
+  // for the test to progress.
+  const rightX = 320, rightY = 620; // right-half shoot zone
   let resolved = null;
   let sawElimination = false;
+  let holding = false;
   const t0 = Date.now();
   while (Date.now() - t0 < 120000) {
     const snap = await page.evaluate(() => {
       const s = window.NAKAVT.scene;
-      const d = s.duel;
-      let humanAim = false, meterPos = null;
-      if (d && d.info.humanRole) {
-        const h = d.info.humanRole === 'front' ? d.front : d.chaser;
-        humanAim = h.state === 'aim';
-        meterPos = h.meterPos;
-      }
       return {
         state: s.state,
         alive: window.NAKAVT.game.match.aliveCount,
-        humanAim, meterPos,
         eliminated: window.NAKAVT.game.match.eliminated.length,
+        aim: s.aimDebug(),
       };
     });
     if (snap.eliminated > 0) sawElimination = true;
     if (snap.state === 'VICTORY') { resolved = 'VICTORY'; break; }
     if (snap.state === 'GAME_OVER') { resolved = 'GAME_OVER'; break; }
-    // Tap when human is aiming near the centre for a good release; else tap to grab rebounds.
-    if (snap.humanAim) {
-      // Release inside the GOOD/PERFECT band (accounts for a little sweep lag).
-      if (snap.meterPos != null && Math.abs(snap.meterPos - 0.5) < 0.11) {
-        await page.mouse.click(195, 400);
-      }
-    } else {
-      // tap to secure rebounds quickly
-      await page.mouse.click(195, 400);
-    }
-    await page.waitForTimeout(15);
-  }
 
-  if (!resolved) fail('match did not resolve within 60s');
+    const a = snap.aim;
+    if (a.human && a.phase === 'live' && a.hasBall && a.ballState === 'held') {
+      if (!a.charging && !holding) {
+        await page.mouse.move(rightX, rightY); await page.mouse.down(); holding = true;
+      } else if (a.charging && holding && Math.abs(a.power - a.ideal) < 0.045) {
+        await page.mouse.up(); holding = false;
+      }
+    } else if (holding) {
+      await page.mouse.up(); holding = false;
+    }
+    await page.waitForTimeout(12);
+  }
+  if (holding) { await page.mouse.up(); holding = false; }
+
+  if (!resolved) fail('match did not resolve within 120s');
   else ok(`match resolved: ${resolved}`);
   if (!sawElimination) fail('no eliminations occurred'); else ok('eliminations occurred during play');
 

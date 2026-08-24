@@ -73,16 +73,67 @@ function resize() {
 window.addEventListener('resize', resize);
 window.addEventListener('orientationchange', () => setTimeout(resize, 150));
 
-// ---- input: tap to shoot ----
-function onTap(e) {
-  if (game.state === STATE.PLAYING || game.state === STATE.FINAL_DUEL || game.state === STATE.COUNTDOWN) {
-    e.preventDefault();
-    scene.handleTap();
-  }
+// ---- input: left-half virtual joystick to MOVE, right-half hold to SHOOT ----
+const input = {
+  moveId: null, moveBase: { x: 0, y: 0 }, moveVec: { x: 0, y: 0 },
+  shootId: null, keys: new Set(),
+};
+const JOY_R = 56; // joystick radius in CSS px
+
+function inPlay() {
+  return game.state === STATE.PLAYING || game.state === STATE.FINAL_DUEL || game.state === STATE.COUNTDOWN;
 }
-canvas.addEventListener('pointerdown', onTap, { passive: false });
+function applyMove() {
+  // joystick takes priority; otherwise keyboard
+  if (input.moveId !== null) { scene.setMove(input.moveVec.x, input.moveVec.y); return; }
+  let x = 0, y = 0;
+  if (input.keys.has('a') || input.keys.has('ArrowLeft')) x -= 1;
+  if (input.keys.has('d') || input.keys.has('ArrowRight')) x += 1;
+  if (input.keys.has('w') || input.keys.has('ArrowUp')) y -= 1;
+  if (input.keys.has('s') || input.keys.has('ArrowDown')) y += 1;
+  const m = Math.hypot(x, y) || 1;
+  scene.setMove(x / m, y / m);
+}
+
+canvas.addEventListener('pointerdown', (e) => {
+  if (!inPlay()) return;
+  e.preventDefault();
+  const rect = canvas.getBoundingClientRect();
+  const x = e.clientX - rect.left, y = e.clientY - rect.top;
+  if (x < rect.width * 0.5 && input.moveId === null) {
+    input.moveId = e.pointerId; input.moveBase = { x, y }; input.moveVec = { x: 0, y: 0 };
+  } else if (input.shootId === null) {
+    input.shootId = e.pointerId; scene.shootDown();
+  }
+}, { passive: false });
+
+canvas.addEventListener('pointermove', (e) => {
+  if (e.pointerId !== input.moveId) return;
+  const rect = canvas.getBoundingClientRect();
+  let dx = (e.clientX - rect.left) - input.moveBase.x;
+  let dy = (e.clientY - rect.top) - input.moveBase.y;
+  const d = Math.hypot(dx, dy);
+  if (d > JOY_R) { dx = dx / d * JOY_R; dy = dy / d * JOY_R; }
+  input.moveVec = { x: dx / JOY_R, y: dy / JOY_R };
+  applyMove();
+}, { passive: false });
+
+function endPointer(e) {
+  if (e.pointerId === input.moveId) { input.moveId = null; input.moveVec = { x: 0, y: 0 }; applyMove(); }
+  if (e.pointerId === input.shootId) { input.shootId = null; scene.shootUp(); }
+}
+canvas.addEventListener('pointerup', endPointer);
+canvas.addEventListener('pointercancel', endPointer);
+canvas.addEventListener('lostpointercapture', endPointer);
+
 window.addEventListener('keydown', (e) => {
-  if (e.code === 'Space' || e.code === 'Enter') { e.preventDefault(); scene.handleTap(); }
+  if (['w', 'a', 's', 'd', 'ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight'].includes(e.key)) {
+    input.keys.add(e.key); applyMove(); e.preventDefault();
+  } else if (e.code === 'Space' && !e.repeat) { scene.shootDown(); e.preventDefault(); }
+});
+window.addEventListener('keyup', (e) => {
+  if (input.keys.has(e.key)) { input.keys.delete(e.key); applyMove(); }
+  if (e.code === 'Space') { scene.shootUp(); }
 });
 
 document.getElementById('hud-sound').addEventListener('click', () => {
@@ -169,20 +220,54 @@ function renderAmbience(dt) {
   });
 }
 
+// ---- on-screen touch controls (drawn over the scene) ----
+function drawControls() {
+  const W = canvas.width / dpr, H = canvas.height / dpr;
+  // Joystick (left): base at rest bottom-left, or where the thumb is when active
+  const rest = { x: W * 0.2, y: H * 0.8 };
+  const base = input.moveId !== null ? input.moveBase : rest;
+  ctx.save();
+  ctx.globalAlpha = input.moveId !== null ? 0.85 : 0.35;
+  ctx.strokeStyle = '#ffffff'; ctx.lineWidth = 2;
+  ctx.beginPath(); ctx.arc(base.x, base.y, JOY_R, 0, Math.PI * 2); ctx.stroke();
+  ctx.fillStyle = 'rgba(255,255,255,0.18)';
+  ctx.beginPath(); ctx.arc(base.x, base.y, JOY_R, 0, Math.PI * 2); ctx.fill();
+  const kx = base.x + input.moveVec.x * JOY_R, ky = base.y + input.moveVec.y * JOY_R;
+  ctx.fillStyle = 'rgba(255,255,255,0.9)';
+  ctx.beginPath(); ctx.arc(kx, ky, JOY_R * 0.42, 0, Math.PI * 2); ctx.fill();
+  if (input.moveId === null) { ctx.globalAlpha = 0.5; ctx.fillStyle = '#fff'; ctx.font = 'bold 11px system-ui'; ctx.textAlign = 'center'; ctx.fillText('MOVE', base.x, base.y + JOY_R + 16); }
+  ctx.restore();
+  // Shoot ring (right)
+  const sc = { x: W * 0.82, y: H * 0.8, r: 46 };
+  ctx.save();
+  ctx.globalAlpha = input.shootId !== null ? 0.9 : 0.4;
+  ctx.fillStyle = input.shootId !== null ? 'rgba(255,122,26,0.5)' : 'rgba(255,122,26,0.25)';
+  ctx.beginPath(); ctx.arc(sc.x, sc.y, sc.r, 0, Math.PI * 2); ctx.fill();
+  ctx.strokeStyle = '#ff7a1a'; ctx.lineWidth = 2.5; ctx.stroke();
+  ctx.globalAlpha = 0.9; ctx.fillStyle = '#fff'; ctx.font = 'bold 13px system-ui'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+  ctx.fillText('SHOOT', sc.x, sc.y);
+  ctx.restore();
+}
+
 // ---- main loop ----
 function loop(now) {
   const dt = Math.min(0.05, (now - game.lastTime) / 1000 || 0);
   game.lastTime = now;
 
-  const playing = game.state === STATE.COUNTDOWN || game.state === STATE.PLAYING || game.state === STATE.FINAL_DUEL;
-  if (playing) {
-    scene.update(dt);
-    scene.render();
-    syncStateFromScene();
-  } else if (game.state === STATE.VICTORY || game.state === STATE.GAME_OVER) {
-    // freeze on the final frame under the result overlay
-  } else {
-    renderAmbience(dt);
+  try {
+    const playing = game.state === STATE.COUNTDOWN || game.state === STATE.PLAYING || game.state === STATE.FINAL_DUEL;
+    if (playing) {
+      scene.update(dt);
+      scene.render();
+      drawControls();
+      syncStateFromScene();
+    } else if (game.state === STATE.VICTORY || game.state === STATE.GAME_OVER) {
+      // freeze on the final frame under the result overlay
+    } else {
+      renderAmbience(dt);
+    }
+  } catch (err) {
+    console.error('[nakavt] frame error', err); // never let one bad frame stop the loop
   }
   requestAnimationFrame(loop);
 }

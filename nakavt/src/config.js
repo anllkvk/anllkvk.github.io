@@ -54,17 +54,48 @@ export const PROB = {
   ceil: 0.99,
 };
 
-/** AI timing/accuracy model (seconds & probabilities). */
+/** AI timing/accuracy model (seconds & probabilities). Tuned slower for a calmer pace. */
 export const AI = {
-  reactionMin: 0.5, // high-reaction AI lines up a shot this fast
-  reactionMax: 1.15,
-  reboundMin: 0.45,
-  reboundMax: 1.25,
-  chaserStagger: 0.28, // the chaser gets the ball a beat after the front player
-  accMin: 0.46, // make prob for a low-accuracy AI at normal difficulty
-  accMax: 0.82,
-  betweenAttempt: 0.28, // small extra delay before a re-shot after a rebound
+  reactionMin: 0.9, // high-reaction AI lines up a shot this fast
+  reactionMax: 1.9,
+  reboundMin: 0.9,
+  reboundMax: 2.0,
+  chaserStagger: 0.5, // the chaser gets the ball a beat after the front player
+  accMin: 0.4, // make prob for a low-accuracy AI at normal difficulty
+  accMax: 0.72,
+  betweenAttempt: 0.5, // small extra delay before a re-shot after a rebound
   maxAttempts: 40, // safety cap per duel
+};
+
+/** Overall pacing (seconds). Larger = calmer, more readable gameplay. */
+export const PACE = {
+  ballFlight: 0.75, // arc time of a shot
+  autoScale: 1.25, // speed-up for AI-vs-AI duels you're only watching
+  intro: 0.5, // "get ready" beat before a duel goes live
+  resultHold: 0.7, // pause after a made basket
+  koTime: 0.9, // knockdown animation length
+  looseTimeout: 5.0, // safety: a loose ball you never reach returns to you
+};
+
+/** Player movement (HaxBall-style free movement on the court). Court-space units/sec. */
+export const MOVE = {
+  accel: 1400, // how quickly the player reaches top speed
+  maxSpeed: 220, // top movement speed
+  friction: 8.5, // velocity damping when no input
+  grabRadius: 30, // pick up a loose ball within this distance
+  aiMoveSpeed: 150, // opponent avatar drift speed (cosmetic)
+};
+
+/** Aim-and-power shot model. The arrow auto-aims at the hoop; you time the power. */
+export const SHOTPWR = {
+  chargeSeconds: 1.15, // time for the power bar to sweep 0->1->0 (ping-pong)
+  // Ideal power scales with distance to the hoop (closer = softer shot).
+  distMin: 60,
+  distMax: 340,
+  idealMin: 0.28,
+  idealMax: 0.9,
+  perfectTol: 0.05, // |power-ideal| within this => PERFECT
+  goodTol: 0.13, // <= this => GOOD, else miss
 };
 
 /** Difficulty presets — scale AI accuracy and speed, never the player. */

@@ -2,8 +2,34 @@
  * Shot mechanics — pure, deterministic given RNG. Shared by the interactive
  * player meter and the AI so success math is identical for everyone (fairness).
  */
-import { METER, PROB, SHOT } from '../config.js';
-import { clamp } from './rng.js';
+import { METER, PROB, SHOT, SHOTPWR } from '../config.js';
+import { clamp, lerp } from './rng.js';
+
+/** Ideal release power for a shot from `dist` pixels to the hoop (closer = softer). */
+export function idealPowerForDistance(dist) {
+  const t = clamp((dist - SHOTPWR.distMin) / (SHOTPWR.distMax - SHOTPWR.distMin), 0, 1);
+  return lerp(SHOTPWR.idealMin, SHOTPWR.idealMax, t);
+}
+
+/** Classify an aim-and-power release against the ideal power for the distance. */
+export function classifyPower(power, dist) {
+  const err = Math.abs(power - idealPowerForDistance(dist));
+  if (err <= SHOTPWR.perfectTol) return SHOT.PERFECT;
+  if (err <= SHOTPWR.goodTol) return power < idealPowerForDistance(dist) ? SHOT.EARLY : SHOT.LATE;
+  return power < idealPowerForDistance(dist) ? SHOT.EARLY : SHOT.LATE;
+}
+
+/** Resolve a human aim-and-power shot. Returns quality + made + the error used. */
+export function resolvePowerShot(power, dist, ctx, rng) {
+  const ideal = idealPowerForDistance(dist);
+  const err = Math.abs(power - ideal);
+  let quality;
+  if (err <= SHOTPWR.perfectTol) quality = SHOT.PERFECT;
+  else if (err <= SHOTPWR.goodTol) quality = SHOT.GOOD;
+  else quality = power < ideal ? SHOT.EARLY : SHOT.LATE;
+  const p = makeProbability(quality, ctx);
+  return { quality, made: rng.next() < p, prob: p, err, ideal };
+}
 
 /**
  * Classify a meter release position (0..1) into a timing bucket.

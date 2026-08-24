@@ -9,10 +9,14 @@ Play it at **`/nakavt/`** on the site. Fully playable, mobile-first, 60 FPS targ
 
 ## How to play
 
-- **Tap anywhere** to release your shot when the moving meter marker hits the
-  centre. Centre = **Perfect**, near-centre = **Good**, edges miss.
-- Miss and you'll **rebound** — tap again to grab it fast and re-shoot.
-- **FRONT** role: sink one before the chaser behind you, or you're knocked out.
+- **Move** your baller freely (HaxBall-style): left-side virtual joystick on
+  touch, or **WASD / arrow keys** on desktop.
+- **Shoot**: hold **SHOOT** (right side) or **Space** to charge. An aim **arrow**
+  arcs to the hoop and a **power bar** appears — release in the **yellow** band
+  for a Perfect, the green for Good. Ideal power depends on your distance, so
+  getting closer makes the shot easier.
+- **Miss?** The ball comes loose on the floor — **run to it, grab it, and finish**.
+- **FRONT** role: sink one before the chaser, or you're knocked out.
 - **CHASER** role: sink one before the player in front — knock them out.
 - Chain Perfect shots for **🔥 HOT** and **🔥 ON FIRE** streaks.
 - Survive to the **FINAL DUEL** and win to become **NAKAVT CHAMPION**.
@@ -40,7 +44,7 @@ nakavt/
 │   ├── core/             # PURE, DOM-free, testable
 │   │   ├── rng.js        # seedable RNG (controlled randomness)
 │   │   ├── events.js     # analytics abstraction (swappable sink)
-│   │   ├── shot.js       # shot-timing model & make probability
+│   │   ├── shot.js       # aim-and-power shot model & make probability
 │   │   └── knockout.js   # the Knockout rules engine (queue state machine)
 │   ├── audio/sfx.js      # procedural Web Audio SFX + crowd bed
 │   ├── render/           # procedural canvas art
@@ -91,8 +95,8 @@ node test/browser.mjs    # headless end-to-end playthrough (needs Playwright + C
 
 ## Fairness & difficulty
 
-The timing meter is identical for everyone — difficulty only tunes the AI
-(accuracy/speed) and a per-round ramp as the field thins. Character stats
+The aim-and-power control is identical for everyone — difficulty only tunes the
+AI (accuracy/speed) and a per-round ramp as the field thins. Character stats
 (accuracy, reaction, speed, rebound, clutch) are traded off so no pick dominates;
 they only nudge outcomes. No pay-to-win, no unfair RNG.
 

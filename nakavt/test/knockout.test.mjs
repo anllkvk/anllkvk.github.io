@@ -3,8 +3,8 @@ import assert from 'node:assert/strict';
 import { CHARACTERS, DIFFICULTY } from '../src/config.js';
 import { makeRng } from '../src/core/rng.js';
 import { KnockoutMatch, buildRoster } from '../src/core/knockout.js';
-import { classifyRelease, makeProbability, resolvePlayerShot } from '../src/core/shot.js';
-import { SHOT } from '../src/config.js';
+import { classifyRelease, makeProbability, resolvePlayerShot, idealPowerForDistance, resolvePowerShot } from '../src/core/shot.js';
+import { SHOT, SHOTPWR } from '../src/config.js';
 
 test('10 players spawn and queue is correct', () => {
   const rng = makeRng(1);
@@ -100,5 +100,35 @@ test('pressure hurts less on a perfect release than on a good one', () => {
 test('resolvePlayerShot is deterministic under a seed', () => {
   const a = resolvePlayerShot(0.5, { clutch: 0.6 }, makeRng(7));
   const b = resolvePlayerShot(0.5, { clutch: 0.6 }, makeRng(7));
+  assert.deepEqual(a, b);
+});
+
+test('ideal power grows with distance to the hoop', () => {
+  const near = idealPowerForDistance(SHOTPWR.distMin);
+  const far = idealPowerForDistance(SHOTPWR.distMax);
+  assert.ok(far > near, 'farther needs more power');
+  assert.ok(near >= SHOTPWR.idealMin - 1e-9 && far <= SHOTPWR.idealMax + 1e-9);
+});
+
+test('releasing at the ideal power yields a PERFECT high-prob shot', () => {
+  const dist = 220;
+  const ideal = idealPowerForDistance(dist);
+  const res = resolvePowerShot(ideal, dist, { clutch: 0.5 }, makeRng(1));
+  assert.equal(res.quality, SHOT.PERFECT);
+  assert.ok(res.prob >= 0.95);
+});
+
+test('a badly-timed power (far from ideal) is a low-prob miss', () => {
+  const dist = 220;
+  const ideal = idealPowerForDistance(dist);
+  const wrong = ideal > 0.5 ? ideal - 0.4 : ideal + 0.4;
+  const res = resolvePowerShot(wrong, dist, { clutch: 0.5 }, makeRng(1));
+  assert.ok(res.quality === SHOT.EARLY || res.quality === SHOT.LATE);
+  assert.ok(res.prob < 0.5);
+});
+
+test('resolvePowerShot is deterministic under a seed', () => {
+  const a = resolvePowerShot(0.6, 200, { clutch: 0.5 }, makeRng(4));
+  const b = resolvePowerShot(0.6, 200, { clutch: 0.5 }, makeRng(4));
   assert.deepEqual(a, b);
 });
