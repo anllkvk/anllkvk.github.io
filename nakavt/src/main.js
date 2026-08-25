@@ -298,3 +298,11 @@ requestAnimationFrame(loop);
 
 // expose a tiny debug handle
 window.NAKAVT = { game, scene, sfx, analytics, version: '1.0.0', name: GAME.name };
+
+// PWA: register the service worker for install + offline play.
+// Skipped under automation (Playwright sets navigator.webdriver) so e2e stays deterministic.
+if ('serviceWorker' in navigator && !navigator.webdriver) {
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('sw.js').catch(() => { /* offline support is best-effort */ });
+  });
+}

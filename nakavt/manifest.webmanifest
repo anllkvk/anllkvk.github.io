@@ -1,0 +1,15 @@
+{
+  "name": "NAKAVT — Basketball Knockout",
+  "short_name": "NAKAVT",
+  "description": "A fast, addictive arcade basketball Knockout game. Tap to shoot, race for the rebound, knock out 9 rivals and become champion.",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#0a0e1a",
+  "theme_color": "#0a0e1a",
+  "categories": ["games", "sports", "entertainment"],
+  "icons": [
+    { "src": "icon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any maskable" }
+  ]
+}
