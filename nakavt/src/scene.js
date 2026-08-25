@@ -10,12 +10,16 @@
  * timeline and is shown as a moving avatar. AI-vs-AI pairings you're only watching
  * auto-resolve with a short readable beat.
  */
-import { STATE, SHOT, STREAK, PACE, MOVE, SHOTPWR, EVENTS } from './config.js';
+import { STATE, SHOT, STREAK, PACE, MOVE, SHOTPWR, EVENTS, COLORS, FX, PARTICLES } from './config.js';
 import { resolvePowerShot, idealPowerForDistance } from './core/shot.js';
 import { resolveAiShot } from './core/shot.js';
 import { analytics } from './core/events.js';
-import { drawArenaScene, drawBall, invalidateArenaCache } from './render/arena.js';
+import { drawArenaScene, drawBall, drawVignette, invalidateArenaCache } from './render/arena.js';
 import { drawCharacter } from './render/characters.js';
+import { Camera } from './render/camera.js';
+import { Particles } from './render/particles.js';
+import { SpriteCache } from './render/sprites.js';
+import { haptics } from './audio/haptics.js';
 
 const dist2 = (a, b) => Math.hypot(a.x - b.x, a.y - b.y);
 
@@ -28,6 +32,12 @@ export class Scene {
     this.tutorialDone = false; this.tutorial = false;
     this.move = { x: 0, y: 0 }; this.shootHeld = false;
     this.dpr = 1;
+    // visual/game-feel layer (purely cosmetic; never touches gameplay state)
+    this.cam = new Camera(1, 1);
+    this.particles = new Particles(PARTICLES.max);
+    this.sprites = new SpriteCache();
+    this.floaters = [];
+    this.screenFlash = 0;
   }
 
   start(match, arena, characters, opts = {}) {
@@ -38,8 +48,12 @@ export class Scene {
     this.streak = 0; this.tutorial = !opts.tutorialDone; this.countdown = 3.0;
     this.move = { x: 0, y: 0 }; this.shootHeld = false;
     this.flash = { text: '3', color: '#fff', ttl: 1, big: true };
+    this.floaters.length = 0; this.screenFlash = 0; this.particles.clear();
     analytics.track(EVENTS.GAME_START, { arena: arena.id, difficulty: match.difficulty.key });
-    this._layout(); this.sfx.startCrowd();
+    this._layout();
+    this.sprites.setDpr(this.dpr);
+    this.cam.resize(this.layout.W, this.layout.H); this.cam.reset();
+    this.sfx.startCrowd();
   }
 
   _layout() {
@@ -55,7 +69,11 @@ export class Scene {
     };
   }
 
-  resize(dpr) { this.dpr = dpr; this._layout(); invalidateArenaCache(); }
+  resize(dpr) {
+    this.dpr = dpr; this._layout(); invalidateArenaCache();
+    this.sprites.setDpr(dpr);
+    if (this.layout) this.cam.resize(this.layout.W, this.layout.H);
+  }
 
   // ---- input API (wired from main.js) ----
   setMove(x, y) { this.move.x = x; this.move.y = y; }
@@ -132,14 +150,24 @@ export class Scene {
   update(dt) {
     this.t += dt;
     if (this.flash) { this.flash.ttl -= dt; if (this.flash.ttl <= 0) this.flash = null; }
+    // cosmetic layer (never gates gameplay)
+    this.cam.zoomTo(this.finalDuel ? FX.camZoomFinal : 1, 3);
+    this.cam.update(dt);
+    this.particles.update(dt);
+    if (this.screenFlash > 0) this.screenFlash = Math.max(0, this.screenFlash - dt * 2.2);
+    for (let i = this.floaters.length - 1; i >= 0; i--) {
+      const f = this.floaters[i];
+      f.ttl -= dt; f.y += f.vy * dt;
+      if (f.ttl <= 0) this.floaters.splice(i, 1);
+    }
 
     if (this.state === STATE.COUNTDOWN) {
       const prev = Math.ceil(this.countdown);
       this.countdown -= dt * 0.85; // slightly slower countdown
       const now = Math.ceil(this.countdown);
-      if (now !== prev && now >= 1) { this.setFlash(String(now), '#fff', 1, true); this.sfx.countBeep(); }
+      if (now !== prev && now >= 1) { this.setFlash(String(now), '#fff', 1, true); this.sfx.countBeep(); this.cam.punch(0.03); }
       if (this.countdown <= 0) {
-        this.setFlash('GO!', '#2ec16b', 0.8, true); this.sfx.whistle();
+        this.setFlash('NAKAVT!', COLORS.secondary, 0.9, true); this.sfx.whistle(); this.cam.punch(0.06);
         this.state = STATE.PLAYING; this._beginDuel();
       }
       return;
@@ -266,18 +294,37 @@ export class Scene {
     if (this.duel.winner) { return; }
     const res = H._lastRes || { quality: SHOT.GOOD };
     this.stats.made++;
-    if (res.quality === SHOT.PERFECT) { this.streak++; this.stats.perfect++; this.sfx.perfect();
-      if (this.streak === STREAK.hot) this.setFlash('🔥 HOT!', '#ff8c1a', 1.1, true);
-      else if (this.streak >= STREAK.onFire) this.setFlash('🔥 ON FIRE!', '#ff3b3b', 1.1, true);
-    } else { this.streak = 0; this.sfx.swish(); }
-    H.ball.state = 'scored'; H.ball.pos = { ...this.layout.hoop };
+    const hoop = this.layout.hoop;
+    if (res.quality === SHOT.PERFECT) {
+      this.streak++; this.stats.perfect++; this.sfx.perfect();
+      // juice: camera punch, screen flash, gold sparkle burst, floating text, haptic
+      this.cam.punch(FX.camPunchPerfect); this.screenFlash = FX.flashPerfect;
+      this.particles.burst(hoop.x, hoop.y, PARTICLES.perfectBurst, { color: COLORS.perfect, shape: 'spark', speed: 150, size: 3, max: 0.7 });
+      this._floater('PERFECT!', H.pos.x, H.pos.y - 96, COLORS.perfect);
+      haptics.perfect();
+      if (this.streak === STREAK.hot) this.setFlash('🔥 HOT!', COLORS.hot, 1.1, true);
+      else if (this.streak === STREAK.onFire) this.setFlash('🔥 ON FIRE!', COLORS.onFire, 1.1, true);
+      else if (this.streak >= STREAK.inferno) this.setFlash('🔥 UNSTOPPABLE!', COLORS.danger, 1.2, true);
+    } else {
+      this.streak = 0; this.sfx.swish();
+      this.cam.punch(FX.camPunchGood);
+      this.particles.burst(hoop.x, hoop.y, PARTICLES.goodBurst, { color: '#fff', speed: 90, size: 2, max: 0.5 });
+      haptics.score();
+    }
+    H.ball.state = 'scored'; H.ball.pos = { ...hoop };
     this.sfx.swish(); this.sfx.crowdSwell(0.18);
     this._score('human');
+  }
+
+  _floater(text, x, y, color, size) {
+    this.floaters.push({ text, x, y, vy: -34, ttl: 0.9, max: 0.9, color, size: size || 26 });
   }
 
   _onMiss(H) {
     if (this.duel.winner) return;
     this.streak = 0; this.sfx.rim();
+    this.cam.shake(FX.camShakeMiss, FX.camShakeMissDur);
+    this.particles.burst(this.layout.hoop.x, this.layout.hoop.y, 5, { color: 'rgba(255,120,60,0.8)', speed: 70, size: 2, max: 0.4, grav: 200 });
     const b = H.ball;
     b.state = 'loose'; b.z = 30;
     // carom back toward the player's side of the court
@@ -361,7 +408,12 @@ export class Scene {
       this.duel.phase = 'ko'; this.duel.timer = PACE.koTime;
       this.duel.koVictim = who === 'human' ? this.duel.opp : this.duel.human; // the front loser
       if (this.duel.koVictim) this.duel.koVictim.koT = 0;
-      this.setFlash('KNOCKED OUT!', '#ff3b4e', 1.2, true); this.sfx.knockout();
+      this.setFlash('KNOCKED OUT!', COLORS.danger, 1.2, true); this.sfx.knockout();
+      // juice: short shake, burst at the victim, haptic
+      this.cam.shake(FX.camShakeKnockout, FX.camShakeKnockoutDur);
+      const v = this.duel.koVictim;
+      if (v) { this.particles.burst(v.pos.x, v.pos.y - 30, PARTICLES.knockoutBurst, { color: COLORS.danger, speed: 170, size: 3, max: 0.8, grav: 260 }); this.particles.dust(v.pos.x, v.pos.y, 8); }
+      haptics.knockout();
     } else {
       this.setFlash(who === 'human' ? 'SAFE!' : 'SAFE', '#2ec16b', 0.9, false);
       this.duel.phase = 'resolve'; this.duel.timer = PACE.resultHold;
@@ -393,8 +445,8 @@ export class Scene {
     this.stats.accuracy = this.stats.shots ? Math.round((this.stats.made / this.stats.shots) * 100) : 0;
     this.state = won ? STATE.VICTORY : STATE.GAME_OVER;
     this.sfx.stopCrowd();
-    if (won) { this.sfx.victory(); analytics.track(EVENTS.VICTORY, {}); this.cb.onVictory?.(this._finalStats()); }
-    else { this.sfx.knockout(); this.cb.onDefeat?.(this._finalStats()); }
+    if (won) { this.sfx.victory(); haptics.victory(); analytics.track(EVENTS.VICTORY, {}); this.cb.onVictory?.(this._finalStats()); }
+    else { this.sfx.knockout(); haptics.knockout(); this.cb.onDefeat?.(this._finalStats()); }
     analytics.track(EVENTS.GAME_END, { won, placement: this.stats.placement });
   }
 
@@ -434,20 +486,22 @@ export class Scene {
   render() {
     const ctx = this.ctx, { W, H } = this.layout;
     ctx.clearRect(0, 0, W, H);
-    ctx.save();
-    if (this.finalDuel) { ctx.translate(W / 2, H * 0.55); ctx.scale(1.1, 1.1); ctx.translate(-W / 2, -H * 0.55); }
+
+    // --- world (inside camera transform) ---
+    this.cam.begin(ctx);
 
     drawArenaScene(ctx, this.layout, this.arena, {
       scoreboardY: H * 0.115,
       scoreboard: { top: this.arena.name.toUpperCase(), bottom: `${this.match.aliveCount} LEFT` },
     });
 
-    // waiting queue
+    // waiting queue — cached idle sprites (blit, not re-drawn)
     const waiting = this.match.queue.slice(2);
     waiting.forEach((id, i) => {
       const ch = this.charsById.get(id);
       const x = W * 0.16 + i * (W * 0.68 / Math.max(1, waiting.length));
-      drawCharacter(ctx, ch, x, H * 0.99, 0.5, 'idle', this.t + i, { dim: true });
+      const bob = Math.sin(this.t * 3 + i) * 1.2;
+      this.sprites.draw(ctx, ch, x, H * 0.99 + bob, 0.5, 'idle', { alpha: 0.82 });
     });
 
     const d = this.duel;
@@ -455,7 +509,6 @@ export class Scene {
       if (d.mode === 'auto') {
         this._drawAi(d.a); this._drawAi(d.b);
       } else {
-        // aim arrow + arc under the player (drawn on floor first)
         if (d.human.hasBall && d.human.ball.state === 'held') this._drawAim(d.human);
         this._drawAi(d.opp);
         this._drawHuman(d.human);
@@ -464,28 +517,65 @@ export class Scene {
       }
     }
 
+    this.particles.draw(ctx);
+    this._drawFloaters();
+
+    this.cam.end(ctx);
+
+    // --- screen-space overlays ---
+    if (this.screenFlash > 0.001) {
+      ctx.save(); ctx.globalAlpha = this.screenFlash; ctx.fillStyle = '#ffffff';
+      ctx.fillRect(0, 0, W, H); ctx.restore();
+    }
+    drawVignette(ctx, W, H, this.finalDuel ? FX.vignetteFinal : FX.vignette);
+
     if (this.streak >= STREAK.hot) {
-      ctx.font = 'bold 16px system-ui'; ctx.textAlign = 'left';
-      ctx.fillStyle = this.streak >= STREAK.onFire ? '#ff3b3b' : '#ff8c1a';
-      ctx.fillText(`🔥 ${this.streak}`, 12, H * 0.52);
+      ctx.font = '900 16px system-ui'; ctx.textAlign = 'left'; ctx.textBaseline = 'alphabetic';
+      ctx.fillStyle = this.streak >= STREAK.onFire ? COLORS.onFire : COLORS.hot;
+      ctx.fillText(`🔥 ${this.streak}`, 12, H * 0.5);
     }
 
-    ctx.restore();
     this._drawPowerBar();
     if (this.flash) this._drawFlash();
   }
 
+  _drawFloaters() {
+    const ctx = this.ctx;
+    for (const f of this.floaters) {
+      const k = 1 - f.ttl / f.max; // 0..1
+      const scale = k < 0.25 ? 0.8 + (k / 0.25) * 0.4 : 1.2 - Math.min(0.2, (k - 0.25) * 0.3);
+      const alpha = f.ttl > 0.3 ? 1 : f.ttl / 0.3;
+      ctx.save();
+      ctx.globalAlpha = alpha; ctx.translate(f.x, f.y); ctx.scale(scale, scale);
+      ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+      ctx.font = `900 ${f.size}px system-ui, sans-serif`;
+      ctx.lineWidth = f.size * 0.16; ctx.strokeStyle = 'rgba(0,0,0,0.7)';
+      ctx.strokeText(f.text, 0, 0);
+      ctx.fillStyle = f.color; ctx.fillText(f.text, 0, 0);
+      ctx.restore();
+    }
+  }
+
   _drawHuman(H) {
     let pose = 'idle', phase = this.t;
+    const opts = { facing: H.facing };
     const moving = Math.hypot(H.vel.x, H.vel.y) > 20;
-    if (H.charging) { pose = 'aim'; phase = this.t; }
-    else if (H.ball.state === 'flight') { pose = 'shoot'; phase = Math.min(1, H.ball.t / 0.25); }
-    else if (moving) { pose = 'run'; phase = this.t; }
-    drawCharacter(this.ctx, this.charsById.get(H.id), H.pos.x, H.pos.y, 0.95, pose, phase, { facing: H.facing });
+    if (H.charging) { pose = 'aim'; phase = this.t; opts.sy = 1 - 0.05; opts.sx = 1 + 0.04; } // gather/crouch
+    else if (H.ball.state === 'flight') {
+      pose = 'shoot'; phase = Math.min(1, H.ball.t / 0.25);
+      const jp = Math.min(1, H.ball.t / 0.32);
+      opts.lift = Math.sin(jp * Math.PI) * 14; // jump shot
+      opts.sy = 1 + FX.stretchShoot * Math.sin(jp * Math.PI);
+    } else if (moving) { pose = 'run'; phase = this.t; }
+    // streak aura
+    if (this.streak >= STREAK.onFire) opts.glow = { color: 'rgba(255,59,59,0.7)', a: 0.6 };
+    else if (this.streak >= STREAK.hot) opts.glow = { color: 'rgba(255,140,26,0.65)', a: 0.5 };
+    drawCharacter(this.ctx, this.charsById.get(H.id), H.pos.x, H.pos.y, 0.95, pose, phase, opts);
     // "YOU" marker
     const ctx = this.ctx;
-    ctx.fillStyle = '#ffd23f'; ctx.font = 'bold 12px system-ui'; ctx.textAlign = 'center';
-    ctx.fillText('▼ YOU', H.pos.x, H.pos.y - 80);
+    ctx.fillStyle = COLORS.secondary; ctx.font = '900 12px system-ui'; ctx.textAlign = 'center';
+    ctx.textBaseline = 'alphabetic';
+    ctx.fillText('▼ YOU', H.pos.x, H.pos.y - 82 - (opts.lift || 0));
   }
 
   _drawAi(O) {
@@ -499,8 +589,21 @@ export class Scene {
 
   _drawBall(b, r) {
     if (!b) return;
+    const ctx = this.ctx;
     const y = b.pos.y - (b.z || 0);
-    drawBall(this.ctx, b.pos.x, y, r, b.rot || 0, { shadowY: b.pos.y });
+    const moving = b.state === 'flight' || b.state === 'ball' || b.state === 'loose';
+    if (moving) {
+      if (!b._trail) b._trail = [];
+      b._trail.push({ x: b.pos.x, y });
+      if (b._trail.length > FX.trailFrames) b._trail.shift();
+      for (let i = 0; i < b._trail.length - 1; i++) {
+        const p = b._trail[i], a = (i / b._trail.length) * 0.4;
+        ctx.globalAlpha = a; ctx.fillStyle = '#ff9c4a';
+        ctx.beginPath(); ctx.arc(p.x, p.y, r * (0.35 + (i / b._trail.length) * 0.5), 0, Math.PI * 2); ctx.fill();
+      }
+      ctx.globalAlpha = 1;
+    } else if (b._trail) { b._trail.length = 0; }
+    drawBall(ctx, b.pos.x, y, r, b.rot || 0, { shadowY: b.pos.y });
   }
 
   /** Dotted aim arc from the player to the hoop + a direction arrow (the "ok"). */
@@ -564,11 +667,18 @@ export class Scene {
     const ctx = this.ctx, { W, H } = this.layout, f = this.flash;
     const a = Math.min(1, f.ttl * 2.5);
     ctx.save(); ctx.globalAlpha = a; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
-    const size = f.big ? Math.min(60, W * 0.15) : Math.min(30, W * 0.072);
+    let size = f.big ? Math.min(60, W * 0.15) : Math.min(30, W * 0.072);
+    // shrink to fit the screen width so long text (e.g. "KNOCKED OUT!") never clips
     ctx.font = `900 ${size}px system-ui, sans-serif`;
-    ctx.lineWidth = size * 0.12; ctx.strokeStyle = 'rgba(0,0,0,0.65)';
-    ctx.strokeText(f.text, W / 2, H * 0.32);
-    ctx.fillStyle = f.color; ctx.fillText(f.text, W / 2, H * 0.32);
+    const maxW = W * 0.9;
+    const tw = ctx.measureText(f.text).width;
+    if (tw > maxW) { size *= maxW / tw; ctx.font = `900 ${size}px system-ui, sans-serif`; }
+    // a subtle pop as it appears
+    const pop = 1 + Math.max(0, (f.ttl - (f.big ? 1.0 : 0.7)) * 0.4);
+    ctx.translate(W / 2, H * 0.32); ctx.scale(pop, pop);
+    ctx.lineWidth = size * 0.12; ctx.strokeStyle = 'rgba(0,0,0,0.7)';
+    ctx.strokeText(f.text, 0, 0);
+    ctx.fillStyle = f.color; ctx.fillText(f.text, 0, 0);
     ctx.restore();
   }
 

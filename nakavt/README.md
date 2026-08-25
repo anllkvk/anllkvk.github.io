@@ -54,10 +54,15 @@ nakavt/
 │   │   ├── events.js     # analytics abstraction (swappable sink)
 │   │   ├── shot.js       # aim-and-power shot model & make probability
 │   │   └── knockout.js   # the Knockout rules engine (queue state machine)
-│   ├── audio/sfx.js      # procedural Web Audio SFX + crowd bed
-│   ├── render/           # procedural canvas art
-│   │   ├── characters.js # arcade character sprites (poses/animation)
-│   │   └── arena.js      # arena backdrop, court, hoop, ball
+│   ├── audio/
+│   │   ├── sfx.js        # procedural Web Audio SFX + crowd bed
+│   │   └── haptics.js    # navigator.vibrate abstraction (safe no-op fallback)
+│   ├── render/           # procedural canvas art + game-feel VFX
+│   │   ├── characters.js # arcade sprites (poses, squash/stretch, jump, glow)
+│   │   ├── arena.js      # arena backdrop, court, hoop, ball (+ offscreen cache, vignette)
+│   │   ├── camera.js     # punch / shake / zoom camera (cosmetic only)
+│   │   ├── particles.js  # pooled particle system (dust, sparkle, burst, confetti)
+│   │   └── sprites.js    # sprite cache — bakes idle players to offscreen canvases
 │   ├── scene.js          # real-time gameplay: duels, meter, rebounds, FSM
 │   ├── ui.js             # DOM screens (menu, selects, victory, settings)
 │   └── main.js           # bootstrap: canvas, loop, input, state wiring

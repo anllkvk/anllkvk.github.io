@@ -79,12 +79,17 @@ export function drawCharacter(ctx, char, x, y, scale, pose = 'idle', phase = 0, 
   const big = char.height === 'big' ? 1.2 : char.height === 'tall' ? 1.08 : 1;
   const facing = opts.facing || 1;
   const trim = char.jerseyTrim || '#ffffff';
+  const sqx = opts.sx || 1, sqy = opts.sy || 1;      // squash/stretch
+  const lift = (opts.lift || 0) * s;                 // visual jump height (px)
   ctx.save();
   ctx.translate(x, y);
+  if (sqx !== 1 || sqy !== 1) ctx.scale(sqx, sqy);   // squash/stretch around the feet
 
   let bob = 0, lean = 0, armUp = 0, fall = 0, spin = 0, crouch = 0;
-  if (pose === 'idle') bob = Math.sin(phase * 3) * 1.1 * s;
-  if (pose === 'run') { bob = Math.abs(Math.sin(phase * 14)) * 3 * s; lean = 4 * s * facing; }
+  if (pose === 'idle' || pose === 'miss') bob = Math.sin(phase * 3) * 1.1 * s;
+  if (pose === 'dribble') bob = Math.sin(phase * 4) * 1.2 * s;
+  if (pose === 'walk') { bob = Math.abs(Math.sin(phase * 10)) * 2 * s; lean = 2 * s * facing; }
+  if (pose === 'run' || pose === 'rebound') { bob = Math.abs(Math.sin(phase * 14)) * 3 * s; lean = 4 * s * facing; }
   if (pose === 'shoot') { armUp = Math.min(1, phase * 1.7); bob = -armUp * 5 * s; crouch = (1 - armUp) * 2 * s; }
   if (pose === 'aim') { armUp = 0.5 + Math.sin(phase * 6) * 0.04; crouch = 3 * s; }
   if (pose === 'celebrate') { armUp = 1; bob = -Math.abs(Math.sin(phase * 8)) * 7 * s; }
@@ -96,16 +101,32 @@ export function drawCharacter(ctx, char, x, y, scale, pose = 'idle', phase = 0, 
 
   const bodyW = 25 * s * big, bodyH = 34 * s * big, headR = 13.5 * s * big;
 
-  // Contact shadow
+  // Optional glow aura (HOT / ON FIRE)
+  if (opts.glow) {
+    ctx.save();
+    ctx.globalAlpha *= opts.glow.a ?? 0.5;
+    const gg = ctx.createRadialGradient(0, -bodyH * 0.5, 4 * s, 0, -bodyH * 0.5, bodyW * 1.5);
+    gg.addColorStop(0, opts.glow.color || 'rgba(255,140,26,0.7)');
+    gg.addColorStop(1, 'rgba(255,140,26,0)');
+    ctx.fillStyle = gg;
+    ctx.beginPath(); ctx.ellipse(0, -bodyH * 0.5 - lift, bodyW * 1.5, bodyH * 1.1, 0, 0, Math.PI * 2); ctx.fill();
+    ctx.restore();
+  }
+
+  // Contact shadow (shrinks as the player lifts off)
   ctx.save();
   ctx.globalAlpha *= 0.28;
+  const shR = bodyW * 0.82 * (1 - Math.min(0.5, lift / (60 * s || 1)));
   const sg = ctx.createRadialGradient(0, 9 * s, 0, 0, 9 * s, bodyW);
   sg.addColorStop(0, 'rgba(0,0,0,0.55)'); sg.addColorStop(1, 'rgba(0,0,0,0)');
-  ctx.fillStyle = sg; ctx.beginPath(); ctx.ellipse(0, 9 * s - bob - crouch, bodyW * 0.82, 6 * s, 0, 0, Math.PI * 2); ctx.fill();
+  ctx.fillStyle = sg; ctx.beginPath(); ctx.ellipse(0, 9 * s - bob - crouch, shR, 6 * s, 0, 0, Math.PI * 2); ctx.fill();
   ctx.restore();
 
+  if (lift) ctx.translate(0, -lift); // raise the body for the jump; shadow stays down
+
   // Legs (skin thighs + shorts)
-  const legSpread = pose === 'run' ? Math.sin(phase * 14) * 5 * s : 3.4 * s;
+  const legPhase = (pose === 'run' || pose === 'rebound') ? 14 : pose === 'walk' ? 10 : 0;
+  const legSpread = legPhase ? Math.sin(phase * legPhase) * 5 * s : 3.4 * s;
   // thighs
   capsule(ctx, -8 * s - legSpread, -4 * s, 7 * s, 16 * s, 3.4 * s, char.skin);
   capsule(ctx, 1 * s + legSpread, -4 * s, 7 * s, 16 * s, 3.4 * s, char.skin);

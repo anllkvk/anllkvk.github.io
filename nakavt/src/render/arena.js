@@ -110,7 +110,28 @@ export function drawArenaScene(ctx, layout, arena, opts = {}) {
 }
 
 /** Drop the cached backdrop (call on resize/arena change to force a rebuild). */
-export function invalidateArenaCache() { _backdrop = null; }
+export function invalidateArenaCache() { _backdrop = null; _vig = null; }
+
+/**
+ * Soft vignette that darkens the edges for depth/focus. Cached to an offscreen
+ * canvas per (size, strength) so it's a single blit per frame, not a gradient.
+ */
+let _vig = null;
+export function drawVignette(ctx, W, H, strength = 0.28) {
+  const key = `${Math.round(W)}x${Math.round(H)}|${strength.toFixed(2)}`;
+  if (!_vig || _vig.key !== key) {
+    const oc = document.createElement('canvas');
+    oc.width = Math.max(1, Math.round(W)); oc.height = Math.max(1, Math.round(H));
+    const o = oc.getContext('2d');
+    const g = o.createRadialGradient(W / 2, H * 0.52, Math.min(W, H) * 0.32, W / 2, H * 0.52, Math.max(W, H) * 0.78);
+    g.addColorStop(0, 'rgba(0,0,0,0)');
+    g.addColorStop(0.7, 'rgba(0,0,0,0)');
+    g.addColorStop(1, `rgba(0,0,0,${strength})`);
+    o.fillStyle = g; o.fillRect(0, 0, W, H);
+    _vig = { key, canvas: oc };
+  }
+  ctx.drawImage(_vig.canvas, 0, 0, W, H);
+}
 
 export function drawCourt(ctx, layout, arena, t) {
   const { floorY, W, H, lineX, hoopX, hoopY } = layout;

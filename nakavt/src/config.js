@@ -108,7 +108,56 @@ export const DIFFICULTY = Object.freeze({
 });
 
 /** Combo thresholds for the streak system. */
-export const STREAK = { hot: 3, onFire: 5 };
+export const STREAK = { hot: 3, onFire: 5, inferno: 7 };
+
+/**
+ * Global design tokens — one source of truth for colors so they aren't
+ * hard-coded per file. (CSS has its own mirror in styles.css :root.)
+ */
+export const COLORS = Object.freeze({
+  bg: '#0a0e1a',
+  ink: '#f4f6ff',
+  primary: '#ff7a1a',
+  secondary: '#ffd23f',
+  accent: '#4dd0ff',
+  danger: '#ff3b4e',
+  success: '#2ec16b',
+  perfect: '#ffd23f',
+  good: '#3aa76d',
+  hot: '#ff8c1a',
+  onFire: '#ff3b3b',
+  shadow: 'rgba(0,0,0,0.28)',
+});
+
+/**
+ * Game-feel / VFX tuning. Small, controlled values — juice without turning the
+ * game into a physics toy. All additive to the existing (unchanged) gameplay.
+ */
+export const FX = Object.freeze({
+  camPunchPerfect: 0.05, // zoom bump on a perfect make
+  camPunchGood: 0.025,
+  camShakeKnockout: 7, // px amplitude
+  camShakeKnockoutDur: 0.28,
+  camShakeMiss: 3,
+  camShakeMissDur: 0.14,
+  camZoomFinal: 1.12, // final-duel zoom
+  flashPerfect: 0.32, // white screen-flash alpha on perfect
+  trailFrames: 7, // ball motion-trail length
+  vignette: 0.28, // base vignette strength
+  vignetteFinal: 0.44,
+  squashLand: 0.16, // squash amount on landing
+  stretchShoot: 0.12, // stretch on release
+});
+
+/** Particle pool + emission tuning. */
+export const PARTICLES = Object.freeze({
+  max: 260,
+  perfectBurst: 16,
+  goodBurst: 7,
+  knockoutBurst: 22,
+  dust: 5,
+  confetti: 120,
+});
 
 /**
  * The 10 characters. Stats are in [0..1] and traded-off so no pick dominates —

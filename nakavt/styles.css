@@ -215,3 +215,28 @@ html, body {
 
 /* Confetti canvas overlays victory */
 #confetti { position: absolute; inset: 0; pointer-events: none; z-index: 9; }
+
+/* ---------- Menu / UI entrance + feedback animations ---------- */
+.screen--menu .logo { animation: logoPop 0.55s cubic-bezier(0.2, 1.25, 0.4, 1) both; }
+@keyframes logoPop { from { transform: scale(0.82); opacity: 0; } to { transform: scale(1); opacity: 1; } }
+.screen--menu .tagline { animation: fadeUp 0.5s ease 0.12s both; }
+.screen--menu .btns { animation: fadeUp 0.5s ease 0.18s both; }
+@keyframes fadeUp { from { transform: translateY(16px); opacity: 0; } to { transform: none; opacity: 1; } }
+
+/* Gentle attention pulse on the primary PLAY button (respects reduced-motion) */
+.btn--play { animation: playGlow 2.4s ease-in-out infinite; }
+@keyframes playGlow {
+  0%, 100% { box-shadow: 0 6px 0 #b4530a, var(--shadow); }
+  50% { box-shadow: 0 6px 0 #b4530a, 0 0 26px rgba(255, 140, 26, 0.55), var(--shadow); }
+}
+.btn--play:active { animation: none; }
+
+/* Card / arena select pop-in */
+.grid .card { animation: cardIn 0.3s ease both; }
+.arenas .arena-card { animation: cardIn 0.35s ease both; }
+@keyframes cardIn { from { transform: scale(0.94); opacity: 0; } to { transform: scale(1); opacity: 1; } }
+
+@media (prefers-reduced-motion: reduce) {
+  .screen, .screen--menu .logo, .screen--menu .tagline, .screen--menu .btns,
+  .grid .card, .arenas .arena-card, .btn--play { animation: none !important; }
+}
