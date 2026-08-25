@@ -20,6 +20,7 @@ import { Camera } from './render/camera.js';
 import { Particles } from './render/particles.js';
 import { SpriteCache } from './render/sprites.js';
 import { haptics } from './audio/haptics.js';
+import { easeOutBack, easeOutCubic } from './core/ease.js';
 
 const dist2 = (a, b) => Math.hypot(a.x - b.x, a.y - b.y);
 
@@ -37,6 +38,7 @@ export class Scene {
     this.particles = new Particles(PARTICLES.max);
     this.sprites = new SpriteCache();
     this.floaters = [];
+    this.rings = []; // expanding ring pulses (make / knockout)
     this.screenFlash = 0;
   }
 
@@ -48,7 +50,7 @@ export class Scene {
     this.streak = 0; this.tutorial = !opts.tutorialDone; this.countdown = 3.0;
     this.move = { x: 0, y: 0 }; this.shootHeld = false;
     this.flash = { text: '3', color: '#fff', ttl: 1, big: true };
-    this.floaters.length = 0; this.screenFlash = 0; this.particles.clear();
+    this.floaters.length = 0; this.rings.length = 0; this.screenFlash = 0; this.particles.clear();
     analytics.track(EVENTS.GAME_START, { arena: arena.id, difficulty: match.difficulty.key });
     this._layout();
     this.sprites.setDpr(this.dpr);
@@ -159,6 +161,10 @@ export class Scene {
       const f = this.floaters[i];
       f.ttl -= dt; f.y += f.vy * dt;
       if (f.ttl <= 0) this.floaters.splice(i, 1);
+    }
+    for (let i = this.rings.length - 1; i >= 0; i--) {
+      const r = this.rings[i]; r.t += dt;
+      if (r.t >= r.max) this.rings.splice(i, 1);
     }
 
     if (this.state === STATE.COUNTDOWN) {
@@ -300,6 +306,7 @@ export class Scene {
       // juice: camera punch, screen flash, gold sparkle burst, floating text, haptic
       this.cam.punch(FX.camPunchPerfect); this.screenFlash = FX.flashPerfect;
       this.particles.burst(hoop.x, hoop.y, PARTICLES.perfectBurst, { color: COLORS.perfect, shape: 'spark', speed: 150, size: 3, max: 0.7 });
+      this._ring(hoop.x, hoop.y, COLORS.perfect, 70);
       this._floater('PERFECT!', H.pos.x, H.pos.y - 96, COLORS.perfect);
       haptics.perfect();
       if (this.streak === STREAK.hot) this.setFlash('🔥 HOT!', COLORS.hot, 1.1, true);
@@ -318,6 +325,10 @@ export class Scene {
 
   _floater(text, x, y, color, size) {
     this.floaters.push({ text, x, y, vy: -34, ttl: 0.9, max: 0.9, color, size: size || 26 });
+  }
+
+  _ring(x, y, color, r1 = 60) {
+    this.rings.push({ x, y, t: 0, max: 0.5, color, r0: 6, r1 });
   }
 
   _onMiss(H) {
@@ -412,7 +423,7 @@ export class Scene {
       // juice: short shake, burst at the victim, haptic
       this.cam.shake(FX.camShakeKnockout, FX.camShakeKnockoutDur);
       const v = this.duel.koVictim;
-      if (v) { this.particles.burst(v.pos.x, v.pos.y - 30, PARTICLES.knockoutBurst, { color: COLORS.danger, speed: 170, size: 3, max: 0.8, grav: 260 }); this.particles.dust(v.pos.x, v.pos.y, 8); }
+      if (v) { this.particles.burst(v.pos.x, v.pos.y - 30, PARTICLES.knockoutBurst, { color: COLORS.danger, speed: 170, size: 3, max: 0.8, grav: 260 }); this.particles.dust(v.pos.x, v.pos.y, 8); this._ring(v.pos.x, v.pos.y - 24, COLORS.danger, 80); }
       haptics.knockout();
     } else {
       this.setFlash(who === 'human' ? 'SAFE!' : 'SAFE', '#2ec16b', 0.9, false);
@@ -455,7 +466,7 @@ export class Scene {
       accuracy: this.stats.accuracy, timeMs: Math.round(this.stats.timeMs), placement: this.stats.placement };
   }
 
-  setFlash(text, color, ttl, big) { this.flash = { text, color, ttl, big }; }
+  setFlash(text, color, ttl, big) { this.flash = { text, color, ttl, max: ttl, big }; }
 
   /** Introspection for automated tests / debugging. */
   aimDebug() {
@@ -517,6 +528,7 @@ export class Scene {
       }
     }
 
+    this._drawRings();
     this.particles.draw(ctx);
     this._drawFloaters();
 
@@ -539,11 +551,25 @@ export class Scene {
     if (this.flash) this._drawFlash();
   }
 
+  _drawRings() {
+    const ctx = this.ctx;
+    for (const r of this.rings) {
+      const k = r.t / r.max;
+      const rad = r.r0 + (r.r1 - r.r0) * easeOutCubic(k);
+      ctx.save();
+      ctx.globalAlpha = (1 - k) * 0.7;
+      ctx.strokeStyle = r.color; ctx.lineWidth = 3 * (1 - k) + 1;
+      ctx.beginPath(); ctx.arc(r.x, r.y, rad, 0, Math.PI * 2); ctx.stroke();
+      ctx.restore();
+    }
+  }
+
   _drawFloaters() {
     const ctx = this.ctx;
     for (const f of this.floaters) {
-      const k = 1 - f.ttl / f.max; // 0..1
-      const scale = k < 0.25 ? 0.8 + (k / 0.25) * 0.4 : 1.2 - Math.min(0.2, (k - 0.25) * 0.3);
+      const k = 1 - f.ttl / f.max; // 0..1 appearance progress
+      // pop in with an overshoot, then hold
+      const scale = k < 0.35 ? 0.6 + easeOutBack(k / 0.35) * 0.5 : 1.1 - Math.min(0.1, (k - 0.35) * 0.16);
       const alpha = f.ttl > 0.3 ? 1 : f.ttl / 0.3;
       ctx.save();
       ctx.globalAlpha = alpha; ctx.translate(f.x, f.y); ctx.scale(scale, scale);
@@ -603,7 +629,11 @@ export class Scene {
       }
       ctx.globalAlpha = 1;
     } else if (b._trail) { b._trail.length = 0; }
+    // squash when a loose ball is settled on the floor
+    const grounded = b.state === 'loose' && (b.z || 0) < 6;
+    if (grounded) { ctx.save(); ctx.translate(b.pos.x, y); ctx.scale(1.16, 0.84); ctx.translate(-b.pos.x, -y); }
     drawBall(ctx, b.pos.x, y, r, b.rot || 0, { shadowY: b.pos.y });
+    if (grounded) ctx.restore();
   }
 
   /** Dotted aim arc from the player to the hoop + a direction arrow (the "ok"). */
@@ -655,9 +685,13 @@ export class Scene {
     const px0 = m.x + m.w * Math.max(0, ideal - SHOTPWR.perfectTol);
     const px1 = m.x + m.w * Math.min(1, ideal + SHOTPWR.perfectTol);
     ctx.fillStyle = '#ffd23f'; ctx.fillRect(px0, m.y, px1 - px0, m.h);
-    // current power marker
+    // current power marker — colored by how close to the ideal release
     const mx = m.x + m.w * H.power;
-    ctx.fillStyle = '#fff'; ctx.fillRect(mx - 2.5, m.y - 6, 5, m.h + 12);
+    const err = Math.abs(H.power - ideal);
+    const mc = err <= SHOTPWR.perfectTol ? COLORS.perfect : err <= SHOTPWR.goodTol ? COLORS.success : '#fff';
+    if (err <= SHOTPWR.perfectTol) { ctx.shadowColor = COLORS.perfect; ctx.shadowBlur = 10; }
+    ctx.fillStyle = mc; ctx.fillRect(mx - 2.5, m.y - 6, 5, m.h + 12);
+    ctx.shadowBlur = 0;
     ctx.fillStyle = '#fff'; ctx.font = 'bold 13px system-ui'; ctx.textAlign = 'center';
     ctx.fillText('RELEASE IN THE YELLOW', m.x + m.w / 2, m.y + m.h + 22);
     ctx.restore();
@@ -673,8 +707,10 @@ export class Scene {
     const maxW = W * 0.9;
     const tw = ctx.measureText(f.text).width;
     if (tw > maxW) { size *= maxW / tw; ctx.font = `900 ${size}px system-ui, sans-serif`; }
-    // a subtle pop as it appears
-    const pop = 1 + Math.max(0, (f.ttl - (f.big ? 1.0 : 0.7)) * 0.4);
+    // entrance pop with an overshoot (easeOutBack)
+    const elapsed = (f.max || f.ttl) - f.ttl;
+    const inP = Math.min(1, elapsed / 0.18);
+    const pop = 0.72 + easeOutBack(inP) * 0.34;
     ctx.translate(W / 2, H * 0.32); ctx.scale(pop, pop);
     ctx.lineWidth = size * 0.12; ctx.strokeStyle = 'rgba(0,0,0,0.7)';
     ctx.strokeText(f.text, 0, 0);
