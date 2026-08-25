@@ -39,8 +39,9 @@ const game = {
 };
 
 // Adaptive quality: sample FPS and drop effects on sustained low frame rates.
-// `locked` = user forced Reduced-effects, so auto never overrides it back up.
-const autoQuality = { acc: 0, frames: 0, quality: 1, locked: false };
+// `locked` = user forced Reduced-effects, so auto never overrides their choice
+// (initialized from persisted settings so it survives reloads).
+const autoQuality = { acc: 0, frames: 0, quality: settings.reduceFx ? 0.4 : 1, locked: !!settings.reduceFx };
 
 const ui = new UI(uiRoot, {
   onPlay: () => { sfx.ensure(); ui.showCharacterSelect(); },

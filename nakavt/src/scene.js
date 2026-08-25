@@ -53,7 +53,7 @@ export class Scene {
     this.stats = { shots: 0, perfect: 0, knockouts: 0, made: 0, start: performance.now(), placement: null };
     this.streak = 0; this.tutorial = !opts.tutorialDone; this.countdown = 3.0;
     this.move = { x: 0, y: 0 }; this.shootHeld = false;
-    this.flash = { text: '3', color: '#fff', ttl: 1, big: true };
+    this.flash = { text: '3', color: '#fff', ttl: 1, max: 1, big: true };
     this.floaters.length = 0; this.rings.length = 0; this.screenFlash = 0; this.particles.clear();
     analytics.track(EVENTS.GAME_START, { arena: arena.id, difficulty: match.difficulty.key });
     this._layout();
