@@ -70,6 +70,7 @@ export class UI {
       card.append(cv);
       card.append(this._el('div', 'cname', c.name));
       card.append(this._el('div', 'arch', `${c.team} · #${c.number}`));
+      card.append(this._statBars(c.stats));
       card.onclick = () => {
         this.selectedChar = c.id;
         grid.querySelectorAll('.card').forEach((n) => n.classList.remove('sel'));
@@ -85,6 +86,22 @@ export class UI {
     btn.onclick = () => preview ? this.cb.onHome() : this.showArenaSelect();
     s.append(btn);
     this.root.append(s);
+  }
+
+  /** Five tiny stat bars (ACC / REA / SPD / REB / CLU) for a character card. */
+  _statBars(stats) {
+    const wrap = this._el('div', 'statbars');
+    const rows = [['ACC', stats.accuracy], ['REA', stats.reaction], ['SPD', stats.speed], ['REB', stats.rebound], ['CLU', stats.clutch]];
+    for (const [label, v] of rows) {
+      const row = this._el('div', 'statbar');
+      row.append(this._el('span', 'sbl', label));
+      const track = this._el('span', 'sbt');
+      const fill = this._el('i');
+      fill.style.width = `${Math.round(v * 100)}%`;
+      track.append(fill); row.append(track);
+      wrap.append(row);
+    }
+    return wrap;
   }
 
   _paintChar(cv, c) {
@@ -258,14 +275,24 @@ export class UI {
     range.oninput = () => this.cb.onSetVolume?.(Number(range.value) / 100);
     vol.append(range);
 
-    const info = this._el('p', 'hint', `NAKAVT v1.0 · Tap to shoot, time the meter, race for the rebound. Target ${GAME.targetFps} FPS.`);
+    const vib = this._el('div', 'settings-item', '<span>Vibration</span>');
+    const vibToggle = this._el('button', `toggle ${settings.haptics === false ? '' : 'on'}`);
+    vibToggle.onclick = () => this.cb.onToggleHaptics?.(vibToggle.classList.toggle('on'));
+    vib.append(vibToggle);
+
+    const fx = this._el('div', 'settings-item', '<span>Reduced effects</span>');
+    const fxToggle = this._el('button', `toggle ${settings.reduceFx ? 'on' : ''}`);
+    fxToggle.onclick = () => this.cb.onToggleReduceFx?.(fxToggle.classList.toggle('on'));
+    fx.append(fxToggle);
+
+    const info = this._el('p', 'hint', `NAKAVT v1.0 · Move (arrows/joystick), Space/SHOOT to release. Target ${GAME.targetFps} FPS. Installable — add to home screen.`);
     info.style.marginTop = '18px';
 
     const done = this._el('button', 'btn', 'DONE');
     done.onclick = () => this.cb.onHome();
     done.style.marginTop = '18px';
 
-    s.append(sound, vol, info, done);
+    s.append(sound, vol, vib, fx, info, done);
     this.root.append(s);
   }
 

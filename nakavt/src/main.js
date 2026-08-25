@@ -9,6 +9,7 @@ import { makeRng } from './core/rng.js';
 import { KnockoutMatch, buildRoster } from './core/knockout.js';
 import { analytics } from './core/events.js';
 import { Sfx } from './audio/sfx.js';
+import { haptics } from './audio/haptics.js';
 import { Scene } from './scene.js';
 import { UI } from './ui.js';
 import { drawArena, drawCourt } from './render/arena.js';
@@ -26,6 +27,7 @@ let dpr = 1;
 const settings = loadSettings();
 sfx.setMuted(settings.muted);
 sfx.setVolume(settings.volume);
+haptics.setEnabled(settings.haptics !== false);
 analytics.setDebug(new URLSearchParams(location.search).has('debug'));
 
 const game = {
@@ -36,6 +38,10 @@ const game = {
   lastTime: 0,
 };
 
+// Adaptive quality: sample FPS and drop effects on sustained low frame rates.
+// `locked` = user forced Reduced-effects, so auto never overrides it back up.
+const autoQuality = { acc: 0, frames: 0, quality: 1, locked: false };
+
 const ui = new UI(uiRoot, {
   onPlay: () => { sfx.ensure(); ui.showCharacterSelect(); },
   onHome: () => goMenu(),
@@ -45,6 +51,8 @@ const ui = new UI(uiRoot, {
   onStartMatch: (charId, arenaId, diff) => startMatch(charId, arenaId, diff),
   onToggleSound: (muted) => { settings.muted = muted; sfx.setMuted(muted); saveSettings(); updateSoundIcon(); },
   onSetVolume: (v) => { settings.volume = v; sfx.setVolume(v); saveSettings(); },
+  onToggleHaptics: (on) => { settings.haptics = on; haptics.setEnabled(on); saveSettings(); if (on) haptics.tap(); },
+  onToggleReduceFx: (on) => { settings.reduceFx = on; saveSettings(); scene.setQuality(on ? 0.4 : 1); autoQuality.locked = on; },
 });
 
 const scene = new Scene(ctx, canvas, sfx, {
@@ -162,6 +170,7 @@ function startMatch(charId, arenaId, diffKey) {
   game.match = new KnockoutMatch(roster, { difficulty, rng });
   scene.dpr = dpr;
   scene.tutorialDone = settings.tutorialDone;
+  scene.setQuality(settings.reduceFx ? 0.4 : autoQuality.quality);
   scene.start(game.match, game.arena, CHARACTERS, { tutorialDone: settings.tutorialDone });
   game.state = STATE.COUNTDOWN;
   syncStateFromScene();
@@ -262,6 +271,15 @@ function loop(now) {
   try {
     const playing = game.state === STATE.COUNTDOWN || game.state === STATE.PLAYING || game.state === STATE.FINAL_DUEL;
     if (playing) {
+      // adaptive quality: if we sustain <45 FPS for ~2s, drop effects once
+      if (!autoQuality.locked && dt > 0) {
+        autoQuality.acc += dt; autoQuality.frames++;
+        if (autoQuality.acc >= 2) {
+          const fps = autoQuality.frames / autoQuality.acc;
+          if (fps < 45 && autoQuality.quality > 0.5) { autoQuality.quality = 0.5; scene.setQuality(0.5); }
+          autoQuality.acc = 0; autoQuality.frames = 0;
+        }
+      }
       scene.update(dt);
       scene.render();
       drawControls();
@@ -279,7 +297,7 @@ function loop(now) {
 
 // ---- settings persistence ----
 function loadSettings() {
-  const def = { muted: false, volume: 0.7, difficulty: 'NORMAL', tutorialDone: false };
+  const def = { muted: false, volume: 0.7, difficulty: 'NORMAL', tutorialDone: false, haptics: true, reduceFx: false };
   try {
     const raw = localStorage.getItem(STORAGE_KEY);
     return raw ? { ...def, ...JSON.parse(raw) } : def;

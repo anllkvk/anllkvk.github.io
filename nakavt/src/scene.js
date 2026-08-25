@@ -40,7 +40,11 @@ export class Scene {
     this.floaters = [];
     this.rings = []; // expanding ring pulses (make / knockout)
     this.screenFlash = 0;
+    this.quality = 1; // particle/effect multiplier (1 = full, lower = fewer)
   }
+
+  setQuality(q) { this.quality = Math.max(0.2, Math.min(1, q)); }
+  _pn(n) { return Math.max(2, Math.round(n * this.quality)); }
 
   start(match, arena, characters, opts = {}) {
     this.match = match; this.arena = arena;
@@ -305,7 +309,7 @@ export class Scene {
       this.streak++; this.stats.perfect++; this.sfx.perfect();
       // juice: camera punch, screen flash, gold sparkle burst, floating text, haptic
       this.cam.punch(FX.camPunchPerfect); this.screenFlash = FX.flashPerfect;
-      this.particles.burst(hoop.x, hoop.y, PARTICLES.perfectBurst, { color: COLORS.perfect, shape: 'spark', speed: 150, size: 3, max: 0.7 });
+      this.particles.burst(hoop.x, hoop.y, this._pn(PARTICLES.perfectBurst), { color: COLORS.perfect, shape: 'spark', speed: 150, size: 3, max: 0.7 });
       this._ring(hoop.x, hoop.y, COLORS.perfect, 70);
       this._floater('PERFECT!', H.pos.x, H.pos.y - 96, COLORS.perfect);
       haptics.perfect();
@@ -315,7 +319,7 @@ export class Scene {
     } else {
       this.streak = 0; this.sfx.swish();
       this.cam.punch(FX.camPunchGood);
-      this.particles.burst(hoop.x, hoop.y, PARTICLES.goodBurst, { color: '#fff', speed: 90, size: 2, max: 0.5 });
+      this.particles.burst(hoop.x, hoop.y, this._pn(PARTICLES.goodBurst), { color: '#fff', speed: 90, size: 2, max: 0.5 });
       haptics.score();
     }
     H.ball.state = 'scored'; H.ball.pos = { ...hoop };
@@ -423,7 +427,7 @@ export class Scene {
       // juice: short shake, burst at the victim, haptic
       this.cam.shake(FX.camShakeKnockout, FX.camShakeKnockoutDur);
       const v = this.duel.koVictim;
-      if (v) { this.particles.burst(v.pos.x, v.pos.y - 30, PARTICLES.knockoutBurst, { color: COLORS.danger, speed: 170, size: 3, max: 0.8, grav: 260 }); this.particles.dust(v.pos.x, v.pos.y, 8); this._ring(v.pos.x, v.pos.y - 24, COLORS.danger, 80); }
+      if (v) { this.particles.burst(v.pos.x, v.pos.y - 30, this._pn(PARTICLES.knockoutBurst), { color: COLORS.danger, speed: 170, size: 3, max: 0.8, grav: 260 }); this.particles.dust(v.pos.x, v.pos.y, 8); this._ring(v.pos.x, v.pos.y - 24, COLORS.danger, 80); }
       haptics.knockout();
     } else {
       this.setFlash(who === 'human' ? 'SAFE!' : 'SAFE', '#2ec16b', 0.9, false);
