@@ -4,6 +4,51 @@ The `oss-scout` researched proven, widely-used open-source patterns. We **reimpl
 the ideas originally** in NAKAVT's vanilla Canvas 2D stack — no code copy-paste, licenses
 respected, public-domain math written fresh.
 
+---
+
+## GitHub repository evaluation (AI movement + procedural animation)
+
+For the continuous-simulation upgrade the AI must **move and chase rebounds** and players
+need **procedural limb animation**. Repos evaluated (⚠️ exact stars/licenses could not be
+auto-fetched — this environment blocks egress to github.com pages; verify before any
+direct code reuse):
+
+| Repo | Focus | License (verify) | Relevant part | Quality | Recommendation |
+|---|---|---|---|---|---|
+| `libgdx/gdx-ai` | Steering behaviors (Java) | Apache-2.0 | Seek/Arrive/Pursuit **algorithm** + docs | High, canonical | **REFERENCE ONLY** (Java) — reimplement the math |
+| `hurik/impact-steering-behaviors` | Steering (Impact JS) | verify | Seek/Arrive/Pursuit in JS | Medium | REFERENCE ONLY — algorithm confirmation |
+| `erosmarcon/three-steer` | Steering (THREE.js) | MIT (verify) | Steering API shape | Medium | REFERENCE ONLY (THREE-based) |
+| `wangchen/Programming-Game-AI-by-Example-src` | Buckland book code (C++) | restrictive/book | Steering + soccer AI | High (educational) | REFERENCE ONLY — do not copy |
+| `theAlgorithmist/Angular9-Kinematics` | 2D bone rigging → canvas (TS) | Apache-2.0 (verify) | Limb bone chains / FK+IK | High | REFERENCE / adaptable idea only |
+| `OnlyShoky/Procedural-Animation` | FABRIK IK | verify | FABRIK joint solve | Medium | REFERENCE ONLY — reimplement FABRIK/2-bone |
+| `cristhiandrm/2D-Procedural-Hyper-Motion-Controller` | Procedural limbs + squash/stretch (Unity) | verify | Game-feel limb motion | Medium | REFERENCE ONLY (C#/Unity) |
+| `dkdan10/nbaJam` | Canvas NBA-Jam game | verify | Canvas hoops feel | Medium | REFERENCE ONLY |
+
+### BEST OSS CANDIDATE
+**None adopted as code.** The two things we actually need are **algorithms, not
+libraries**, and both are public-domain concepts we can write from scratch:
+
+1. **Craig Reynolds' steering behaviors** (Seek / Arrive / Pursuit, 1999) — the canonical
+   basis of every repo above. We implement a tiny original `core/steering.js` (Arrive for
+   moving to a target, Pursuit for intercepting a moving rebound). Pure vectors, testable.
+2. **2-bone / FABRIK inverse kinematics** — for arm/leg posing (jump shot, layup). We
+   implement a small original 2-bone solver for the shooting arm and legs.
+
+**Why reimplement rather than adopt:** the repos are Java/C#/THREE/Impact/Angular — none
+drop into vanilla Canvas 2D, and pulling any in would add a dependency and a build step,
+which the project explicitly forbids. The underlying math is public-domain, so writing it
+fresh is both cleaner and license-safe. If, during implementation, a specific MIT/Apache
+snippet is genuinely worth adapting, it will be recorded in `docs/OSS_ADOPTIONS.md` with
+source, commit, license, what was adopted vs. rewritten, and attribution.
+
+Classification summary: **SAFE-TO-USE (as reimplemented algorithm):** steering behaviors,
+FABRIK/2-bone IK, Penner easing (already done). **REFERENCE-ONLY:** all repos above.
+**LICENSE-RISK / NOT-SUITABLE:** direct code copy from any (engine-specific or unverified
+license).
+
+---
+
+
 ## Patterns adopted
 
 | Pattern | Source / precedent | How we use it (original impl) |
