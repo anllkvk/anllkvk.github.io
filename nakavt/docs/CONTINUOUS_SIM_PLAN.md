@@ -1,5 +1,29 @@
 # NAKAVT — Continuous Simulation + AI + Visual Upgrade — PLAN
 
+## ✅ Implementation status (kept current)
+
+Delivered via an **evolutionary** route rather than a greenfield `sim/` rewrite — the
+plan's own risk section warned that rewriting `scene.js`'s playback wholesale could
+regress feel/tests, so the shared behaviours were landed **in place, behind the same
+callbacks**, keeping `core/knockout.js` and all tests green.
+
+| Phase | Status | Notes |
+|---|---|---|
+| P4 steering + IK | ✅ shipped | `core/steering.js` + `test/steering.test.mjs` (Arrive/Seek/Pursue/predictSettle + 2-bone IK) |
+| P7 AI rebound-chase | ✅ shipped | Unified `_aiStep` in `scene.js`: miss → real loose ball → run to predicted rebound (steering) → grab → finish w/ layup bonus. One code path for the live opponent AND watched rivals. |
+| P8 continuity | ✅ shipped (lite) | Trimmed inter-pairing beats (intro/resultHold). Watched duels already animate fully via P7, so the "only moves on my turn" complaint is resolved without the full `sim/` split. |
+| P9 articulated animation | ✅ shipped | `render/characters.js` now poses IK 2-bone arms/legs (run cycle, jump shot, celebrate, knockout); back arm behind jersey, front arm on top. |
+| P12 invariants | ✅ shipped (partial) | Match simulation raised to **1000 seeds** with per-step continuous-flow invariants. Continuous-play E2E still uses `test/browser.mjs`. |
+| P5/P6 shared Character + BallManager | ⬜ not split out | The behaviours exist inside `scene.js` (human already physical; AI now physical; two balls already concurrent in a duel). A formal `sim/` extraction was **intentionally deferred** as pure refactor with no player-visible gain and real regression risk. |
+| P10 camera follow | ⬜ deferred | Fixed-court portrait framing keeps the whole court visible; the arena backdrop is baked to the viewport, so a pan/follow camera would reveal unpainted edges. Punch/shake/zoom kept. |
+| P11 fixed-timestep | ⬜ open | Current rAF loop holds 60 FPS with adaptive quality; a formal accumulator is a follow-up. |
+| P13 review/docs | 🔄 ongoing | `docs/OSS_ADOPTIONS.md` added; this status block; `/code-review` pass pending. |
+
+Live at `https://anllkvk.github.io/nakavt/` (deployed from `main`).
+
+---
+
+
 > Deliverable for the "deep gameplay + AI + visual" mission. **No large code change
 > starts until this plan is approved.** Written for the **faithful 2-ball continuous**
 > interpretation (Option A in `KNOCKOUT_RULES_RESEARCH.md`); branch points for the
