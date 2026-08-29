@@ -323,8 +323,9 @@ export class Scene {
       this.particles.burst(hoop.x, hoop.y, this._pn(PARTICLES.goodBurst), { color: '#fff', speed: 90, size: 2, max: 0.5 });
       haptics.score();
     }
-    // arcade points (cosmetic): perfect uses the streak multiplier
-    const pts = shotPoints(res.quality, this.streak);
+    // arcade points (cosmetic): a lone perfect scores the base; the multiplier
+    // rewards each ADDITIONAL perfect in the streak (streak was already ++'d above).
+    const pts = shotPoints(res.quality, this.streak - 1);
     this.stats.score += pts;
     this._floater(`+${pts}`, hoop.x + 30, hoop.y - 6, res.quality === SHOT.PERFECT ? COLORS.perfect : '#fff', 18);
     H.ball.state = 'scored'; H.ball.pos = { ...hoop };
