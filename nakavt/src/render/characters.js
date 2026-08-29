@@ -4,11 +4,22 @@
  * side stripes and a big number. Athletic pseudo-3D proportions with shaded
  * volumes, beards, arm sleeves and a range of hairstyles. Light enough for 60 FPS.
  *
+ * Joint placement lives in core/rig.js (pure, unit-tested); this file only draws the
+ * skeleton it resolves — see the layer split documented there.
+ *
  * drawCharacter(ctx, char, x, y, scale, pose, phase, opts)
  *   pose:  'idle' | 'run' | 'shoot' | 'aim' | 'celebrate' | 'knockout'
  *   opts:  { facing: -1|1, dim: bool }
  */
 import { twoBoneIK } from '../core/steering.js';
+import { rigDims, basePose, generatePose, makeSkeleton, resolveRig } from '../core/rig.js';
+
+// One rig scratch set for the module: pose generation and skeleton resolution are pure and
+// synchronous, so reusing these keeps drawing allocation-free no matter how many players
+// are on screen.
+const _dims = {};
+const _pose = basePose();
+const _sk = makeSkeleton();
 
 function rgb(hex) {
   const h = (hex || '#888').replace('#', '');
@@ -104,7 +115,6 @@ function drawHair(ctx, char, hx, hy, hr) {
 
 export function drawCharacter(ctx, char, x, y, scale, pose = 'idle', phase = 0, opts = {}) {
   const s = scale;
-  const big = char.height === 'big' ? 1.2 : char.height === 'tall' ? 1.08 : 1;
   const facing = opts.facing || 1;
   const trim = char.jerseyTrim || '#ffffff';
   const sqx = opts.sx || 1, sqy = opts.sy || 1;      // squash/stretch
@@ -113,21 +123,17 @@ export function drawCharacter(ctx, char, x, y, scale, pose = 'idle', phase = 0, 
   ctx.translate(x, y);
   if (sqx !== 1 || sqy !== 1) ctx.scale(sqx, sqy);   // squash/stretch around the feet
 
-  let bob = 0, lean = 0, armUp = 0, fall = 0, spin = 0, crouch = 0;
-  if (pose === 'idle' || pose === 'miss') bob = Math.sin(phase * 3) * 1.1 * s;
-  if (pose === 'dribble') bob = Math.sin(phase * 4) * 1.2 * s;
-  if (pose === 'walk') { bob = Math.abs(Math.sin(phase * 10)) * 2 * s; lean = 2 * s * facing; }
-  if (pose === 'run' || pose === 'rebound') { bob = Math.abs(Math.sin(phase * 14)) * 3 * s; lean = 4 * s * facing; }
-  if (pose === 'shoot') { armUp = Math.min(1, phase * 1.7); bob = -armUp * 5 * s; crouch = (1 - armUp) * 2 * s; }
-  if (pose === 'aim') { armUp = 0.5 + Math.sin(phase * 6) * 0.04; crouch = 3 * s; }
-  if (pose === 'celebrate') { armUp = 1; bob = -Math.abs(Math.sin(phase * 8)) * 7 * s; }
-  if (pose === 'knockout') { fall = Math.min(1, phase); spin = phase * 1.1; }
+  // Animation state -> pose channels -> resolved skeleton. All of it pure (core/rig.js).
+  const dims = rigDims(s, char.height, _dims);
+  const P = generatePose(pose, phase, facing, s, _pose);
+  const sk = resolveRig(dims, P, _sk);
+  const { bob, lean, armUp, fall, spin, crouch } = P;
 
   if (pose === 'knockout') { ctx.translate(0, fall * 20 * s); ctx.rotate(spin * 0.9); ctx.globalAlpha = Math.max(0, 1 - fall * 0.6); }
   ctx.translate(lean, bob + crouch);
   if (opts.dim) ctx.globalAlpha *= 0.85;
 
-  const bodyW = 25 * s * big, bodyH = 34 * s * big, headR = 13.5 * s * big;
+  const { bodyW, bodyH, headR, big } = dims;
 
   // Optional glow aura (HOT / ON FIRE)
   if (opts.glow) {
@@ -152,27 +158,12 @@ export function drawCharacter(ctx, char, x, y, scale, pose = 'idle', phase = 0, 
 
   if (lift) ctx.translate(0, -lift); // raise the body for the jump; shadow stays down
 
-  // Shared limb driver: a running stride phase used by both legs and arms.
-  const running = pose === 'run' || pose === 'rebound' || pose === 'walk';
-  const strideHz = pose === 'walk' ? 10 : 14;
-  const swing = running ? Math.sin(phase * strideHz) : 0;
-
-  // Legs — articulated hip→knee→ankle via 2-bone IK, with a shoe cap.
-  const hipY = -5 * s, hipDx = 5.4 * s * big;
-  const legL1 = 9 * s * big, legL2 = 9 * s * big;
-  const footY = 13.5 * s;
-  // gather crouch (shot load) and jump tuck pull the feet up a touch
-  const tuck = (pose === 'shoot' ? armUp : pose === 'aim' ? 0.4 : 0) * 2.5 * s;
+  // Legs — articulated hip→knee→ankle via 2-bone IK, with a shoe cap. Hip and foot
+  // targets come from the rig; this only draws the chain between them.
+  const { legL1, legL2, legW } = dims;
   const drawLeg = (side) => {
-    const hip = { x: side * hipDx, y: hipY };
-    // stride: forward foot swings toward facing and lifts; back foot trails
-    const ph = side === 1 ? swing : -swing;
-    const foot = {
-      x: side * hipDx + (running ? ph * 7 * s * facing : side * 1.5 * s),
-      y: footY - (running ? Math.max(0, ph * facing) * 5 * s : 0) - tuck,
-    };
-    // knee leads forward (toward facing)
-    const { end } = limb(ctx, hip, foot, legL1, legL2, facing >= 0 ? 1 : -1, 4.4 * s * big, char.skin);
+    const k = side === 1 ? 'r' : 'l';
+    const { end } = limb(ctx, sk.hip[k], sk.foot[k], legL1, legL2, sk.bendLeg, legW, char.skin);
     // sock band + shoe (oriented toward facing)
     ctx.fillStyle = '#f2f2f2';
     ctx.beginPath(); ctx.arc(end.x, end.y - 1.5 * s, 3.4 * s, 0, Math.PI * 2); ctx.fill();
@@ -197,33 +188,12 @@ export function drawCharacter(ctx, char, x, y, scale, pose = 'idle', phase = 0, 
   ctx.fillStyle = shade(trim, 0.9); // logo patch
   rr(ctx, -bodyW * 0.16, shortsY + shortsH * 0.5, bodyW * 0.14, shortsH * 0.28, 1.5 * s); ctx.fill();
 
-  // Arms — articulated shoulder→elbow→wrist via 2-bone IK. The shooting arm reaches
-  // toward the release point; the guide hand supports; running arms pump.
-  const shoulderY = -bodyH * 0.82, armW = 3.9 * s * big;
-  const armL1 = 8.5 * s * big, armL2 = 8.5 * s * big;
-  const shoL = { x: -bodyW * 0.46, y: shoulderY }, shoR = { x: bodyW * 0.46, y: shoulderY };
-  // default: hands hang a little outside the hips so the arms read beside the torso
-  let handL = { x: shoL.x - 5 * s, y: shoulderY + 17 * s };
-  let handR = { x: shoR.x + 5 * s, y: shoulderY + 17 * s };
-  let bendL = -1, bendR = 1;
-  if (running) {
-    handL = { x: shoL.x - 4 * s - swing * 6 * s * facing, y: shoulderY + 14 * s - Math.abs(swing) * 3 * s };
-    handR = { x: shoR.x + 4 * s + swing * 6 * s * facing, y: shoulderY + 14 * s - Math.abs(swing) * 3 * s };
-  } else if (pose === 'celebrate') {
-    handL = { x: shoL.x - 8 * s, y: shoulderY - 21 * s };
-    handR = { x: shoR.x + 8 * s, y: shoulderY - 21 * s };
-  } else if (pose === 'knockout') {
-    handL = { x: shoL.x - 15 * s, y: shoulderY + 8 * s };
-    handR = { x: shoR.x + 15 * s, y: shoulderY + 8 * s };
-  } else if (pose === 'aim' || pose === 'shoot') {
-    const rel = pose === 'shoot' ? armUp : 0.5; // 0 gather → 1 full extension
-    const relPt = { x: facing * bodyW * 0.42, y: shoulderY - 20 * s * rel - 8 * s };
-    const guidePt = { x: facing * bodyW * 0.10, y: shoulderY - 9 * s * rel + 1 * s };
-    if (facing >= 0) { handR = relPt; handL = guidePt; bendL = 1; } else { handL = relPt; handR = guidePt; bendR = -1; }
-  }
+  // Arms — articulated shoulder→elbow→wrist via 2-bone IK. The rig decides where each
+  // hand goes (shot release point, guide hand, arm pump, celebrate, knockout); this draws it.
+  const { armL1, armL2, armW } = dims;
   const sleeveLower = char.sleeve ? (char.sleeveColor || '#222') : char.skin;
-  const drawArmL = () => limb(ctx, shoL, handL, armL1, armL2, bendL, armW, char.skin, { cap: armW * 0.66, capColor: shade(char.skin, 1.05), lowerColor: char.sleeve ? sleeveLower : char.skin });
-  const drawArmR = () => limb(ctx, shoR, handR, armL1, armL2, bendR, armW, char.skin, { cap: armW * 0.66, capColor: shade(char.skin, 1.05), lowerColor: sleeveLower });
+  const drawArmL = () => limb(ctx, sk.shoulder.l, sk.hand.l, armL1, armL2, sk.bendArm.l, armW, char.skin, { cap: armW * 0.66, capColor: shade(char.skin, 1.05), lowerColor: char.sleeve ? sleeveLower : char.skin });
+  const drawArmR = () => limb(ctx, sk.shoulder.r, sk.hand.r, armL1, armL2, sk.bendArm.r, armW, char.skin, { cap: armW * 0.66, capColor: shade(char.skin, 1.05), lowerColor: sleeveLower });
   // Back arm (away from camera) goes behind the jersey; the front arm is drawn
   // after the torso so it reads on top. `facing >= 0` ⇒ right arm is the front one.
   const drawFrontArm = facing >= 0 ? drawArmR : drawArmL;
@@ -258,7 +228,7 @@ export function drawCharacter(ctx, char, x, y, scale, pose = 'idle', phase = 0, 
   drawFrontArm();
 
   // Head — sphere-shaded
-  const hx = 0, hy = -bodyH - headR * 0.4;
+  const hx = sk.head.x, hy = sk.head.y;
   const hg = ctx.createRadialGradient(hx - headR * 0.35, hy - headR * 0.4, headR * 0.12, hx, hy, headR * 1.15);
   hg.addColorStop(0, shade(char.skin, 1.2)); hg.addColorStop(0.7, char.skin); hg.addColorStop(1, shade(char.skin, 0.72));
   ctx.fillStyle = hg; ctx.beginPath(); ctx.arc(hx, hy, headR, 0, Math.PI * 2); ctx.fill();
