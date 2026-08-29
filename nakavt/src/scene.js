@@ -484,6 +484,8 @@ export class Scene {
       this.particles.burst(victim.pos.x, victim.pos.y - 28, this._pn(PARTICLES.knockoutBurst), { color: COLORS.danger, speed: 150, size: 3, max: 0.7, grav: 260 });
       this._ring(victim.pos.x, victim.pos.y - 24, COLORS.danger, 70);
     } else {
+      // front sank it first — nobody out; drop the chaser's stray loose ball if any
+      if (this.duel.b && this.duel.b.state === 'chase') { this.duel.b.ball = null; this.duel.b.state = 'wait'; }
       this.duel.phase = 'resolve'; this.duel.timer = PACE.resultHold;
     }
   }
