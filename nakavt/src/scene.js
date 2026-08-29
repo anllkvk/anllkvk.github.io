@@ -16,6 +16,15 @@ import { resolveAiShot } from './core/shot.js';
 import { analytics } from './core/events.js';
 import { drawArenaScene, drawBall, drawVignette, invalidateArenaCache } from './render/arena.js';
 import { drawCharacter } from './render/characters.js';
+import { makeAnimState, updateAnim } from './core/anim.js';
+import { makeSkeleton } from './core/rig.js';
+
+/** A character's persistent animation state plus its own rig skeleton (AE1/AE2). */
+function newAnim() {
+  const a = makeAnimState();
+  a.sk = makeSkeleton();
+  return a;
+}
 import { Camera } from './render/camera.js';
 import { Particles } from './render/particles.js';
 import { SpriteCache } from './render/sprites.js';
@@ -129,14 +138,34 @@ export class Scene {
     }
   }
 
+  /**
+   * Advance a character's momentum state (AE2). Speed is measured from how far the entity
+   * actually moved, so it works for the human (velocity-driven) and the AI (steering
+   * writes straight to pos) without either needing to report a velocity.
+   */
+  _animStep(E, dt, lift = 0) {
+    if (!E || !E.anim || dt <= 0) return;
+    if (!E.animPrev) E.animPrev = { x: E.pos.x, y: E.pos.y };
+    const speed = Math.hypot(E.pos.x - E.animPrev.x, E.pos.y - E.animPrev.y) / dt;
+    E.animPrev.x = E.pos.x; E.animPrev.y = E.pos.y;
+    updateAnim(E.anim, { speed, maxSpeed: MOVE.maxSpeed, facing: E.facing || 1, lift }, dt);
+  }
+
+  /** Jump-shot lift in px — shared by the animation state and the renderer. */
+  _shotLift(H) {
+    if (!H || !H.ball || H.ball.state !== 'flight') return 0;
+    return Math.sin(Math.min(1, H.ball.t / 0.32) * Math.PI) * 14;
+  }
+
   _makeHuman(player, role) {
     const L = this.layout;
     const pos = { x: L.lineX, y: L.ftY };
     return {
       id: player.id, player, role, isHuman: true,
       pos, vel: { x: 0, y: 0 }, facing: 1,
+      anim: newAnim(), animPrev: { x: pos.x, y: pos.y },
       hasBall: true, charging: false, power: 0, powerDir: 1, attempts: 0,
-      looseTimer: 0, landT: 0,
+      looseTimer: 0,
       ball: { state: 'held', pos: { ...pos }, vel: { x: 0, y: 0 }, z: 40, rot: 0, t: 0, from: null, to: null, quality: null, made: false },
     };
   }
@@ -147,6 +176,7 @@ export class Scene {
       id: player.id, player, role, isHuman: false,
       pos: { x: role === 'front' ? L.lineX + 70 : L.lineX - 70, y: L.ftY + 6 },
       vel: { x: 0, y: 0 }, drift: Math.random() * Math.PI * 2, facing: 1,
+      anim: newAnim(), animPrev: null,
       state: 'wait', timer: this.match.aiReaction(player) + (role === 'chaser' ? 0.5 : 0),
       attempts: 0, ball: null, looseTimer: 0,
     };
@@ -155,6 +185,7 @@ export class Scene {
   // ---- update ----
   update(dt) {
     this.t += dt;
+    this._dt = dt; // the draw pass needs it to advance the limb lag
     if (this.flash) { this.flash.ttl -= dt; if (this.flash.ttl <= 0) this.flash = null; }
     // cosmetic layer (never gates gameplay)
     this.cam.zoomTo(this.finalDuel ? FX.camZoomFinal : 1, 3);
@@ -197,6 +228,7 @@ export class Scene {
       d.safety = (d.safety || 0) + dt;
       this._aiStep(d.a, dt, PACE.autoScale, () => this._autoMake(d.a));
       if (!d.winner) this._aiStep(d.b, dt, PACE.autoScale, () => this._autoMake(d.b));
+      this._animStep(d.a, dt); this._animStep(d.b, dt);
       // Safety (rare): if it drags AND no shot is mid-air, resolve deterministically
       // (better shooter wins) — no RNG, so seeded runs stay reproducible.
       if (!d.winner && d.safety > 8 && !d.a.ball && !d.b.ball) {
@@ -208,7 +240,11 @@ export class Scene {
     }
     if (d.phase === 'resolve' || d.phase === 'ko') {
       d.timer -= dt;
-      if (d.human) { this._updateBall(d.human, dt); if (d.human.landT > 0) d.human.landT = Math.max(0, d.human.landT - dt); }
+      if (d.human) {
+        this._updateBall(d.human, dt);
+        this._animStep(d.human, dt, this._shotLift(d.human));
+      }
+      this._animStep(d.opp, dt);
       if (d.phase === 'ko' && d.koVictim) d.koVictim.koT = Math.min(1, (d.koVictim.koT || 0) + dt / PACE.koTime);
       if (d.timer <= 0) this._finishDuel();
       return;
@@ -217,6 +253,8 @@ export class Scene {
     // live
     this._updateHuman(d.human, dt);
     if (!d.winner) this._aiStep(d.opp, dt, 1, () => { this.sfx.swish(); this._score('opp'); });
+    this._animStep(d.human, dt, this._shotLift(d.human));
+    this._animStep(d.opp, dt);
     this._emitHud();
   }
 
@@ -240,7 +278,6 @@ export class Scene {
     if (Math.abs(this.move.x) > 0.1) H.facing = this.move.x > 0 ? 1 : -1;
     else if (H.charging || H.hasBall) H.facing = L.hoop.x >= H.pos.x ? 1 : -1;
 
-    if (H.landT > 0) H.landT = Math.max(0, H.landT - dt);
     // charging
     if (H.charging) {
       H.power += (dt / SHOTPWR.chargeSeconds) * 2 * H.powerDir;
@@ -316,7 +353,6 @@ export class Scene {
 
   _onMake(H) {
     if (this.duel.winner) { return; }
-    H.landT = 0.2; // land the jump shot with a squash
     const res = H._lastRes || { quality: SHOT.GOOD };
     this.stats.made++;
     const hoop = this.layout.hoop;
@@ -357,7 +393,6 @@ export class Scene {
 
   _onMiss(H) {
     if (this.duel.winner) return;
-    H.landT = 0.2;
     this.streak = 0; this.sfx.rim();
     this.cam.shake(FX.camShakeMiss, FX.camShakeMissDur);
     this.particles.burst(this.layout.hoop.x, this.layout.hoop.y, 5, { color: 'rgba(255,120,60,0.8)', speed: 70, size: 2, max: 0.4, grav: 200 });
@@ -695,21 +730,18 @@ export class Scene {
 
   _drawHuman(H) {
     let pose = 'idle', phase = this.t;
-    const opts = { facing: H.facing };
+    const opts = { facing: H.facing, anim: H.anim, dt: this._dt || 0 };
     const moving = Math.hypot(H.vel.x, H.vel.y) > 20;
-    if (H.charging) { pose = 'aim'; phase = this.t; opts.sy = 1 - 0.05; opts.sx = 1 + 0.04; } // gather/crouch
+    // Squash/stretch now comes from the momentum layer (AE2), which derives it from the
+    // body's real vertical motion — stretch while rising, squash on touchdown — instead of
+    // two hand-rolled cases that could not agree with each other.
+    opts.sx = H.anim.sx; opts.sy = H.anim.sy;
+    if (H.charging) { pose = 'aim'; phase = this.t; opts.sy *= 0.95; opts.sx *= 1.04; } // gather/crouch
     else if (H.ball.state === 'flight') {
       pose = 'shoot'; phase = Math.min(1, H.ball.t / 0.25);
-      const jp = Math.min(1, H.ball.t / 0.32);
-      opts.lift = Math.sin(jp * Math.PI) * 14; // jump shot
-      opts.sy = 1 + FX.stretchShoot * Math.sin(jp * Math.PI);
+      opts.lift = this._shotLift(H);
     } else if (moving) { pose = 'run'; phase = this.t; }
     else if (H.hasBall && H.ball.state === 'held') { pose = 'dribble'; phase = this.t; }
-    // landing squash after a shot
-    if (H.landT > 0 && pose !== 'shoot') {
-      const k = H.landT / 0.2; // 1 → 0
-      opts.sy = 1 - FX.squashLand * k; opts.sx = 1 + FX.squashLand * 0.7 * k;
-    }
     // streak aura
     if (this.streak >= STREAK.onFire) opts.glow = { color: 'rgba(255,59,59,0.7)', a: 0.6 };
     else if (this.streak >= STREAK.hot) opts.glow = { color: 'rgba(255,140,26,0.65)', a: 0.5 };
@@ -729,7 +761,8 @@ export class Scene {
     const sc = O.role === 'front' ? 0.92 : 0.86;
     const facing = O.facing != null ? O.facing : (this.layout.hoop.x >= O.pos.x ? 1 : -1);
     drawCharacter(this.ctx, this.charsById.get(O.id), O.pos.x, O.pos.y, sc,
-      pose, pose === 'knockout' ? O.koT : this.t + (O.drift || 0), { facing });
+      pose, pose === 'knockout' ? O.koT : this.t + (O.drift || 0),
+      { facing, anim: O.anim, dt: this._dt || 0, sx: O.anim.sx, sy: O.anim.sy });
   }
 
   _nameTag(O) {

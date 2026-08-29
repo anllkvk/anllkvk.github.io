@@ -16,6 +16,8 @@
  * neutral until AE2/AE3 drive them.
  */
 
+import { strideScale, strideCadence, clampReach } from './anim.js';
+
 /** Height class -> overall size multiplier. */
 export function heightScale(heightClass) {
   return heightClass === 'big' ? 1.2 : heightClass === 'tall' ? 1.08 : 1;
@@ -71,14 +73,19 @@ export function basePose(out = {}) {
   // --- channels introduced by AE1, driven from AE2/AE3 (frame finding 1.0-3) ---
   out.stanceWidth = 1;    // multiplies hip separation + the resting foot offset
   out.hipDrop = 0;        // px the pelvis sinks while the feet stay planted
+  out.strideScale = 1;    // AE2: stride amplitude multiplier (speed-driven)
   return out;
 }
 
 /**
  * Pose generation: gameplay pose name + phase -> animation channels.
  * Split out of the renderer so the same curves can later be blended between states.
+ *
+ * `anim` (AE2, optional) is the per-character momentum state from core/anim.js. With it,
+ * lean and stride scale with the smoothed speed instead of being fixed per pose. Without
+ * it the output is exactly the AE1 pose, which is what the parity test pins.
  */
-export function generatePose(poseName, phase, facing, s, out = basePose()) {
+export function generatePose(poseName, phase, facing, s, out = basePose(), anim = null) {
   basePose(out);
   out.facing = facing;
 
@@ -100,6 +107,20 @@ export function generatePose(poseName, phase, facing, s, out = basePose()) {
   out.swing = out.running ? Math.sin(phase * out.strideHz) : 0;
   out.tuck = (poseName === 'shoot' ? out.armUp : poseName === 'aim' ? 0.4 : 0) * 2.5 * s;
   out.bendLeg = facing >= 0 ? 1 : -1;
+
+  // AE2 momentum: the body leans into the direction it is actually moving, and the stride
+  // grows in both length and cadence with speed, instead of every run looking identical.
+  if (anim) {
+    out.strideScale = strideScale(anim);
+    if (out.running) {
+      out.strideHz = strideCadence(anim);
+      out.swing = Math.sin(phase * out.strideHz);
+      out.lean = anim.lean.v;
+    } else if (Math.abs(anim.lean.v) > Math.abs(out.lean)) {
+      // Momentum outlives the pose: a player who just stopped still carries the lean.
+      out.lean = anim.lean.v;
+    }
+  }
 
   if (out.running) out.armMode = 'swing';
   else if (poseName === 'celebrate') out.armMode = 'celebrate';
@@ -124,6 +145,7 @@ export function makeSkeleton() {
     head: pt(),
     bendArm: { l: -1, r: 1 },
     bendLeg: 1,
+    lean: 0,   // px the upper body carries ahead of the feet (AE2)
   };
 }
 
@@ -148,11 +170,12 @@ export function resolveRig(dims, pose, sk = makeSkeleton()) {
   // Feet. The stride swings the right leg with `swing` and the left against it; standing,
   // they rest just outside the hips. hipDrop deliberately does NOT move them — that is the
   // point of a dropped centre of gravity: the knees absorb it and the feet stay planted.
+  const stride = pose.strideScale;
   for (const side of SIDES) {
     const k = side === 1 ? 'r' : 'l';
     const ph = side === 1 ? pose.swing : -pose.swing;
-    sk.foot[k].x = side * hx + (pose.running ? ph * 7 * s * facing : side * 1.5 * s * w);
-    sk.foot[k].y = footY - (pose.running ? Math.max(0, ph * facing) * 5 * s : 0) - pose.tuck;
+    sk.foot[k].x = side * hx + (pose.running ? ph * 7 * s * facing * stride : side * 1.5 * s * w);
+    sk.foot[k].y = footY - (pose.running ? Math.max(0, ph * facing) * 5 * s * stride : 0) - pose.tuck;
   }
 
   sk.shoulder.l.x = -shoulderDx; sk.shoulder.l.y = shoulderY;
@@ -163,10 +186,11 @@ export function resolveRig(dims, pose, sk = makeSkeleton()) {
 
   switch (pose.armMode) {
     case 'swing': {
-      const lift = Math.abs(pose.swing) * 3 * s;
-      sk.hand.l.x = sk.shoulder.l.x - 4 * s - pose.swing * 6 * s * facing;
+      const st = pose.strideScale;
+      const lift = Math.abs(pose.swing) * 3 * s * st;
+      sk.hand.l.x = sk.shoulder.l.x - 4 * s - pose.swing * 6 * s * facing * st;
       sk.hand.l.y = shoulderY + 14 * s - lift;
-      sk.hand.r.x = sk.shoulder.r.x + 4 * s + pose.swing * 6 * s * facing;
+      sk.hand.r.x = sk.shoulder.r.x + 4 * s + pose.swing * 6 * s * facing * st;
       sk.hand.r.y = shoulderY + 14 * s - lift;
       break;
     }
@@ -199,6 +223,25 @@ export function resolveRig(dims, pose, sk = makeSkeleton()) {
       break;
   }
 
+  // AE2 / frame finding §1.0-6: during locomotion and at rest the elbows stay bent — a
+  // fully extended arm is what makes a procedural run read as flailing. The shot is the
+  // one move that genuinely extends, so it is exempt.
+  if (pose.armMode === 'swing' || pose.armMode === 'hang') {
+    clampReach(sk.shoulder.l, sk.hand.l, dims.armL1 + dims.armL2);
+    clampReach(sk.shoulder.r, sk.hand.r, dims.armL1 + dims.armL2);
+  }
+
   sk.head.x = 0; sk.head.y = headY;
+
+  // AE2 lean. This used to be a canvas translate of the whole character, which just slid
+  // the sprite sideways — the reference leans by carrying the body *over* the feet
+  // (§1.0: the plant foot stays pinned while the body passes over it). So the lean moves
+  // the pelvis and everything above it; the feet stay where they were planted. The
+  // renderer applies sk.lean to the torso/arms/head it draws in body space.
+  sk.lean = pose.lean;
+  sk.pelvis.x += pose.lean;
+  sk.hip.l.x += pose.lean;
+  sk.hip.r.x += pose.lean;
+
   return sk;
 }

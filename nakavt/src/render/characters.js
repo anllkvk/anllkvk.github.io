@@ -13,6 +13,7 @@
  */
 import { twoBoneIK } from '../core/steering.js';
 import { rigDims, basePose, generatePose, makeSkeleton, resolveRig } from '../core/rig.js';
+import { applyLimbLag } from '../core/anim.js';
 
 // One rig scratch set for the module: pose generation and skeleton resolution are pure and
 // synchronous, so reusing these keeps drawing allocation-free no matter how many players
@@ -124,13 +125,19 @@ export function drawCharacter(ctx, char, x, y, scale, pose = 'idle', phase = 0, 
   if (sqx !== 1 || sqy !== 1) ctx.scale(sqx, sqy);   // squash/stretch around the feet
 
   // Animation state -> pose channels -> resolved skeleton. All of it pure (core/rig.js).
+  // opts.anim is the persistent momentum state (AE2); without it the character still
+  // draws, just without lean/stride scaling or limb lag — used by the pose sheet.
+  const anim = opts.anim || null;
   const dims = rigDims(s, char.height, _dims);
-  const P = generatePose(pose, phase, facing, s, _pose);
-  const sk = resolveRig(dims, P, _sk);
+  const P = generatePose(pose, phase, facing, s, _pose, anim);
+  const sk = resolveRig(dims, P, (anim && anim.sk) || _sk);
+  if (anim) applyLimbLag(anim, sk, opts.dt || 0);
   const { bob, lean, armUp, fall, spin, crouch } = P;
 
   if (pose === 'knockout') { ctx.translate(0, fall * 20 * s); ctx.rotate(spin * 0.9); ctx.globalAlpha = Math.max(0, 1 - fall * 0.6); }
-  ctx.translate(lean, bob + crouch);
+  // Lean is no longer a whole-body translate: the rig carries the pelvis and up over the
+  // planted feet (see resolveRig), and the upper body is shifted below, after the legs.
+  ctx.translate(0, bob + crouch);
   if (opts.dim) ctx.globalAlpha *= 0.85;
 
   const { bodyW, bodyH, headR, big } = dims;
@@ -176,6 +183,10 @@ export function drawCharacter(ctx, char, x, y, scale, pose = 'idle', phase = 0, 
   // draw the trailing leg first (depth), then the leading one
   const lead = facing >= 0 ? 1 : -1;
   drawLeg(-lead); drawLeg(lead);
+
+  // Everything above the hips rides the lean; the feet just drawn do not.
+  ctx.save();
+  ctx.translate(sk.lean, 0);
 
   // Shorts (over the top of the thighs) — NBA format: main + side stripe + patch
   const shortsY = -6 * s, shortsH = 13 * s;
@@ -297,5 +308,6 @@ export function drawCharacter(ctx, char, x, y, scale, pose = 'idle', phase = 0, 
   ctx.strokeStyle = 'rgba(255,255,255,0.22)'; ctx.lineWidth = 1.4 * s;
   ctx.beginPath(); ctx.arc(hx, hy, headR - 0.8 * s, Math.PI * 1.15, Math.PI * 1.55); ctx.stroke();
 
+  ctx.restore(); // end of the leaned upper body
   ctx.restore();
 }

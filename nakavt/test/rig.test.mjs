@@ -9,8 +9,9 @@ import assert from 'node:assert/strict';
 import {
   heightScale, rigDims, basePose, generatePose, makeSkeleton, resolveRig, STRIDE_POSES,
 } from '../src/core/rig.js';
+import { ANIM, makeAnimState, updateAnim } from '../src/core/anim.js';
 
-const near = (a, b, eps = 1e-9) => assert.ok(Math.abs(a - b) < eps, `${a} !== ${b}`);
+const near = (a, b, eps = 1e-9, msg = '') => assert.ok(Math.abs(a - b) < eps, `${msg} ${a} !== ${b}`);
 
 test('heightScale maps the three height classes', () => {
   assert.equal(heightScale('big'), 1.2);
@@ -195,37 +196,119 @@ function legacyJoints(scale, heightClass, poseName, phase, facing) {
   };
 }
 
-test('AE1 visual parity: the rig reproduces the old inline joints exactly', () => {
-  const poses = ['idle', 'miss', 'dribble', 'walk', 'run', 'rebound', 'aim', 'shoot', 'celebrate', 'knockout'];
-  const phases = [0, 0.17, 0.43, 0.6, 1.3, 2.7];
-  const heights = ['normal', 'tall', 'big'];
-  let checked = 0;
-  for (const h of heights) {
-    for (const scale of [0.86, 0.95, 1.4]) {
+const PARITY_POSES = ['idle', 'miss', 'dribble', 'walk', 'run', 'rebound', 'aim', 'shoot', 'celebrate', 'knockout'];
+const PARITY_PHASES = [0, 0.17, 0.43, 0.6, 1.3, 2.7];
+const PARITY_HEIGHTS = ['normal', 'tall', 'big'];
+const PARITY_SCALES = [0.86, 0.95, 1.4];
+
+/** Every (height, scale, pose, phase, facing) case the parity sweep covers. */
+function* parityCases() {
+  for (const h of PARITY_HEIGHTS) {
+    for (const scale of PARITY_SCALES) {
       const dims = rigDims(scale, h);
-      for (const name of poses) {
-        for (const phase of phases) {
+      for (const name of PARITY_POSES) {
+        for (const phase of PARITY_PHASES) {
           for (const facing of [1, -1]) {
-            const want = legacyJoints(scale, h, name, phase, facing);
-            const got = resolveRig(dims, generatePose(name, phase, facing, scale), makeSkeleton());
-            const msg = `${h}/${scale}/${name}/${phase}/${facing}`;
-            near(got.hip.l.x, want.hipL.x, 1e-9); near(got.hip.l.y, want.hipL.y, 1e-9);
-            near(got.hip.r.x, want.hipR.x, 1e-9); near(got.hip.r.y, want.hipR.y, 1e-9);
-            near(got.foot.l.x, want.footL.x, 1e-9); near(got.foot.l.y, want.footL.y, 1e-9);
-            near(got.foot.r.x, want.footR.x, 1e-9); near(got.foot.r.y, want.footR.y, 1e-9);
-            near(got.shoulder.l.x, want.shoL.x, 1e-9); near(got.shoulder.l.y, want.shoL.y, 1e-9);
-            near(got.shoulder.r.x, want.shoR.x, 1e-9); near(got.shoulder.r.y, want.shoR.y, 1e-9);
-            near(got.hand.l.x, want.handL.x, 1e-9); near(got.hand.l.y, want.handL.y, 1e-9);
-            near(got.hand.r.x, want.handR.x, 1e-9); near(got.hand.r.y, want.handR.y, 1e-9);
-            near(got.head.x, want.head.x, 1e-9); near(got.head.y, want.head.y, 1e-9);
-            assert.equal(got.bendArm.l, want.bendL, 'bendArm.l ' + msg);
-            assert.equal(got.bendArm.r, want.bendR, 'bendArm.r ' + msg);
-            assert.equal(got.bendLeg, want.bendLeg, 'bendLeg ' + msg);
-            checked++;
+            // Lean is zeroed: AE1 applied it as a whole-body canvas translate, AE2 moved it
+            // into the rig so the pelvis carries over the planted feet. That difference is
+            // covered by its own test below; this sweep pins everything else.
+            const pose = generatePose(name, phase, facing, scale);
+            pose.lean = 0;
+            yield {
+              dims, h, scale, name, phase, facing,
+              want: legacyJoints(scale, h, name, phase, facing),
+              got: resolveRig(dims, pose, makeSkeleton()),
+              tag: `${h}/${scale}/${name}/${phase}/${facing}`,
+            };
           }
         }
       }
     }
   }
-  assert.equal(checked, heights.length * 3 * poses.length * phases.length * 2);
+}
+
+test('AE1 parity: the rig reproduces the old inline skeleton exactly', () => {
+  let checked = 0;
+  for (const { want, got, tag } of parityCases()) {
+    near(got.hip.l.x, want.hipL.x); near(got.hip.l.y, want.hipL.y);
+    near(got.hip.r.x, want.hipR.x); near(got.hip.r.y, want.hipR.y);
+    near(got.foot.l.x, want.footL.x); near(got.foot.l.y, want.footL.y);
+    near(got.foot.r.x, want.footR.x); near(got.foot.r.y, want.footR.y);
+    near(got.shoulder.l.x, want.shoL.x); near(got.shoulder.l.y, want.shoL.y);
+    near(got.shoulder.r.x, want.shoR.x); near(got.shoulder.r.y, want.shoR.y);
+    near(got.head.x, want.head.x); near(got.head.y, want.head.y);
+    assert.equal(got.bendArm.l, want.bendL, 'bendArm.l ' + tag);
+    assert.equal(got.bendArm.r, want.bendR, 'bendArm.r ' + tag);
+    assert.equal(got.bendLeg, want.bendLeg, 'bendLeg ' + tag);
+    checked++;
+  }
+  assert.equal(checked, PARITY_HEIGHTS.length * PARITY_SCALES.length * PARITY_POSES.length * PARITY_PHASES.length * 2);
+});
+
+test('AE1 parity: shot, celebrate and knockout hands are unchanged by AE2', () => {
+  // AE2 only clamps the locomotion/resting arms; the poses that genuinely extend keep
+  // their exact old hand targets.
+  const extended = new Set(['aim', 'shoot', 'celebrate', 'knockout']);
+  let checked = 0;
+  for (const { want, got, name, tag } of parityCases()) {
+    if (!extended.has(name)) continue;
+    near(got.hand.l.x, want.handL.x, 1e-9, 'handL.x ' + tag);
+    near(got.hand.l.y, want.handL.y, 1e-9);
+    near(got.hand.r.x, want.handR.x, 1e-9, 'handR.x ' + tag);
+    near(got.hand.r.y, want.handR.y, 1e-9);
+    checked++;
+  }
+  assert.ok(checked > 0);
+});
+
+test('AE2: lean carries the pelvis over the feet instead of sliding the whole body', () => {
+  // The point of the change: the reference leans by passing the body over a planted foot,
+  // so the hips must move while the feet stay exactly where they were put down.
+  const dims = rigDims(1, 'normal');
+  const upright = resolveRig(dims, Object.assign(generatePose('run', 0.3, 1, 1), { lean: 0 }), makeSkeleton());
+  const leaned = resolveRig(dims, Object.assign(generatePose('run', 0.3, 1, 1), { lean: 6 }), makeSkeleton());
+  near(leaned.hip.l.x, upright.hip.l.x + 6, 1e-9, 'left hip carries the lean');
+  near(leaned.hip.r.x, upright.hip.r.x + 6, 1e-9, 'right hip carries the lean');
+  near(leaned.pelvis.x, upright.pelvis.x + 6, 1e-9, 'pelvis carries the lean');
+  near(leaned.foot.l.x, upright.foot.l.x, 1e-9, 'planted feet do NOT move');
+  near(leaned.foot.r.x, upright.foot.r.x, 1e-9);
+  assert.equal(leaned.lean, 6, 'the renderer is told how far to shift the upper body');
+});
+
+test('AE2: a faster run leans the body further over its feet', () => {
+  const dims = rigDims(1, 'normal');
+  const anim = makeAnimState();
+  for (let i = 0; i < 60; i++) updateAnim(anim, { speed: 220, maxSpeed: 220, facing: 1, lift: 0 }, 1 / 60);
+  const fast = resolveRig(dims, generatePose('run', 0.3, 1, 1, basePose(), anim), makeSkeleton());
+
+  const slowAnim = makeAnimState();
+  for (let i = 0; i < 60; i++) updateAnim(slowAnim, { speed: 40, maxSpeed: 220, facing: 1, lift: 0 }, 1 / 60);
+  const slow = resolveRig(dims, generatePose('run', 0.3, 1, 1, basePose(), slowAnim), makeSkeleton());
+
+  assert.ok(fast.lean > slow.lean, `sprint lean ${fast.lean} should exceed jog lean ${slow.lean}`);
+});
+
+test('AE2: the old resting/running hand targets were beyond full arm reach', () => {
+  // This is the frame finding (1.0-6) reproduced as a test: the pre-AE2 hand targets sat
+  // *outside* the arm, so the IK pinned the elbow straight and the arms read as sticks.
+  const dims = rigDims(1, 'normal');
+  const armLen = dims.armL1 + dims.armL2;
+  const legacy = legacyJoints(1, 'normal', 'idle', 0, 1);
+  const reach = Math.hypot(legacy.handR.x - legacy.shoR.x, legacy.handR.y - legacy.shoR.y);
+  assert.ok(reach > armLen, `legacy rest reach ${reach} should exceed arm length ${armLen}`);
+});
+
+test('AE2: locomotion and resting hands are clamped inside full extension', () => {
+  const dims = rigDims(1, 'normal');
+  const armLen = dims.armL1 + dims.armL2;
+  const max = armLen * ANIM.armReach;
+  for (const name of ['idle', 'dribble', 'walk', 'run', 'rebound']) {
+    for (const phase of [0, 0.2, 0.55, 1.1]) {
+      const sk = resolveRig(dims, generatePose(name, phase, 1, 1), makeSkeleton());
+      for (const k of ['l', 'r']) {
+        const d = Math.hypot(sk.hand[k].x - sk.shoulder[k].x, sk.hand[k].y - sk.shoulder[k].y);
+        assert.ok(d <= max + 1e-9, `${name}@${phase} hand.${k} reach ${d} > ${max}`);
+      }
+    }
+  }
 });
