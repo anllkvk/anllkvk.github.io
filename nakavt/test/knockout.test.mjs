@@ -44,24 +44,36 @@ test('CHASER makes first -> front eliminated and removed entirely', () => {
   assert.equal(m.queue[m.queue.length - 1], chaserId, 'chaser safe at back');
 });
 
-test('a full simulated match always ends with exactly one champion', () => {
-  for (let seed = 1; seed <= 200; seed++) {
+test('a full simulated match always ends with exactly one champion (1000 seeds, per-step invariants)', () => {
+  const N = 1000;
+  for (let seed = 1; seed <= N; seed++) {
     const rng = makeRng(seed);
     const roster = buildRoster(CHARACTERS, CHARACTERS[seed % 10].id, rng);
     const m = new KnockoutMatch(roster, { difficulty: DIFFICULTY.NORMAL, rng });
     let guard = 0;
     let sawFinalDuel = false;
+    const everEliminated = new Set();
     while (!m.isOver && guard++ < 5000) {
       if (m.isFinalDuel) sawFinalDuel = true;
+      // Invariants that must hold at EVERY step (continuous flow safety):
+      assert.ok(m.aliveCount >= 1, `seed ${seed} never zero alive`);
+      assert.equal(m.aliveCount + m.eliminated.length, 10, `seed ${seed} alive+out conserved`);
+      assert.equal(new Set(m.queue).size, m.queue.length, `seed ${seed} queue has no duplicate`);
+      for (const e of m.eliminated) assert.ok(!m.queue.includes(e), `seed ${seed} eliminated never back in queue`);
       const d = m.duel();
       const { winner } = m.simulateAiDuel(d);
-      m.resolve(winner);
+      const r = m.resolve(winner);
+      if (r.eliminatedId) {
+        assert.ok(!everEliminated.has(r.eliminatedId), `seed ${seed} a player is eliminated at most once`);
+        everEliminated.add(r.eliminatedId);
+      }
     }
     assert.ok(m.isOver, `seed ${seed} terminated`);
-    assert.equal(m.aliveCount, 1, `seed ${seed} one champion`);
+    assert.equal(m.aliveCount, 1, `seed ${seed} exactly one champion`);
     assert.equal(m.eliminated.length, 9, `seed ${seed} nine eliminated`);
     assert.ok(sawFinalDuel, `seed ${seed} passed through a final duel`);
     assert.ok(m.champion, `seed ${seed} has a champion`);
+    assert.ok(!m.eliminated.includes(m.champion.id), `seed ${seed} champion never eliminated`);
   }
 });
 
