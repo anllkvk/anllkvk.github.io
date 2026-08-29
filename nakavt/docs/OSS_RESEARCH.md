@@ -6,6 +6,10 @@ respected, public-domain math written fresh.
 
 ---
 
+> **See also:** `docs/CHARACTER_ANIMATION_R&D.md` — a deep dive on the NBA Live 08 movement
+> reference and four animation repos (Creature WebGL, Hyper-Motion Controller, Cani2D,
+> ik-proc-anim-2d) with license classification and a recommended Canvas-2D rig architecture.
+
 ## GitHub repository evaluation (AI movement + procedural animation)
 
 For the continuous-simulation upgrade the AI must **move and chase rebounds** and players
