@@ -137,7 +137,7 @@ export class Scene {
       id: player.id, player, role, isHuman: true,
       pos, vel: { x: 0, y: 0 }, facing: 1,
       hasBall: true, charging: false, power: 0, powerDir: 1, attempts: 0,
-      looseTimer: 0,
+      looseTimer: 0, landT: 0,
       ball: { state: 'held', pos: { ...pos }, vel: { x: 0, y: 0 }, z: 40, rot: 0, t: 0, from: null, to: null, quality: null, made: false },
     };
   }
@@ -193,8 +193,13 @@ export class Scene {
       return;
     }
     if (d.phase === 'auto') {
-      d.timer -= dt; this._animAi(d.a, dt); this._animAi(d.b, dt);
-      if (d.timer <= 0) { d.winner = d.simWinner; this._finishDuel(); }
+      // Watchable AI-vs-AI duel: both rivals actually shoot (ball flight, make/miss,
+      // rebound) so you can see the field playing while you wait your turn.
+      d.safety = (d.safety || 0) + dt;
+      this._updateAiLive(d.a, dt);
+      if (!d.winner) this._updateAiLive(d.b, dt);
+      if (!d.winner && d.safety > 6) this._autoScore(d.simWinner); // safety: don't drag
+      this._emitHud();
       return;
     }
     if (d.phase === 'resolve' || d.phase === 'ko') {
@@ -228,6 +233,7 @@ export class Scene {
     if (Math.abs(this.move.x) > 0.1) H.facing = this.move.x > 0 ? 1 : -1;
     else if (H.charging || H.hasBall) H.facing = L.hoop.x >= H.pos.x ? 1 : -1;
 
+    if (H.landT > 0) H.landT = Math.max(0, H.landT - dt);
     // charging
     if (H.charging) {
       H.power += (dt / SHOTPWR.chargeSeconds) * 2 * H.powerDir;
@@ -303,6 +309,7 @@ export class Scene {
 
   _onMake(H) {
     if (this.duel.winner) { return; }
+    H.landT = 0.2; // land the jump shot with a squash
     const res = H._lastRes || { quality: SHOT.GOOD };
     this.stats.made++;
     const hoop = this.layout.hoop;
@@ -343,6 +350,7 @@ export class Scene {
 
   _onMiss(H) {
     if (this.duel.winner) return;
+    H.landT = 0.2;
     this.streak = 0; this.sfx.rim();
     this.cam.shake(FX.camShakeMiss, FX.camShakeMissDur);
     this.particles.burst(this.layout.hoop.x, this.layout.hoop.y, 5, { color: 'rgba(255,120,60,0.8)', speed: 70, size: 2, max: 0.4, grav: 200 });
@@ -395,6 +403,67 @@ export class Scene {
     O.ball = { state: 'ball', pos: { ...from }, from, to, t: 0, z: 44, rot: 0, made: res.made };
     O.state = 'ball';
     this.sfx.bounce();
+  }
+
+  /** One rival in a watched AI-vs-AI duel: shoots, shows the ball, makes/misses, rebounds. */
+  _updateAiLive(O, dt) {
+    const sdt = dt * PACE.autoScale;
+    this._animAi(O, dt);
+    if (this.duel.winner) return;
+    switch (O.state) {
+      case 'wait':
+        O.timer -= sdt; if (O.timer <= 0) this._aiLiveShoot(O);
+        break;
+      case 'ball': {
+        const b = O.ball; b.t += sdt; b.rot += sdt * 7;
+        const p = Math.min(1, b.t / PACE.ballFlight);
+        b.pos.x = b.from.x + (b.to.x - b.from.x) * p;
+        b.pos.y = b.from.y + (b.to.y - b.from.y) * p;
+        b.z = 44 + Math.sin(p * Math.PI) * (this.layout.H * 0.26);
+        if (p >= 1) {
+          if (b.made) {
+            b.state = 'scored'; this.sfx.swish();
+            this.particles.burst(this.layout.hoop.x, this.layout.hoop.y, this._pn(5), { color: '#fff', speed: 80, size: 2, max: 0.4 });
+            this._ring(this.layout.hoop.x, this.layout.hoop.y, this.arena.accent, 46);
+            this._autoScore(O.role);
+          } else {
+            this.sfx.rim(); O.ball = null; O.state = 'rebound'; O.timer = this.match.aiRebound(O.player) * 0.8;
+          }
+        }
+        break;
+      }
+      case 'rebound':
+        O.timer -= sdt; if (O.timer <= 0) this._aiLiveShoot(O);
+        break;
+      default: break;
+    }
+  }
+
+  _aiLiveShoot(O) {
+    const acc = this.match.aiAccuracy(O.player, 0);
+    const res = resolveAiShot(acc, { clutch: O.player.stats.clutch, pressure: 0 }, this.match.rng);
+    O.attempts++;
+    const from = { x: O.pos.x, y: O.pos.y - 30 };
+    const to = res.made ? { ...this.layout.hoop }
+      : { x: this.layout.hoop.x + (this.match.rng.next() < 0.5 ? -1 : 1) * 18, y: this.layout.hoop.y - 4 };
+    O.ball = { state: 'ball', pos: { ...from }, from, to, t: 0, z: 44, rot: 0, made: res.made };
+    O.state = 'ball'; this.sfx.bounce();
+  }
+
+  /** Resolve a watched AI duel (a=front, b=chaser). */
+  _autoScore(role) {
+    if (this.duel.winner) return;
+    this.duel.winner = role;
+    if (role === 'chaser') {
+      const victim = this.duel.a; // the front rival is knocked out
+      this.duel.phase = 'ko'; this.duel.timer = PACE.koTime; this.duel.koVictim = victim; victim.koT = 0;
+      this.setFlash('KNOCKED OUT!', COLORS.danger, 1.0, true);
+      this.cam.shake(FX.camShakeKnockout * 0.6, FX.camShakeKnockoutDur); this.sfx.knockout();
+      this.particles.burst(victim.pos.x, victim.pos.y - 28, this._pn(PARTICLES.knockoutBurst), { color: COLORS.danger, speed: 150, size: 3, max: 0.7, grav: 260 });
+      this._ring(victim.pos.x, victim.pos.y - 24, COLORS.danger, 70);
+    } else {
+      this.duel.phase = 'resolve'; this.duel.timer = PACE.resultHold;
+    }
   }
 
   _animAi(O, dt) {
@@ -498,6 +567,9 @@ export class Scene {
     let label = 'WATCHING…';
     if (humanRole === 'front') label = 'SINK IT — STAY ALIVE';
     else if (humanRole === 'chaser') label = 'SCORE FIRST — KNOCK THEM OUT';
+    else if (this.duel?.mode === 'auto' && this.duel.a && this.duel.b) {
+      label = `WATCHING · ${this.charsById.get(this.duel.a.id).name} vs ${this.charsById.get(this.duel.b.id).name}`;
+    }
     this.cb.onHud?.({
       round: this.match.eliminated.length + 1, remaining: this.match.aliveCount,
       total: this.match.players.length, shots: this.stats.shots, streak: this.streak,
@@ -531,6 +603,9 @@ export class Scene {
     if (d) {
       if (d.mode === 'auto') {
         this._drawAi(d.a); this._drawAi(d.b);
+        if (d.a.ball) this._drawBall(d.a.ball, 9);
+        if (d.b.ball) this._drawBall(d.b.ball, 9);
+        this._nameTag(d.a); this._nameTag(d.b);
       } else {
         if (d.human.hasBall && d.human.ball.state === 'held') this._drawAim(d.human);
         this._drawAi(d.opp);
@@ -605,6 +680,12 @@ export class Scene {
       opts.lift = Math.sin(jp * Math.PI) * 14; // jump shot
       opts.sy = 1 + FX.stretchShoot * Math.sin(jp * Math.PI);
     } else if (moving) { pose = 'run'; phase = this.t; }
+    else if (H.hasBall && H.ball.state === 'held') { pose = 'dribble'; phase = this.t; }
+    // landing squash after a shot
+    if (H.landT > 0 && pose !== 'shoot') {
+      const k = H.landT / 0.2; // 1 → 0
+      opts.sy = 1 - FX.squashLand * k; opts.sx = 1 + FX.squashLand * 0.7 * k;
+    }
     // streak aura
     if (this.streak >= STREAK.onFire) opts.glow = { color: 'rgba(255,59,59,0.7)', a: 0.6 };
     else if (this.streak >= STREAK.hot) opts.glow = { color: 'rgba(255,140,26,0.65)', a: 0.5 };
@@ -623,6 +704,18 @@ export class Scene {
     const sc = O.role === 'front' ? 0.92 : 0.86;
     drawCharacter(this.ctx, this.charsById.get(O.id), O.pos.x, O.pos.y, sc,
       pose, pose === 'knockout' ? O.koT : this.t + (O.drift || 0), { facing: this.layout.hoop.x >= O.pos.x ? 1 : -1 });
+  }
+
+  _nameTag(O) {
+    const ctx = this.ctx;
+    const ch = this.charsById.get(O.id);
+    ctx.save();
+    ctx.font = '900 10px system-ui'; ctx.textAlign = 'center'; ctx.textBaseline = 'alphabetic';
+    ctx.lineWidth = 3; ctx.strokeStyle = 'rgba(0,0,0,0.6)';
+    ctx.strokeText(ch.name, O.pos.x, O.pos.y - 66);
+    ctx.fillStyle = O.koT != null ? COLORS.danger : 'rgba(255,255,255,0.9)';
+    ctx.fillText(ch.name, O.pos.x, O.pos.y - 66);
+    ctx.restore();
   }
 
   _drawBall(b, r) {
