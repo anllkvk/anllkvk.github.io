@@ -9,22 +9,28 @@
 
 ---
 
-## 0. Honesty note on the reference material
+## 0. Reference material and how it was analysed
 
-- The reference is **NBA Live 08** gameplay (YouTube `kuBZzpO51nU`; an MP4 is to be added at
-  `/reference/nba-live-08-animation.mp4`).
-- I could **not** do a literal frame-by-frame read of the video: the file is not in this
-  (freshly-cloned) repo, `youtube.com` is blocked by the network egress proxy, there is no
-  `ffmpeg` in this environment, and I cannot decode video directly regardless.
-- What follows is therefore grounded in **(a)** how NBA Live 08 and that era's basketball
-  sims are actually built (motion capture + blend trees + foot/hand IK on a weighted rig)
-  and **(b)** classical animation theory — not on pixels I personally inspected. This is
-  enough to answer the central question correctly, because the answer is about the
-  *pipeline*, not any one frame.
-- **If you want a literal frame analysis:** export a handful of frames as PNGs into
-  `/reference/` (e.g. `run_01.png … shoot_08.png`) and commit them — I can read PNGs
-  directly and will annotate them. Or add `ffmpeg` to the web environment's setup and I'll
-  extract frames myself from the committed MP4.
+- The reference is **NBA Live 08** PC gameplay, kept **local only** at
+  `nakavt/reference/nba-live-08-animation.mp4` (321 MB, 1280×720, 60 fps, 12:00).
+  `reference/` and `*.mp4` are gitignored: the footage is copyrighted (EA) and far too
+  large for the repo. **Nothing from it is committed, and no asset from it is used.**
+- **A real frame analysis was done** (2026-08-30, local machine, ffmpeg 9.0.1):
+  - `ffmpeg -i … -vf "fps=3,scale=480:-1"` → **2161 survey frames** in `reference/frames/`.
+  - Contact sheets (`reference/sheets/`) to map the footage, then **native-resolution
+    1280×720 bursts at 6–8 fps** over the action windows, cropped and Lanczos-upscaled
+    2–4× so a player fills ~700 px instead of ~140 px.
+  - **16 representative frames** were selected, cropped and named in
+    `reference/selected/` (also local only) — listed in §1.0 below.
+- **Limits of this footage, stated honestly:** it is a single continuous broadcast-camera
+  game capture. There is **no isolated free throw and no unobstructed catch-and-shoot
+  jumper** anywhere in it, and no slow-motion replay. Players are 140–200 px tall at
+  native resolution, so **wrist and finger detail is not readable**. What *is* readable —
+  and what §1 below is now grounded in — is pelvis/COM, weight transfer, foot plant,
+  knee compression, torso lean, shoulder counter-rotation, head stabilisation, arm-swing
+  asymmetry and the hand↔ball relationship. The shot evidence is a **putback/gather chain
+  and a held follow-through**, not a full gather→release jumper; that one sub-phase stays
+  reasoned from animation theory rather than observed, and is flagged as such in §1.3.
 
 ---
 
@@ -38,6 +44,69 @@ weighted, IK-grounded rig — so every frame obeys real biomechanics and momentu
 NAKAVT drives each body part with independent sine offsets, switches poses instantly, slides
 its feet, and glues the ball to a fixed hand point.** The gap is *not* "number of poses." It
 is six structural properties NAKAVT does not yet have. Broken down:
+
+### 1.0 Frame observations (verified, not inferred)
+
+Sixteen frames in `reference/selected/` (local only). Timestamps are into the source MP4.
+
+| Frame | ≈t | What the pixels actually show |
+|---|---|---|
+| `idle_ready.png` | 404.0 | Standing "alive" hold: feet **wider than shoulders**, knees softly bent, hips low, arms hanging *away* from the torso with bent elbows, head up and turned toward the ball. Never a straight-legged rest pose. |
+| `walk_dribble.png` | 504.5 | Upright-ish carry, knees still bent, **ball low and out to the ball-side**, that hand reaching down onto it, head tipped toward the ball. |
+| `crossover_step.png` | 504.6 | Ball swung across the body; **front foot flat and planted**, back knee driving through, deep knee flexion, torso pitched forward over the base. |
+| `drive_lunge.png` | 504.9 | Deep gather: feet **planted wide and both flat**, hips dropped below knee height, chest over the knees, **ball out in front and low with the hand on top of it**, off-arm out for balance, gaze down at the ball. |
+| `stop_plant.png` | 505.1 | Braking / change-of-direction plant: **both feet down, wide, flat**, COM dropped hard, shoulders squared over the base. The silhouette is unmistakably *wide and low* versus the running silhouette. |
+| `gather_rise.png` | 505.4 | Ball pulled in to the chest, body straightening, weight coming up off the wide base. |
+| `sprint_plant.png` | 501.6 | **The single most instructive frame.** Trail leg fully extended behind with the **ankle plantar-flexed (sole facing up/back)**; lead leg bent with the **foot flat and fixed on the floor**; torso ~20–25° forward; **head level and forward, not rotated with the torso**; near arm bent ~90° driven forward, far arm swung back — **elbows never straighten**; near shoulder forward, i.e. shoulder line counter-rotated against the hips. Contact shadow is tight and **under the plant foot only**, not a blob under the body centre. |
+| `sprint_extend.png` | 501.8 | Next stride: full extension, brief float. The pose is **asymmetric at every instant** — one leg planted-and-bent, the other extended-and-pointed. |
+| `jump_load.png` | 404.1 | Anticipation crouch before rising: knees bent, hips back, weight on one loaded leg, arms starting up. |
+| `rebound_reach.png` | 404.3 | Body extending upward toward the ball's **actual position**; arms lead the body up; head tracking the ball. |
+| `rebound_catch.png` | 404.4 | **Both hands on the ball surface**, cupping it from opposite sides, above and slightly in front of the head; elbows bent and out; torso upright and slightly rotated; head turned to the ball. The ball is *held*, never a decal at a body offset. |
+| `land_absorb.png` | 404.5 | Two-foot landing: **wide base, deep knee flexion, knees pushed out, hips dropped**, torso upright but compressed — and the **ball pulled in to the chest** (protect / gather). |
+| `turn_pivot.png` | 404.6 | Turning away: the pelvis has already rotated to the new direction while the shoulders still trail it. |
+| `run_stride.png` | 404.8 | Normal-speed run: shorter stride, less lean, smaller arm swing than the sprint frames — **the same cycle scaled by speed**. |
+| `shoot_follow.png` | 412.9 | Shooter **holds both arms fully extended overhead after release**; the contesting defender holds one arm straight up while his torso leans back over a lunge plant. |
+| `post_base.png` | 627.4 | Post / defensive base: very wide flat-footed stance, hips low, arms out and asymmetric. |
+
+**What the frames confirmed.** The §1.1–1.6 principle analysis below was written before the
+footage was readable, and the frames back it: no foot ever slides — the plant foot is
+**pinned to the floor while the body passes over it**; the pose is **never mirror-symmetric**;
+the head stays level while the torso pitches; every explosive action is preceded by a
+**crouch** and followed by a **held** extension; and the hand is posed **to the ball**, not
+the ball to the hand.
+
+**What the frames corrected or sharpened.** Six changes to the plan, all from pixels:
+
+1. **Foot plant reads through the *ankle*, not just position.** The convincing cue is the
+   trail foot being **plantar-flexed (toe pointed)** after push-off while the plant foot is
+   **flat**. NAKAVT draws a shoe ellipse at a fixed angle on both feet — so even with foot
+   IK, without an ankle angle driven by the stride phase the stride will still read wrong.
+   *Not in the original plan; **AE3 must add an ankle/foot angle channel**.*
+2. **The braking stop is a two-foot wide plant, not a lead-foot spike.** §1.2 predicted "the
+   lead foot spikes forward, the torso pitches back." `stop_plant.png` shows **both** feet
+   down, wide and flat, with the COM dropped and the shoulders square. *Implement STOP in
+   AE3 as **widen base + drop COM + plant both feet** — also a far easier target than a
+   one-foot brake.*
+3. **Stance width is a first-class animation channel.** Across `idle_ready`, `drive_lunge`,
+   `stop_plant`, `land_absorb` and `post_base` the thing that changes most is **how far
+   apart the feet are and how low the hips sit** — not limb angles. NAKAVT's hips are a
+   fixed `hipDx`. *Add a `stanceWidth` + `hipDrop` pair driven by state (AE1/AE2): cheap,
+   and it carries most of the "weight" read on its own.*
+4. **The contact shadow is per-foot, not per-body.** NAKAVT draws one ellipse under the body
+   centre; the reference grounds the character with a tight shadow under the **planted
+   foot**. Cheap credibility win, fold into AE3.
+5. **The head is stabilised *and* aimed.** Level against torso pitch (sprint frames) *and*
+   turned toward the ball (`rebound_catch`, `drive_lunge`). Both, not either — AE5.
+6. **Elbows never straighten during locomotion.** The arms hold a roughly 90° bend and swing
+   from the shoulder. NAKAVT's arm IK hand targets can currently reach full extension, which
+   is what makes the run read as flailing. *Clamp the arm hand-target distance in AE2.*
+
+**The central question, answered from frames.** NBA Live 08 reads real because **at every
+instant the pose is asymmetric, the base is wide and loaded, one foot is pinned flat to the
+floor, the head is level, and the hands are on the ball where the ball actually is.** NAKAVT
+reads drawn because it is **symmetric (a mirrored sine), narrow-based, sliding on both feet,
+head-locked to the torso, and holding the ball at a fixed offset.** The gap is those five
+properties — not pose count.
 
 ### 1.1 Body mechanics
 | Property | NBA Live 08 (why it reads real) | NAKAVT today |
@@ -367,17 +436,17 @@ Scored 1–5 (5 = best) for NAKAVT's constraints. **Higher total = better fit.**
 
 | Phase | Work | Acceptance |
 |---|---|---|
-| **AE1 — Rig scaffold** | Introduce a pure rig (root/pelvis, spine, shoulders, hips, neck) + joint-target data; render current look *through* the rig (visual parity). Split pose-gen from drawing. | look unchanged; tests green |
-| **AE2 — Momentum layer** | smoothed-velocity → body lean + stride/swing scaling; squash/stretch on jump apex & landing; SmoothDamp limb lag (follow-through/secondary). | run leans & scales with speed; limbs lag |
-| **AE3 — Foot IK + planting** | COM-triggered step + arc-lerp swing foot; lock the plant foot (no sliding); braking plant on STOP. | no foot-skating; visible hard stop |
+| **AE1 — Rig scaffold** | Introduce a pure rig (root/pelvis, spine, shoulders, hips, neck) + joint-target data; render current look *through* the rig (visual parity). Split pose-gen from drawing. Rig carries **`stanceWidth` + `hipDrop`** channels from the start (§1.0 finding 3). | look unchanged; tests green |
+| **AE2 — Momentum layer** | smoothed-velocity → body lean + stride/swing scaling; squash/stretch on jump apex & landing; SmoothDamp limb lag (follow-through/secondary); **clamp arm hand-targets so elbows never straighten** (§1.0 finding 6). | run leans & scales with speed; limbs lag; arms never lock out |
+| **AE3 — Foot IK + planting** | COM-triggered step + arc-lerp swing foot; lock the plant foot (no sliding); **ankle/foot angle driven by stride phase — plant foot flat, trail foot plantar-flexed** (§1.0 finding 1); STOP = **widen base + drop COM + plant both feet** (finding 2); **per-foot contact shadow** (finding 4). | no foot-skating; visible hard stop; toe points on push-off |
 | **AE4 — Shot chain** | replace `armUp` with `gather(dip)→leg drive→extend→wrist release→follow-through hold→land absorb`, eased sub-phases; jump load/apex/land. | RUN→SHOOT reads as a real jump shot |
-| **AE5 — Ball-tracking hands** | hand-IK to the ball carry/reach point; head/eye track the ball; rebound = reach toward the ball's real position + catch + land absorb. | ball reads "held/reached," not glued |
+| **AE5 — Ball-tracking hands** | hand-IK to the ball carry/reach point; head **stabilised against torso pitch _and_ aimed at the ball** (§1.0 finding 5); rebound = reach toward the ball's real position + catch + land absorb. | ball reads "held/reached," not glued |
 | **AE6 — State blending** | crossfade pose weights between states; pelvis-led TURN/PIVOT; direction-change crossover. | no pose popping; smooth turns |
 | **AE7 — Secondary FX + perf + QA** | Verlet jersey hem/hair; profile 60/45 FPS w/ 10 movers; visual QA against the two acceptance chains; tune. | acceptance chains pass, 60 FPS |
 
 New tests (pure layer): COM step-trigger fires when COM leaves foot span; plant foot stays
 fixed while body translates; blend weight ∈ [0,1] and reaches target; shot phase timing
-monotonic; hand-IK target equals ball position within reach. Plus the two E2E acceptance
+monotonic; hand-IK target equals ball position within reach; **ankle angle is flat on the plant foot and pointed on the swing foot**; **arm hand-target never exceeds the clamped reach**. Plus the two E2E acceptance
 chains below.
 
 ---
@@ -408,11 +477,24 @@ chain in `test/`.
 
 ---
 
-## 12. Open decision (need a green light before AE1)
-1. Approve **Option C** (Canvas + procedural IK + lightweight rig, evolving the current
-   renderer) as the direction?
-2. Proceed **phase-by-phase** (AE1→AE7, tests+QA gating each), starting with the rig scaffold
-   at visual parity?
-3. For a *literal* NBA Live 08 frame analysis, will you commit frame PNGs to `/reference/`
-   (I can read those), or should the environment get `ffmpeg` + the committed MP4? Either
-   way, the principle analysis above already drives the plan.
+## 12. Decisions — status
+
+1. **Option C approved** (Canvas + procedural IK + lightweight rig, evolving the current
+   renderer). Direction confirmed by the project owner; AE1→AE7 is now the working plan.
+2. **Phase-by-phase**, tests + visual QA gating each phase, starting with the rig scaffold at
+   visual parity. Every phase: implement → `npm test` (39 green) → run the game locally and
+   screenshot → commit → push.
+3. ~~Frame analysis blocked~~ — **done** (2026-08-30). ffmpeg was installed locally, the MP4
+   sits in the gitignored `reference/`, 2161 frames were extracted and 16 representative
+   frames selected and read. Findings are in §0 and §1.0; they added six concrete changes to
+   the AE1–AE5 scope (ankle angle, two-foot stop, stance width, per-foot shadow, head
+   stabilise-and-aim, elbow clamp). **No frame, video or asset is committed.**
+
+**Local reproduction of the frame work** (nothing here is in git):
+
+```sh
+# ffmpeg (Windows):  winget install --id=Gyan.FFmpeg -e --source winget
+mkdir -p nakavt/reference/frames
+ffmpeg -i nakavt/reference/nba-live-08-animation.mp4 \
+       -vf "fps=3,scale=480:-1" nakavt/reference/frames/f_%04d.png
+```
