@@ -118,11 +118,9 @@ export class Scene {
         this.setFlash('MOVE + HOLD SHOOT', '#ffd23f', 2.4, false);
       }
     } else {
-      // Watching: precompute the winner, play a short beat.
-      const sim = this.match.simulateAiDuel(d);
+      // Watching: the two rivals actually play it out live (see _updateAiLive).
       this.duel = {
-        info: d, mode: 'auto', phase: 'auto', timer: 1.15 / PACE.autoScale, winner: null,
-        simWinner: sim.winner,
+        info: d, mode: 'auto', phase: 'auto', winner: null, safety: 0,
         a: this._makeAi(d.front, 'front'), b: this._makeAi(d.chaser, 'chaser'),
       };
       this.duel.a.pos = { x: L.court.x0 + L.court.x1 * 0.32, y: L.ftY };
@@ -198,13 +196,18 @@ export class Scene {
       d.safety = (d.safety || 0) + dt;
       this._updateAiLive(d.a, dt);
       if (!d.winner) this._updateAiLive(d.b, dt);
-      if (!d.winner && d.safety > 6) this._autoScore(d.simWinner); // safety: don't drag
+      // Safety (rare): if it drags AND no shot is mid-air, resolve deterministically
+      // (better shooter wins) — no RNG, so seeded runs stay reproducible.
+      if (!d.winner && d.safety > 6 && !d.a.ball && !d.b.ball) {
+        const w = this.match.aiAccuracy(d.a.player) >= this.match.aiAccuracy(d.b.player) ? 'front' : 'chaser';
+        this._autoScore(w);
+      }
       this._emitHud();
       return;
     }
     if (d.phase === 'resolve' || d.phase === 'ko') {
       d.timer -= dt;
-      if (d.human) this._updateBall(d.human, dt);
+      if (d.human) { this._updateBall(d.human, dt); if (d.human.landT > 0) d.human.landT = Math.max(0, d.human.landT - dt); }
       if (d.phase === 'ko' && d.koVictim) d.koVictim.koT = Math.min(1, (d.koVictim.koT || 0) + dt / PACE.koTime);
       if (d.timer <= 0) this._finishDuel();
       return;
@@ -456,6 +459,7 @@ export class Scene {
     this.duel.winner = role;
     if (role === 'chaser') {
       const victim = this.duel.a; // the front rival is knocked out
+      victim.ball = null; victim.state = 'ko'; // stop any in-flight shot so the KO anim shows
       this.duel.phase = 'ko'; this.duel.timer = PACE.koTime; this.duel.koVictim = victim; victim.koT = 0;
       this.setFlash('KNOCKED OUT!', COLORS.danger, 1.0, true);
       this.cam.shake(FX.camShakeKnockout * 0.6, FX.camShakeKnockoutDur); this.sfx.knockout();
@@ -699,8 +703,8 @@ export class Scene {
 
   _drawAi(O) {
     let pose = 'idle';
-    if (O.state === 'ball' && O.ball) pose = 'shoot';
-    else if (O.koT != null) pose = 'knockout';
+    if (O.koT != null) pose = 'knockout';
+    else if (O.state === 'ball' && O.ball) pose = 'shoot';
     const sc = O.role === 'front' ? 0.92 : 0.86;
     drawCharacter(this.ctx, this.charsById.get(O.id), O.pos.x, O.pos.y, sc,
       pose, pose === 'knockout' ? O.koT : this.t + (O.drift || 0), { facing: this.layout.hoop.x >= O.pos.x ? 1 : -1 });
