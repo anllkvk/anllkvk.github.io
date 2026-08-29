@@ -71,8 +71,8 @@ export const AI = {
 export const PACE = {
   ballFlight: 0.66, // arc time of a shot
   autoScale: 1.75, // speed-up for AI-vs-AI duels you're only watching (brisk but visible)
-  intro: 0.38, // "get ready" beat before a duel goes live
-  resultHold: 0.5, // pause after a made basket
+  intro: 0.22, // brief "get ready" beat before a duel goes live (kept short for continuity)
+  resultHold: 0.36, // short beat after a made basket before the next pairing steps up
   koTime: 0.72, // knockdown animation length
   looseTimeout: 4.0, // safety: a loose ball you never reach returns to you
 };
