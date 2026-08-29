@@ -10,7 +10,7 @@
  * timeline and is shown as a moving avatar. AI-vs-AI pairings you're only watching
  * auto-resolve with a short readable beat.
  */
-import { STATE, SHOT, STREAK, PACE, MOVE, SHOTPWR, EVENTS, COLORS, FX, PARTICLES } from './config.js';
+import { STATE, SHOT, STREAK, PACE, MOVE, SHOTPWR, EVENTS, COLORS, FX, PARTICLES, AI } from './config.js';
 import { resolvePowerShot, idealPowerForDistance } from './core/shot.js';
 import { resolveAiShot } from './core/shot.js';
 import { analytics } from './core/events.js';
@@ -22,6 +22,7 @@ import { SpriteCache } from './render/sprites.js';
 import { haptics } from './audio/haptics.js';
 import { easeOutBack, easeOutCubic } from './core/ease.js';
 import { shotPoints, KNOCKOUT_BONUS, SURVIVE_BONUS } from './core/score.js';
+import { arrive, predictSettle } from './core/steering.js';
 
 const dist2 = (a, b) => Math.hypot(a.x - b.x, a.y - b.y);
 
@@ -118,7 +119,7 @@ export class Scene {
         this.setFlash('MOVE + HOLD SHOOT', '#ffd23f', 2.4, false);
       }
     } else {
-      // Watching: the two rivals actually play it out live (see _updateAiLive).
+      // Watching: the two rivals actually play it out live (see _aiStep).
       this.duel = {
         info: d, mode: 'auto', phase: 'auto', winner: null, safety: 0,
         a: this._makeAi(d.front, 'front'), b: this._makeAi(d.chaser, 'chaser'),
@@ -145,9 +146,9 @@ export class Scene {
     return {
       id: player.id, player, role, isHuman: false,
       pos: { x: role === 'front' ? L.lineX + 70 : L.lineX - 70, y: L.ftY + 6 },
-      vel: { x: 0, y: 0 }, drift: Math.random() * Math.PI * 2,
+      vel: { x: 0, y: 0 }, drift: Math.random() * Math.PI * 2, facing: 1,
       state: 'wait', timer: this.match.aiReaction(player) + (role === 'chaser' ? 0.5 : 0),
-      attempts: 0, ball: null,
+      attempts: 0, ball: null, looseTimer: 0,
     };
   }
 
@@ -194,11 +195,11 @@ export class Scene {
       // Watchable AI-vs-AI duel: both rivals actually shoot (ball flight, make/miss,
       // rebound) so you can see the field playing while you wait your turn.
       d.safety = (d.safety || 0) + dt;
-      this._updateAiLive(d.a, dt);
-      if (!d.winner) this._updateAiLive(d.b, dt);
+      this._aiStep(d.a, dt, PACE.autoScale, () => this._autoMake(d.a));
+      if (!d.winner) this._aiStep(d.b, dt, PACE.autoScale, () => this._autoMake(d.b));
       // Safety (rare): if it drags AND no shot is mid-air, resolve deterministically
       // (better shooter wins) — no RNG, so seeded runs stay reproducible.
-      if (!d.winner && d.safety > 6 && !d.a.ball && !d.b.ball) {
+      if (!d.winner && d.safety > 8 && !d.a.ball && !d.b.ball) {
         const w = this.match.aiAccuracy(d.a.player) >= this.match.aiAccuracy(d.b.player) ? 'front' : 'chaser';
         this._autoScore(w);
       }
@@ -215,7 +216,7 @@ export class Scene {
 
     // live
     this._updateHuman(d.human, dt);
-    if (!d.winner) this._updateOpp(d.opp, dt);
+    if (!d.winner) this._aiStep(d.opp, dt, 1, () => { this.sfx.swish(); this._score('opp'); });
     this._emitHud();
   }
 
@@ -370,40 +371,68 @@ export class Scene {
     this.setFlash('REBOUND!', '#4dd0ff', 0.8, false);
   }
 
-  // opponent (AI) timeline
-  _updateOpp(O, dt) {
-    this._animAi(O, dt);
+  // ---- unified AI controller ----------------------------------------------
+  // One code path drives every CPU baller — the live opponent AND the rivals you
+  // only watch. It is genuinely physical: shoot → (miss) loose ball with floor
+  // physics → RUN to the predicted rebound using steering → grab → shoot again
+  // (a layup bonus for finishing close). `scale` speeds up watched AI-vs-AI duels;
+  // `onScore` fires the instant this baller sinks it.
+  _aiStep(O, dt, scale, onScore) {
+    if (this.duel.winner) return;
+    const sdt = dt * scale, L = this.layout;
     switch (O.state) {
       case 'wait':
-        O.timer -= dt;
-        if (O.timer <= 0) this._aiShoot(O);
+        this._aiIdle(O, dt);
+        O.timer -= sdt;
+        if (O.timer <= 0) this._aiLaunch(O);
         break;
       case 'ball': {
-        O.ball.t += dt; O.ball.rot += dt * 7;
-        const p = Math.min(1, O.ball.t / PACE.ballFlight);
-        O.ball.pos.x = O.ball.from.x + (O.ball.to.x - O.ball.from.x) * p;
-        O.ball.pos.y = O.ball.from.y + (O.ball.to.y - O.ball.from.y) * p;
-        O.ball.z = 44 + Math.sin(p * Math.PI) * (this.layout.H * 0.28);
+        this._aiIdle(O, dt);
+        const b = O.ball; b.t += sdt; b.rot += sdt * 7;
+        const p = Math.min(1, b.t / PACE.ballFlight);
+        b.pos.x = b.from.x + (b.to.x - b.from.x) * p;
+        b.pos.y = b.from.y + (b.to.y - b.from.y) * p;
+        b.z = 44 + Math.sin(p * Math.PI) * (L.H * 0.28);
         if (p >= 1) {
-          if (O.ball.made) { O.ball.state = 'scored'; this.sfx.swish(); this._score('opp'); }
-          else { this.sfx.rim(); O.ball = null; O.state = 'rebound'; O.timer = this.match.aiRebound(O.player) + PACE.autoScale * 0.2; }
+          if (b.made) { b.state = 'scored'; b.pos = { ...L.hoop }; onScore(); }
+          else this._aiToLoose(O);
         }
         break;
       }
-      case 'rebound':
-        O.timer -= dt;
-        if (O.timer <= 0) this._aiShoot(O);
+      case 'chase': {
+        const b = O.ball;
+        this._looseStep(b, sdt);
+        // steer to where the ball will settle (Reynolds "arrive"), speed by stat
+        const target = predictSettle(b.pos, b.vel, 3.0);
+        const spd = MOVE.aiMoveSpeed * (0.72 + O.player.stats.speed * 0.7) * scale;
+        const v = arrive(O.pos, target, spd, 46);
+        O.pos.x += v.x * dt; O.pos.y += v.y * dt;
+        O.pos.x = Math.max(L.court.x0, Math.min(L.court.x1, O.pos.x));
+        O.pos.y = Math.max(L.court.y0, Math.min(L.court.y1, O.pos.y));
+        O.facing = b.pos.x >= O.pos.x ? 1 : -1;
+        O.looseTimer += sdt;
+        if (dist2(O.pos, b.pos) < MOVE.grabRadius || O.looseTimer > PACE.looseTimeout) {
+          O.ball = null; O.state = 'wait';
+          O.timer = this.match.aiRebound(O.player) * 0.45 + AI.betweenAttempt * 0.4;
+          this.sfx.bounce();
+        }
         break;
+      }
       default: break;
     }
   }
 
-  _aiShoot(O) {
+  /** A CPU baller lines up and releases a shot from wherever it stands. */
+  _aiLaunch(O) {
     const pressure = this._pressure();
-    const acc = this.match.aiAccuracy(O.player, pressure);
+    const from = { x: O.pos.x, y: O.pos.y - 30 };
+    // Finishing close is easier (layup) — reward a good rebound chase.
+    const dHoop = dist2(from, this.layout.hoop);
+    const near = Math.max(0, 1 - dHoop / (this.layout.H * 0.5));
+    const acc = Math.min(0.98, this.match.aiAccuracy(O.player, pressure) + near * 0.25);
     const res = resolveAiShot(acc, { clutch: O.player.stats.clutch, pressure }, this.match.rng);
     O.attempts++;
-    const from = { x: O.pos.x, y: O.pos.y - 30 };
+    O.facing = this.layout.hoop.x >= O.pos.x ? 1 : -1;
     const to = res.made ? { ...this.layout.hoop }
       : { x: this.layout.hoop.x + (this.match.rng.next() < 0.5 ? -1 : 1) * 18, y: this.layout.hoop.y - 4 };
     O.ball = { state: 'ball', pos: { ...from }, from, to, t: 0, z: 44, rot: 0, made: res.made };
@@ -411,49 +440,35 @@ export class Scene {
     this.sfx.bounce();
   }
 
-  /** One rival in a watched AI-vs-AI duel: shoots, shows the ball, makes/misses, rebounds. */
-  _updateAiLive(O, dt) {
-    const sdt = dt * PACE.autoScale;
-    this._animAi(O, dt);
-    if (this.duel.winner) return;
-    switch (O.state) {
-      case 'wait':
-        O.timer -= sdt; if (O.timer <= 0) this._aiLiveShoot(O);
-        break;
-      case 'ball': {
-        const b = O.ball; b.t += sdt; b.rot += sdt * 7;
-        const p = Math.min(1, b.t / PACE.ballFlight);
-        b.pos.x = b.from.x + (b.to.x - b.from.x) * p;
-        b.pos.y = b.from.y + (b.to.y - b.from.y) * p;
-        b.z = 44 + Math.sin(p * Math.PI) * (this.layout.H * 0.26);
-        if (p >= 1) {
-          if (b.made) {
-            b.state = 'scored'; this.sfx.swish();
-            this.particles.burst(this.layout.hoop.x, this.layout.hoop.y, this._pn(5), { color: '#fff', speed: 80, size: 2, max: 0.4 });
-            this._ring(this.layout.hoop.x, this.layout.hoop.y, this.arena.accent, 46);
-            this._autoScore(O.role);
-          } else {
-            this.sfx.rim(); O.ball = null; O.state = 'rebound'; O.timer = this.match.aiRebound(O.player) * 0.8;
-          }
-        }
-        break;
-      }
-      case 'rebound':
-        O.timer -= sdt; if (O.timer <= 0) this._aiLiveShoot(O);
-        break;
-      default: break;
-    }
+  /** A missed CPU shot becomes a real loose ball; the baller enters LIVE_CHASE. */
+  _aiToLoose(O) {
+    this.sfx.rim();
+    const b = O.ball;
+    b.state = 'loose'; b.z = 30;
+    const ang = (Math.PI / 2) + (this.match.rng.next() - 0.5) * 1.5;
+    const spd = 140 + this.match.rng.next() * 120;
+    b.vel = { x: Math.cos(ang) * spd * (this.match.rng.next() < 0.5 ? -1 : 1), y: Math.sin(ang) * spd };
+    O.state = 'chase'; O.looseTimer = 0;
   }
 
-  _aiLiveShoot(O) {
-    const acc = this.match.aiAccuracy(O.player, 0);
-    const res = resolveAiShot(acc, { clutch: O.player.stats.clutch, pressure: 0 }, this.match.rng);
-    O.attempts++;
-    const from = { x: O.pos.x, y: O.pos.y - 30 };
-    const to = res.made ? { ...this.layout.hoop }
-      : { x: this.layout.hoop.x + (this.match.rng.next() < 0.5 ? -1 : 1) * 18, y: this.layout.hoop.y - 4 };
-    O.ball = { state: 'ball', pos: { ...from }, from, to, t: 0, z: 44, rot: 0, made: res.made };
-    O.state = 'ball'; this.sfx.bounce();
+  /** Shared loose-ball floor physics (friction, drop, court-bound bounces). */
+  _looseStep(b, dt) {
+    const L = this.layout;
+    b.pos.x += b.vel.x * dt; b.pos.y += b.vel.y * dt;
+    b.vel.x *= Math.max(0, 1 - 3.0 * dt); b.vel.y *= Math.max(0, 1 - 3.0 * dt);
+    b.z = Math.max(0, (b.z || 0) - 120 * dt); b.rot += dt * 7;
+    if (b.pos.x < L.court.x0) { b.pos.x = L.court.x0; b.vel.x = Math.abs(b.vel.x) * 0.6; }
+    if (b.pos.x > L.court.x1) { b.pos.x = L.court.x1; b.vel.x = -Math.abs(b.vel.x) * 0.6; }
+    if (b.pos.y < L.court.y0) { b.pos.y = L.court.y0; b.vel.y = Math.abs(b.vel.y) * 0.6; }
+    if (b.pos.y > L.court.y1) { b.pos.y = L.court.y1; b.vel.y = -Math.abs(b.vel.y) * 0.6; }
+  }
+
+  /** Made-basket VFX for a watched AI-vs-AI duel, then resolve. */
+  _autoMake(O) {
+    this.sfx.swish();
+    this.particles.burst(this.layout.hoop.x, this.layout.hoop.y, this._pn(5), { color: '#fff', speed: 80, size: 2, max: 0.4 });
+    this._ring(this.layout.hoop.x, this.layout.hoop.y, this.arena.accent, 46);
+    this._autoScore(O.role);
   }
 
   /** Resolve a watched AI duel (a=front, b=chaser). */
@@ -473,12 +488,12 @@ export class Scene {
     }
   }
 
-  _animAi(O, dt) {
-    // gentle cosmetic drift so the avatar feels alive
+  /** Gentle cosmetic drift so a standing/aiming baller feels alive (never during a chase). */
+  _aiIdle(O, dt) {
     O.drift = (O.drift || 0) + dt * 1.5;
     const L = this.layout;
-    O.pos.x += Math.cos(O.drift) * MOVE.aiMoveSpeed * 0.15 * dt;
-    O.pos.y += Math.sin(O.drift * 0.7) * MOVE.aiMoveSpeed * 0.1 * dt;
+    O.pos.x += Math.cos(O.drift) * MOVE.aiMoveSpeed * 0.09 * dt;
+    O.pos.y += Math.sin(O.drift * 0.7) * MOVE.aiMoveSpeed * 0.06 * dt;
     O.pos.x = Math.max(L.court.x0, Math.min(L.court.x1, O.pos.x));
     O.pos.y = Math.max(L.court.y0, Math.min(L.court.y1, O.pos.y));
   }
@@ -707,10 +722,12 @@ export class Scene {
   _drawAi(O) {
     let pose = 'idle';
     if (O.koT != null) pose = 'knockout';
+    else if (O.state === 'chase') pose = 'run';
     else if (O.state === 'ball' && O.ball) pose = 'shoot';
     const sc = O.role === 'front' ? 0.92 : 0.86;
+    const facing = O.facing != null ? O.facing : (this.layout.hoop.x >= O.pos.x ? 1 : -1);
     drawCharacter(this.ctx, this.charsById.get(O.id), O.pos.x, O.pos.y, sc,
-      pose, pose === 'knockout' ? O.koT : this.t + (O.drift || 0), { facing: this.layout.hoop.x >= O.pos.x ? 1 : -1 });
+      pose, pose === 'knockout' ? O.koT : this.t + (O.drift || 0), { facing });
   }
 
   _nameTag(O) {
