@@ -322,7 +322,7 @@ goMenu();
 requestAnimationFrame(loop);
 
 // expose a tiny debug handle
-window.NAKAVT = { game, scene, sfx, analytics, version: '1.1.0', name: GAME.name };
+window.NAKAVT = { game, scene, sfx, analytics, version: '1.2.0', name: GAME.name };
 
 // PWA: register the service worker for install + offline play.
 // Skipped under automation (Playwright sets navigator.webdriver) so e2e stays deterministic.
