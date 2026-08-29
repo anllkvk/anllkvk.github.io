@@ -1,16 +1,12 @@
 /**
- * NAKAVT service worker — installable + offline play.
+ * NAKAVT service worker — installable + offline, but always fresh when online.
  *
- * Strategy:
- *  - Precache the FULL app shell (index, styles, manifest, icon, and the entire
- *    ES-module graph) so the very first offline launch boots cleanly.
- *  - Navigations: network-first (fresh HTML when online) → cache fallback offline.
- *  - Other same-origin GETs: stale-while-revalidate — serve the cached copy fast,
- *    refresh the cache in the background so a new deploy is picked up on the next
- *    load without waiting on a manual cache-name bump.
- *  - Offline fallback only for navigations (never serves HTML for a JS/CSS import).
+ * Strategy: NETWORK-FIRST for same-origin GETs (so a new deploy is picked up on
+ * the very next online load — no stale code), falling back to the cache when
+ * offline. The full app shell is precached so the first offline launch still
+ * boots. Bump CACHE on any shipped change to force a clean refresh.
  */
-const CACHE = 'nakavt-v3';
+const CACHE = 'nakavt-v4';
 const SHELL = [
   './', './index.html', './styles.css', './manifest.webmanifest', './icon.svg',
   './src/main.js', './src/config.js', './src/scene.js', './src/ui.js',
@@ -22,7 +18,6 @@ const SHELL = [
 ];
 
 self.addEventListener('install', (e) => {
-  // best-effort precache: don't fail install if one entry 404s
   e.waitUntil(caches.open(CACHE).then((c) => Promise.all(
     SHELL.map((u) => c.add(u).catch(() => null)),
   )).then(() => self.skipWaiting()));
@@ -39,28 +34,15 @@ self.addEventListener('activate', (e) => {
 self.addEventListener('fetch', (e) => {
   const req = e.request;
   if (req.method !== 'GET') return;
-
-  // Navigations → network-first, fall back to the cached shell offline.
-  if (req.mode === 'navigate') {
-    e.respondWith(
-      fetch(req).then((res) => {
-        const copy = res.clone(); caches.open(CACHE).then((c) => c.put(req, copy));
-        return res;
-      }).catch(() => caches.match(req).then((hit) => hit || caches.match('./index.html'))),
-    );
-    return;
-  }
-
-  // Subresources → stale-while-revalidate.
+  // Network-first: freshest code when online, cache fallback when offline.
   e.respondWith(
-    caches.match(req).then((hit) => {
-      const network = fetch(req).then((res) => {
-        if (res && res.ok && res.type === 'basic') {
-          const copy = res.clone(); caches.open(CACHE).then((c) => c.put(req, copy));
-        }
-        return res;
-      }).catch(() => hit); // offline: fall back to whatever we had (or undefined)
-      return hit || network;
-    }),
+    fetch(req).then((res) => {
+      if (res && res.ok && res.type === 'basic') {
+        const copy = res.clone(); caches.open(CACHE).then((c) => c.put(req, copy));
+      }
+      return res;
+    }).catch(() => caches.match(req).then(
+      (hit) => hit || (req.mode === 'navigate' ? caches.match('./index.html') : undefined),
+    )),
   );
 });

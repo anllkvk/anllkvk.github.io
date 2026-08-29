@@ -69,12 +69,12 @@ export const AI = {
 
 /** Overall pacing (seconds). Larger = calmer, more readable gameplay. */
 export const PACE = {
-  ballFlight: 0.75, // arc time of a shot
-  autoScale: 1.25, // speed-up for AI-vs-AI duels you're only watching
-  intro: 0.5, // "get ready" beat before a duel goes live
-  resultHold: 0.7, // pause after a made basket
-  koTime: 0.9, // knockdown animation length
-  looseTimeout: 5.0, // safety: a loose ball you never reach returns to you
+  ballFlight: 0.66, // arc time of a shot
+  autoScale: 1.75, // speed-up for AI-vs-AI duels you're only watching (brisk but visible)
+  intro: 0.38, // "get ready" beat before a duel goes live
+  resultHold: 0.5, // pause after a made basket
+  koTime: 0.72, // knockdown animation length
+  looseTimeout: 4.0, // safety: a loose ball you never reach returns to you
 };
 
 /** Player movement (HaxBall-style free movement on the court). Court-space units/sec. */

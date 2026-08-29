@@ -135,13 +135,22 @@ export function drawVignette(ctx, W, H, strength = 0.28) {
 
 export function drawCourt(ctx, layout, arena, t) {
   const { floorY, W, H, lineX, hoopX, hoopY } = layout;
+  const ftY = layout.ftY ?? (floorY + (H - floorY) * 0.72);
 
   // Floor
   const fg = ctx.createLinearGradient(0, floorY, 0, H);
-  fg.addColorStop(0, shade(arena.court, 1.08));
-  fg.addColorStop(1, shade(arena.court, 0.82));
+  fg.addColorStop(0, shade(arena.court, 1.12));
+  fg.addColorStop(0.5, shade(arena.court, 0.98));
+  fg.addColorStop(1, shade(arena.court, 0.78));
   ctx.fillStyle = fg;
   ctx.fillRect(0, floorY, W, H - floorY);
+
+  // Center-court spotlight for depth
+  const cy = floorY + (H - floorY) * 0.55;
+  const spot = ctx.createRadialGradient(lineX, cy, 12, lineX, cy, W * 0.62);
+  spot.addColorStop(0, 'rgba(255,255,255,0.10)');
+  spot.addColorStop(1, 'rgba(255,255,255,0)');
+  ctx.fillStyle = spot; ctx.fillRect(0, floorY, W, H - floorY);
 
   // Parquet planks (Celtic) or subtle boards (Bay)
   ctx.save();
@@ -156,23 +165,37 @@ export function drawCourt(ctx, layout, arena, t) {
   }
   ctx.restore();
 
-  // The key / paint area (perspective trapezoid up to the hoop)
-  ctx.fillStyle = hexA(arena.keyPaint, 0.5);
+  // Court boundary (perspective trapezoid: near-wide → far-narrow) for depth
+  ctx.save();
+  ctx.strokeStyle = hexA(arena.courtLine, 0.45); ctx.lineWidth = 3;
+  const nearHalf = W * 0.46, farHalf = 70, baseY = hoopY + 34, nearY = H - 6;
+  ctx.beginPath();
+  ctx.moveTo(lineX - nearHalf, nearY);
+  ctx.lineTo(lineX - farHalf, baseY);
+  ctx.lineTo(lineX + farHalf, baseY);
+  ctx.lineTo(lineX + nearHalf, nearY);
+  ctx.stroke();
+  ctx.restore();
+
+  // The key / paint area (perspective trapezoid) with depth shading
+  const kg = ctx.createLinearGradient(0, hoopY + 30, 0, ftY);
+  kg.addColorStop(0, hexA(arena.keyPaint, 0.68));
+  kg.addColorStop(1, hexA(arena.keyPaint, 0.42));
+  ctx.fillStyle = kg;
   ctx.beginPath();
   ctx.moveTo(hoopX - 26, hoopY + 30);
   ctx.lineTo(hoopX + 26, hoopY + 30);
-  ctx.lineTo(lineX + 70, floorY + (H - floorY) * 0.72);
-  ctx.lineTo(lineX - 70, floorY + (H - floorY) * 0.72);
+  ctx.lineTo(lineX + 74, ftY);
+  ctx.lineTo(lineX - 74, ftY);
   ctx.closePath(); ctx.fill();
+  ctx.strokeStyle = hexA(arena.courtLine, 0.8); ctx.lineWidth = 2; ctx.stroke();
 
-  // Free-throw line (clearly visible, as required)
+  // Free-throw line + perspective (flattened) circle, aligned to the player's line
   ctx.strokeStyle = arena.courtLine; ctx.lineWidth = 4;
-  const ftY = floorY + (H - floorY) * 0.72;
   ctx.beginPath(); ctx.moveTo(lineX - 74, ftY); ctx.lineTo(lineX + 74, ftY); ctx.stroke();
-  // Free-throw semicircle
-  ctx.beginPath(); ctx.arc(lineX, ftY, 74, Math.PI, 0); ctx.stroke();
+  ctx.beginPath(); ctx.ellipse(lineX, ftY, 74, 30, 0, Math.PI, 0); ctx.stroke();
   ctx.setLineDash([6, 6]);
-  ctx.beginPath(); ctx.arc(lineX, ftY, 74, 0, Math.PI); ctx.stroke();
+  ctx.beginPath(); ctx.ellipse(lineX, ftY, 74, 30, 0, 0, Math.PI); ctx.stroke();
   ctx.setLineDash([]);
 
   drawHoop(ctx, layout, arena, t);
@@ -180,31 +203,43 @@ export function drawCourt(ctx, layout, arena, t) {
 
 export function drawHoop(ctx, layout, arena, t) {
   const { hoopX, hoopY } = layout;
-  // Backboard pole
-  ctx.fillStyle = '#2a2a30';
-  ctx.fillRect(hoopX - 4, hoopY - 70, 8, 70);
-  // Backboard
-  ctx.fillStyle = 'rgba(240,245,255,0.9)';
-  roundRect(ctx, hoopX - 34, hoopY - 66, 68, 46, 4); ctx.fill();
-  ctx.strokeStyle = '#c9351f'; ctx.lineWidth = 2; ctx.stroke();
-  ctx.strokeRect(hoopX - 12, hoopY - 46, 24, 18); // target square
-  // Rim
+  // Pole base shadow on the floor
+  ctx.save(); ctx.globalAlpha = 0.25; ctx.fillStyle = '#000';
+  ctx.beginPath(); ctx.ellipse(hoopX, hoopY + 30, 18, 5, 0, 0, Math.PI * 2); ctx.fill(); ctx.restore();
+  // Pole — rounded-metal gradient for volume
+  const pg = ctx.createLinearGradient(hoopX - 5, 0, hoopX + 5, 0);
+  pg.addColorStop(0, '#16161c'); pg.addColorStop(0.5, '#50505c'); pg.addColorStop(1, '#16161c');
+  ctx.fillStyle = pg; ctx.fillRect(hoopX - 5, hoopY - 74, 10, 80);
+  // Backboard drop shadow
+  ctx.save(); ctx.globalAlpha = 0.28; ctx.fillStyle = '#000';
+  roundRect(ctx, hoopX - 35, hoopY - 62, 72, 48, 5); ctx.fill(); ctx.restore();
+  // Backboard glass (gradient + edge)
+  const bgd = ctx.createLinearGradient(hoopX - 36, hoopY - 68, hoopX + 36, hoopY - 20);
+  bgd.addColorStop(0, 'rgba(228,238,252,0.96)'); bgd.addColorStop(1, 'rgba(188,203,224,0.9)');
+  ctx.fillStyle = bgd; roundRect(ctx, hoopX - 36, hoopY - 68, 72, 48, 5); ctx.fill();
+  ctx.strokeStyle = '#c9351f'; ctx.lineWidth = 2.5; ctx.stroke();
+  ctx.strokeRect(hoopX - 13, hoopY - 49, 26, 19); // target square
+  // glass highlight streak
+  ctx.strokeStyle = 'rgba(255,255,255,0.5)'; ctx.lineWidth = 1.5;
+  ctx.beginPath(); ctx.moveTo(hoopX - 30, hoopY - 63); ctx.lineTo(hoopX - 8, hoopY - 63); ctx.stroke();
+  // rim connector to backboard
+  ctx.strokeStyle = '#c9351f'; ctx.lineWidth = 3;
+  ctx.beginPath(); ctx.moveTo(hoopX, hoopY - 20); ctx.lineTo(hoopX, hoopY - 5); ctx.stroke();
+  // Rim as a 3D ring: dim back half, net inside, bright front half
+  ctx.strokeStyle = '#a8431b'; ctx.lineWidth = 4;
+  ctx.beginPath(); ctx.ellipse(hoopX, hoopY, 22, 7, 0, Math.PI, 0); ctx.stroke(); // back
+  // Net (tapering, deeper)
+  ctx.strokeStyle = 'rgba(255,255,255,0.78)'; ctx.lineWidth = 1;
+  for (let i = -4; i <= 4; i++) {
+    const nx = hoopX + i * 5;
+    ctx.beginPath(); ctx.moveTo(nx, hoopY + 2); ctx.lineTo(hoopX + i * 2.4, hoopY + 26); ctx.stroke();
+  }
+  for (let r = 1; r <= 4; r++) {
+    const yy = hoopY + r * 6, wr = 20 - r * 3.6;
+    ctx.beginPath(); ctx.ellipse(hoopX, yy, wr, wr * 0.28, 0, 0, Math.PI * 2); ctx.stroke();
+  }
   ctx.strokeStyle = '#ff6a2b'; ctx.lineWidth = 4;
-  ctx.beginPath(); ctx.ellipse(hoopX, hoopY, 22, 7, 0, 0, Math.PI * 2); ctx.stroke();
-  // Net
-  ctx.strokeStyle = 'rgba(255,255,255,0.7)'; ctx.lineWidth = 1;
-  for (let i = -3; i <= 3; i++) {
-    const nx = hoopX + i * 6;
-    ctx.beginPath();
-    ctx.moveTo(nx, hoopY + 2);
-    ctx.lineTo(hoopX + i * 3, hoopY + 22);
-    ctx.stroke();
-  }
-  for (let r = 1; r <= 3; r++) {
-    const yy = hoopY + r * 7;
-    const wr = 20 - r * 4;
-    ctx.beginPath(); ctx.ellipse(hoopX, yy, wr, wr * 0.3, 0, 0, Math.PI * 2); ctx.stroke();
-  }
+  ctx.beginPath(); ctx.ellipse(hoopX, hoopY, 22, 7, 0, 0, Math.PI); ctx.stroke(); // front
 }
 
 export function drawBall(ctx, x, y, r, rot = 0, opts = {}) {

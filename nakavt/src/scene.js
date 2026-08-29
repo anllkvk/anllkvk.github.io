@@ -233,6 +233,9 @@ export class Scene {
     H.pos.x += H.vel.x * dt; H.pos.y += H.vel.y * dt;
     H.pos.x = Math.max(L.court.x0, Math.min(L.court.x1, H.pos.x));
     H.pos.y = Math.max(L.court.y0, Math.min(L.court.y1, H.pos.y));
+    // First shot is a free throw: you can't cross the free-throw line until you've
+    // taken your first attempt (after that, chase the rebound anywhere).
+    if (H.attempts === 0) H.pos.y = Math.max(L.ftY, H.pos.y);
     if (Math.abs(this.move.x) > 0.1) H.facing = this.move.x > 0 ? 1 : -1;
     else if (H.charging || H.hasBall) H.facing = L.hoop.x >= H.pos.x ? 1 : -1;
 
