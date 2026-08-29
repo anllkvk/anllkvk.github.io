@@ -21,6 +21,7 @@ import { Particles } from './render/particles.js';
 import { SpriteCache } from './render/sprites.js';
 import { haptics } from './audio/haptics.js';
 import { easeOutBack, easeOutCubic } from './core/ease.js';
+import { shotPoints, KNOCKOUT_BONUS, SURVIVE_BONUS } from './core/score.js';
 
 const dist2 = (a, b) => Math.hypot(a.x - b.x, a.y - b.y);
 
@@ -50,7 +51,7 @@ export class Scene {
     this.match = match; this.arena = arena;
     this.charsById = new Map(characters.map((c) => [c.id, c]));
     this.t = 0; this.finalDuel = false; this.state = STATE.COUNTDOWN;
-    this.stats = { shots: 0, perfect: 0, knockouts: 0, made: 0, start: performance.now(), placement: null };
+    this.stats = { shots: 0, perfect: 0, knockouts: 0, made: 0, score: 0, start: performance.now(), placement: null };
     this.streak = 0; this.tutorial = !opts.tutorialDone; this.countdown = 3.0;
     this.move = { x: 0, y: 0 }; this.shootHeld = false;
     this.flash = { text: '3', color: '#fff', ttl: 1, max: 1, big: true };
@@ -322,6 +323,10 @@ export class Scene {
       this.particles.burst(hoop.x, hoop.y, this._pn(PARTICLES.goodBurst), { color: '#fff', speed: 90, size: 2, max: 0.5 });
       haptics.score();
     }
+    // arcade points (cosmetic): perfect uses the streak multiplier
+    const pts = shotPoints(res.quality, this.streak);
+    this.stats.score += pts;
+    this._floater(`+${pts}`, hoop.x + 30, hoop.y - 6, res.quality === SHOT.PERFECT ? COLORS.perfect : '#fff', 18);
     H.ball.state = 'scored'; H.ball.pos = { ...hoop };
     this.sfx.swish(); this.sfx.crowdSwell(0.18);
     this._score('human');
@@ -419,7 +424,7 @@ export class Scene {
 
     if (winnerRole === 'chaser') {
       // front is knocked out
-      if (who === 'human') this.stats.knockouts++;
+      if (who === 'human') { this.stats.knockouts++; this.stats.score += KNOCKOUT_BONUS; }
       this.duel.phase = 'ko'; this.duel.timer = PACE.koTime;
       this.duel.koVictim = who === 'human' ? this.duel.opp : this.duel.human; // the front loser
       if (this.duel.koVictim) this.duel.koVictim.koT = 0;
@@ -430,6 +435,7 @@ export class Scene {
       if (v) { this.particles.burst(v.pos.x, v.pos.y - 30, this._pn(PARTICLES.knockoutBurst), { color: COLORS.danger, speed: 170, size: 3, max: 0.8, grav: 260 }); this.particles.dust(v.pos.x, v.pos.y, 8); this._ring(v.pos.x, v.pos.y - 24, COLORS.danger, 80); }
       haptics.knockout();
     } else {
+      if (who === 'human') this.stats.score += SURVIVE_BONUS;
       this.setFlash(who === 'human' ? 'SAFE!' : 'SAFE', '#2ec16b', 0.9, false);
       this.duel.phase = 'resolve'; this.duel.timer = PACE.resultHold;
     }
@@ -467,7 +473,8 @@ export class Scene {
 
   _finalStats() {
     return { shots: this.stats.shots, perfect: this.stats.perfect, knockouts: this.stats.knockouts,
-      accuracy: this.stats.accuracy, timeMs: Math.round(this.stats.timeMs), placement: this.stats.placement };
+      accuracy: this.stats.accuracy, timeMs: Math.round(this.stats.timeMs), placement: this.stats.placement,
+      score: this.stats.score };
   }
 
   setFlash(text, color, ttl, big) { this.flash = { text, color, ttl, max: ttl, big }; }
@@ -493,7 +500,7 @@ export class Scene {
     this.cb.onHud?.({
       round: this.match.eliminated.length + 1, remaining: this.match.aliveCount,
       total: this.match.players.length, shots: this.stats.shots, streak: this.streak,
-      roleLabel: label, finalDuel: this.finalDuel,
+      score: this.stats.score, roleLabel: label, finalDuel: this.finalDuel,
     });
   }
 

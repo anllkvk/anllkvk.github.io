@@ -10,12 +10,12 @@
  *    load without waiting on a manual cache-name bump.
  *  - Offline fallback only for navigations (never serves HTML for a JS/CSS import).
  */
-const CACHE = 'nakavt-v2';
+const CACHE = 'nakavt-v3';
 const SHELL = [
   './', './index.html', './styles.css', './manifest.webmanifest', './icon.svg',
   './src/main.js', './src/config.js', './src/scene.js', './src/ui.js',
   './src/core/rng.js', './src/core/events.js', './src/core/shot.js',
-  './src/core/knockout.js', './src/core/ease.js',
+  './src/core/knockout.js', './src/core/ease.js', './src/core/score.js',
   './src/audio/sfx.js', './src/audio/haptics.js',
   './src/render/characters.js', './src/render/arena.js', './src/render/camera.js',
   './src/render/particles.js', './src/render/sprites.js',

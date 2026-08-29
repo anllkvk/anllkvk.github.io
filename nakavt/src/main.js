@@ -178,7 +178,13 @@ function startMatch(charId, arenaId, diffKey) {
 }
 
 function endMatch(won, stats) {
-  if (!settings.tutorialDone) { settings.tutorialDone = true; saveSettings(); }
+  if (!settings.tutorialDone) { settings.tutorialDone = true; }
+  // high-score persistence
+  const prevBest = settings.best || 0;
+  stats.isNewBest = (stats.score || 0) > prevBest;
+  if (stats.isNewBest) settings.best = stats.score;
+  stats.best = settings.best || 0;
+  saveSettings();
   const delay = won ? 1300 : 1000;
   setTimeout(() => {
     hud.classList.add('hidden');
@@ -203,7 +209,7 @@ function syncStateFromScene() {
 function updateHud(h) {
   document.getElementById('hud-round').textContent = h.round;
   document.getElementById('hud-remaining').textContent = h.remaining;
-  document.getElementById('hud-shots').textContent = h.shots;
+  document.getElementById('hud-score').textContent = h.score;
   const role = document.getElementById('hud-role');
   role.textContent = h.roleLabel;
   role.style.color = h.finalDuel ? '#ff3b4e' : '#ffd23f';
@@ -298,7 +304,7 @@ function loop(now) {
 
 // ---- settings persistence ----
 function loadSettings() {
-  const def = { muted: false, volume: 0.7, difficulty: 'NORMAL', tutorialDone: false, haptics: true, reduceFx: false };
+  const def = { muted: false, volume: 0.7, difficulty: 'NORMAL', tutorialDone: false, haptics: true, reduceFx: false, best: 0 };
   try {
     const raw = localStorage.getItem(STORAGE_KEY);
     return raw ? { ...def, ...JSON.parse(raw) } : def;

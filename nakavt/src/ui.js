@@ -193,15 +193,19 @@ export class UI {
 
     const panel = this._el('div', 'stats-panel');
     const rows = [
+      ['Score', (stats.score ?? 0).toLocaleString()],
+      ['Best', (stats.best ?? 0).toLocaleString()],
       ['Placement', won ? '🏆 1st' : `#${stats.placement}`],
-      ['Shots', stats.shots],
-      ['Perfect', stats.perfect],
       ['Knockouts', stats.knockouts],
+      ['Perfect', stats.perfect],
       ['Accuracy', `${stats.accuracy}%`],
-      ['Time', `${(stats.timeMs / 1000).toFixed(1)}s`],
     ];
     for (const [k, v] of rows) panel.append(this._el('div', 's', `<span>${k}</span><b>${v}</b>`));
     s.append(panel);
+    if (stats.isNewBest && (stats.score ?? 0) > 0) {
+      const nb = this._el('div', 'newbest', '★ NEW BEST SCORE ★');
+      s.append(nb);
+    }
 
     const row1 = this._el('div', 'row');
     const again = this._el('button', 'btn', '▶ PLAY AGAIN');

@@ -110,6 +110,16 @@ export const DIFFICULTY = Object.freeze({
 /** Combo thresholds for the streak system. */
 export const STREAK = { hot: 3, onFire: 5, inferno: 7 };
 
+/** Arcade scoring — cosmetic points on top of the (unchanged) knockout gameplay. */
+export const SCORING = Object.freeze({
+  perfect: 100,
+  good: 50,
+  knockout: 150, // bonus when YOU knock a rival out
+  survive: 25, // bonus when you stay alive as the front shooter
+  streakStep: 0.25, // multiplier grows by this per perfect in the streak
+  streakMax: 3, // multiplier capped here (x3)
+});
+
 /**
  * Global design tokens — one source of truth for colors so they aren't
  * hard-coded per file. (CSS has its own mirror in styles.css :root.)
@@ -241,6 +251,12 @@ export const ARENAS = [
     court: '#c69a5a', courtLine: '#f0e2c0', keyPaint: '#1f7a3d',
     crowdA: '#0f5a2e', crowdB: '#f0e2c0', wall: '#0c2417', wallGlow: '#1f7a3d',
     accent: '#f5e9c8', floorSheen: '#d6ab68', parquet: true,
+  },
+  {
+    id: 'street', name: 'Sunset Blacktop', tagline: 'Downtown streetball',
+    court: '#5c6169', courtLine: '#e9e3d2', keyPaint: '#c24a2b',
+    crowdA: '#ff7a3d', crowdB: '#ffd23f', wall: '#2a1636', wallGlow: '#ff7a3d',
+    accent: '#ff9c4a', floorSheen: '#6a6f78',
   },
 ];
 
