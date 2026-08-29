@@ -1,0 +1,8 @@
+# Local-only animation reference (NBA Live 08 footage / extracted frames):
+# copyrighted and far too large for a public GitHub Pages repo — keep on your
+# machine only, never commit. See nakavt/docs/CHARACTER_ANIMATION_R&D.md.
+reference/
+nakavt/reference/
+*.mp4
+*.mov
+*.webm
