@@ -8,6 +8,7 @@
  *   pose:  'idle' | 'run' | 'shoot' | 'aim' | 'celebrate' | 'knockout'
  *   opts:  { facing: -1|1, dim: bool }
  */
+import { twoBoneIK } from '../core/steering.js';
 
 function rgb(hex) {
   const h = (hex || '#888').replace('#', '');
@@ -28,6 +29,33 @@ function capsule(ctx, x, y, w, h, r, base) {
   const g = ctx.createLinearGradient(x, y, x + w, y);
   g.addColorStop(0, shade(base, 0.7)); g.addColorStop(0.4, base); g.addColorStop(1, shade(base, 1.2));
   ctx.fillStyle = g; rr(ctx, x, y, w, h, r); ctx.fill();
+}
+
+/**
+ * Draw an articulated 2-bone limb from `base` toward `target`, solving the joint
+ * (elbow/knee) with law-of-cosines IK. Tapered upper + lower segments, a rounded
+ * joint cap, and an optional hand/foot end cap. `bend` picks the joint side.
+ * Returns the solved { mid, end } so callers can attach shoes/hands.
+ */
+function limb(ctx, base, target, l1, l2, bend, w, color, opts = {}) {
+  const { mid, end } = twoBoneIK(base, target, l1, l2, bend);
+  const seg = (a, b, wa, wb, col) => {
+    const ang = Math.atan2(b.y - a.y, b.x - a.x);
+    const nx = Math.cos(ang + Math.PI / 2), ny = Math.sin(ang + Math.PI / 2);
+    ctx.beginPath();
+    ctx.moveTo(a.x + nx * wa, a.y + ny * wa); ctx.lineTo(b.x + nx * wb, b.y + ny * wb);
+    ctx.lineTo(b.x - nx * wb, b.y - ny * wb); ctx.lineTo(a.x - nx * wa, a.y - ny * wa);
+    ctx.closePath();
+    const g = ctx.createLinearGradient(a.x, a.y, b.x, b.y);
+    g.addColorStop(0, shade(col, 0.82)); g.addColorStop(1, shade(col, 1.12));
+    ctx.fillStyle = g; ctx.fill();
+  };
+  seg(base, mid, w, w * 0.84, color);
+  seg(mid, end, w * 0.84, w * 0.68, opts.lowerColor || color);
+  ctx.fillStyle = shade(color, 0.9);
+  ctx.beginPath(); ctx.arc(mid.x, mid.y, w * 0.82, 0, Math.PI * 2); ctx.fill();
+  if (opts.cap) { ctx.fillStyle = opts.capColor || color; ctx.beginPath(); ctx.arc(end.x, end.y, opts.cap, 0, Math.PI * 2); ctx.fill(); }
+  return { mid, end };
 }
 
 function drawHair(ctx, char, hx, hy, hr) {
@@ -124,19 +152,39 @@ export function drawCharacter(ctx, char, x, y, scale, pose = 'idle', phase = 0, 
 
   if (lift) ctx.translate(0, -lift); // raise the body for the jump; shadow stays down
 
-  // Legs (skin thighs + shorts)
-  const legPhase = (pose === 'run' || pose === 'rebound') ? 14 : pose === 'walk' ? 10 : 0;
-  const legSpread = legPhase ? Math.sin(phase * legPhase) * 5 * s : 3.4 * s;
-  // thighs
-  capsule(ctx, -8 * s - legSpread, -4 * s, 7 * s, 16 * s, 3.4 * s, char.skin);
-  capsule(ctx, 1 * s + legSpread, -4 * s, 7 * s, 16 * s, 3.4 * s, char.skin);
-  // socks + shoes
-  ctx.fillStyle = '#f2f2f2';
-  rr(ctx, -9.5 * s - legSpread, 9 * s, 9.5 * s, 5.5 * s, 2.4 * s); ctx.fill();
-  rr(ctx, 0 * s + legSpread, 9 * s, 9.5 * s, 5.5 * s, 2.4 * s); ctx.fill();
-  ctx.fillStyle = trim;
-  ctx.fillRect(-9.5 * s - legSpread, 12.5 * s, 9.5 * s, 1.8 * s);
-  ctx.fillRect(0 * s + legSpread, 12.5 * s, 9.5 * s, 1.8 * s);
+  // Shared limb driver: a running stride phase used by both legs and arms.
+  const running = pose === 'run' || pose === 'rebound' || pose === 'walk';
+  const strideHz = pose === 'walk' ? 10 : 14;
+  const swing = running ? Math.sin(phase * strideHz) : 0;
+
+  // Legs — articulated hip→knee→ankle via 2-bone IK, with a shoe cap.
+  const hipY = -5 * s, hipDx = 5.4 * s * big;
+  const legL1 = 9 * s * big, legL2 = 9 * s * big;
+  const footY = 13.5 * s;
+  // gather crouch (shot load) and jump tuck pull the feet up a touch
+  const tuck = (pose === 'shoot' ? armUp : pose === 'aim' ? 0.4 : 0) * 2.5 * s;
+  const drawLeg = (side) => {
+    const hip = { x: side * hipDx, y: hipY };
+    // stride: forward foot swings toward facing and lifts; back foot trails
+    const ph = side === 1 ? swing : -swing;
+    const foot = {
+      x: side * hipDx + (running ? ph * 7 * s * facing : side * 1.5 * s),
+      y: footY - (running ? Math.max(0, ph * facing) * 5 * s : 0) - tuck,
+    };
+    // knee leads forward (toward facing)
+    const { end } = limb(ctx, hip, foot, legL1, legL2, facing >= 0 ? 1 : -1, 4.4 * s * big, char.skin);
+    // sock band + shoe (oriented toward facing)
+    ctx.fillStyle = '#f2f2f2';
+    ctx.beginPath(); ctx.arc(end.x, end.y - 1.5 * s, 3.4 * s, 0, Math.PI * 2); ctx.fill();
+    ctx.fillStyle = shade(trim, 1.0);
+    ctx.save(); ctx.translate(end.x, end.y + 1.5 * s);
+    ctx.beginPath(); ctx.ellipse(facing * 1.6 * s, 0, 5.6 * s, 3.1 * s, 0, 0, Math.PI * 2); ctx.fill();
+    ctx.fillStyle = shade(trim, 0.7); ctx.fillRect(-5.6 * s + facing * 1.6 * s, 1.4 * s, 11.2 * s, 1.4 * s);
+    ctx.restore();
+  };
+  // draw the trailing leg first (depth), then the leading one
+  const lead = facing >= 0 ? 1 : -1;
+  drawLeg(-lead); drawLeg(lead);
 
   // Shorts (over the top of the thighs) — NBA format: main + side stripe + patch
   const shortsY = -6 * s, shortsH = 13 * s;
@@ -149,18 +197,37 @@ export function drawCharacter(ctx, char, x, y, scale, pose = 'idle', phase = 0, 
   ctx.fillStyle = shade(trim, 0.9); // logo patch
   rr(ctx, -bodyW * 0.16, shortsY + shortsH * 0.5, bodyW * 0.14, shortsH * 0.28, 1.5 * s); ctx.fill();
 
-  // Arms (shaded); right arm may raise. Optional shooting sleeve.
-  const shoulderY = -bodyH * 0.82, armW = 5.6 * s * big;
-  const armColor = char.skin;
-  // left arm
-  if (pose === 'celebrate' || armUp > 0.45) capsule(ctx, -bodyW * 0.6, shoulderY - 22 * s * armUp, armW, 22 * s * armUp + armW, armW / 2, armColor);
-  else capsule(ctx, -bodyW * 0.6, shoulderY, armW, 17 * s, armW / 2, armColor);
-  // right arm (+ sleeve)
-  const rax = bodyW * (armUp > 0 ? 0.34 : 0.54), ray = armUp > 0 ? shoulderY - 24 * s * armUp : shoulderY;
-  const rah = armUp > 0 ? 24 * s * armUp + armW : 17 * s;
-  if (char.sleeve) capsule(ctx, rax, ray, armW, rah, armW / 2, char.sleeveColor || '#222');
-  else capsule(ctx, rax, ray, armW, rah, armW / 2, armColor);
-  if (char.wristband) { ctx.fillStyle = trim; ctx.fillRect(rax - 0.5 * s, ray + rah - armW - 2 * s, armW + 1 * s, 3 * s); }
+  // Arms — articulated shoulder→elbow→wrist via 2-bone IK. The shooting arm reaches
+  // toward the release point; the guide hand supports; running arms pump.
+  const shoulderY = -bodyH * 0.82, armW = 3.9 * s * big;
+  const armL1 = 8.5 * s * big, armL2 = 8.5 * s * big;
+  const shoL = { x: -bodyW * 0.46, y: shoulderY }, shoR = { x: bodyW * 0.46, y: shoulderY };
+  // default: hands hang a little outside the hips so the arms read beside the torso
+  let handL = { x: shoL.x - 5 * s, y: shoulderY + 17 * s };
+  let handR = { x: shoR.x + 5 * s, y: shoulderY + 17 * s };
+  let bendL = -1, bendR = 1;
+  if (running) {
+    handL = { x: shoL.x - 4 * s - swing * 6 * s * facing, y: shoulderY + 14 * s - Math.abs(swing) * 3 * s };
+    handR = { x: shoR.x + 4 * s + swing * 6 * s * facing, y: shoulderY + 14 * s - Math.abs(swing) * 3 * s };
+  } else if (pose === 'celebrate') {
+    handL = { x: shoL.x - 8 * s, y: shoulderY - 21 * s };
+    handR = { x: shoR.x + 8 * s, y: shoulderY - 21 * s };
+  } else if (pose === 'knockout') {
+    handL = { x: shoL.x - 15 * s, y: shoulderY + 8 * s };
+    handR = { x: shoR.x + 15 * s, y: shoulderY + 8 * s };
+  } else if (pose === 'aim' || pose === 'shoot') {
+    const rel = pose === 'shoot' ? armUp : 0.5; // 0 gather → 1 full extension
+    const relPt = { x: facing * bodyW * 0.42, y: shoulderY - 20 * s * rel - 8 * s };
+    const guidePt = { x: facing * bodyW * 0.10, y: shoulderY - 9 * s * rel + 1 * s };
+    if (facing >= 0) { handR = relPt; handL = guidePt; bendL = 1; } else { handL = relPt; handR = guidePt; bendR = -1; }
+  }
+  const sleeveLower = char.sleeve ? (char.sleeveColor || '#222') : char.skin;
+  const drawArmL = () => limb(ctx, shoL, handL, armL1, armL2, bendL, armW, char.skin, { cap: armW * 0.66, capColor: shade(char.skin, 1.05), lowerColor: char.sleeve ? sleeveLower : char.skin });
+  const drawArmR = () => limb(ctx, shoR, handR, armL1, armL2, bendR, armW, char.skin, { cap: armW * 0.66, capColor: shade(char.skin, 1.05), lowerColor: sleeveLower });
+  // Back arm (away from camera) goes behind the jersey; the front arm is drawn
+  // after the torso so it reads on top. `facing >= 0` ⇒ right arm is the front one.
+  const drawFrontArm = facing >= 0 ? drawArmR : drawArmL;
+  (facing >= 0 ? drawArmL : drawArmR)();
 
   // Torso — jersey main color, shaded
   const tg = ctx.createLinearGradient(-bodyW / 2, 0, bodyW / 2, 0);
@@ -186,6 +253,9 @@ export function drawCharacter(ctx, char, x, y, scale, pose = 'idle', phase = 0, 
   ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
   ctx.fillText(String(char.number), 0, -bodyH * 0.42);
   ctx.strokeStyle = trim; ctx.lineWidth = 0.8 * s; ctx.strokeText(String(char.number), 0, -bodyH * 0.42);
+
+  // Front arm — drawn over the jersey so the shooting/guide hand reads on top.
+  drawFrontArm();
 
   // Head — sphere-shaded
   const hx = 0, hy = -bodyH - headR * 0.4;
