@@ -16,6 +16,7 @@ import { rigDims, basePose, generatePose, makeSkeleton, resolveRig } from '../co
 import { applyLimbLag } from '../core/anim.js';
 import { gaitToLocal } from '../core/gait.js';
 import { blendPose, updateTurn } from '../core/blend.js';
+import { makeStrand, updateStrand } from '../core/verlet.js';
 
 // One rig scratch set for the module: pose generation and skeleton resolution are pure and
 // synchronous, so reusing these keeps drawing allocation-free no matter how many players
@@ -145,6 +146,24 @@ export function drawCharacter(ctx, char, x, y, scale, pose = 'idle', phase = 0, 
   if (anim) applyLimbLag(anim, sk, opts.dt || 0);
   // AE6: crossfade away from the previous pose so a state change is a transition rather
   // than a cut, and swing the body around instead of flipping `facing` instantly.
+  // AE7 secondary motion: the jersey hem (and dreads, where the character has them) are
+  // Verlet strands driven only by the body moving. Created lazily so a character that is
+  // never drawn costs nothing, and stepped with the body's own velocity as wind so the
+  // cloth trails the direction of travel.
+  let cloth = null;
+  if (anim) {
+    if (!anim.cloth) {
+      anim.cloth = {
+        hem: [makeStrand(3, 3.2 * s), makeStrand(3, 3.2 * s)],
+        dread: char.hair === 'dreads' ? [makeStrand(3, 3.0 * s), makeStrand(3, 3.0 * s)] : null,
+        wind: 0,
+      };
+    }
+    cloth = anim.cloth;
+    // the body's horizontal motion becomes the wind that drags the cloth behind it
+    cloth.wind = -(anim.lean.v) * 260;
+  }
+
   let turn = null;
   if (anim && anim.blend) {
     blendPose(anim.blend, sk, pose, opts.dt || 0);
@@ -238,6 +257,22 @@ export function drawCharacter(ctx, char, x, y, scale, pose = 'idle', phase = 0, 
   ctx.fillStyle = shade(trim, 0.9); // logo patch
   rr(ctx, -bodyW * 0.16, shortsY + shortsH * 0.5, bodyW * 0.14, shortsH * 0.28, 1.5 * s); ctx.fill();
 
+  // AE7: the jersey hem, hanging off the bottom of the shorts and swinging with the body
+  if (cloth) {
+    const dtc = opts.dt || 0;
+    const hemY = shortsY + shortsH;
+    cloth.hem.forEach((st, i) => {
+      const ax = (i === 0 ? -1 : 1) * bodyW * 0.26;
+      updateStrand(st, ax, hemY, dtc, cloth.wind);
+      ctx.strokeStyle = shade(char.shorts, 0.85);
+      ctx.lineWidth = 3.2 * s; ctx.lineCap = 'round'; ctx.lineJoin = 'round';
+      ctx.beginPath();
+      ctx.moveTo(st.pts[0].x, st.pts[0].y);
+      for (let k = 1; k < st.n; k++) ctx.lineTo(st.pts[k].x, st.pts[k].y);
+      ctx.stroke();
+    });
+  }
+
   // Arms — articulated shoulder→elbow→wrist via 2-bone IK. The rig decides where each
   // hand goes (shot release point, guide hand, arm pump, celebrate, knockout); this draws it.
   const { armL1, armL2, armW } = dims;
@@ -306,6 +341,22 @@ export function drawCharacter(ctx, char, x, y, scale, pose = 'idle', phase = 0, 
   }
 
   drawHair(ctx, char, hx, hy, headR);
+
+  // AE7: dreads get real swing on top of the drawn hair, anchored at the head
+  if (cloth && cloth.dread) {
+    const dtc = opts.dt || 0;
+    cloth.dread.forEach((st, i) => {
+      const ax = hx + (i === 0 ? -1 : 1) * headR * 0.72;
+      const ay = hy + headR * 0.25;
+      updateStrand(st, ax, ay, dtc, cloth.wind);
+      ctx.strokeStyle = shade(char.hairColor || '#1a1208', 0.95);
+      ctx.lineWidth = headR * 0.26; ctx.lineCap = 'round'; ctx.lineJoin = 'round';
+      ctx.beginPath();
+      ctx.moveTo(st.pts[0].x, st.pts[0].y);
+      for (let k = 1; k < st.n; k++) ctx.lineTo(st.pts[k].x, st.pts[k].y);
+      ctx.stroke();
+    });
+  }
 
   if (char.headband) {
     ctx.fillStyle = char.headbandColor || '#fff';
