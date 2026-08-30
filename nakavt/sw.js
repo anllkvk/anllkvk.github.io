@@ -6,7 +6,7 @@
  * offline. The full app shell is precached so the first offline launch still
  * boots. Bump CACHE on any shipped change to force a clean refresh.
  */
-const CACHE = 'nakavt-v6';
+const CACHE = 'nakavt-v7';
 const SHELL = [
   './', './index.html', './styles.css', './manifest.webmanifest', './icon.svg',
   './src/main.js', './src/config.js', './src/scene.js', './src/ui.js',
