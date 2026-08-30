@@ -255,14 +255,19 @@ export function drawCharacter(ctx, char, x, y, scale, pose = 'idle', phase = 0, 
   // Shorts. AE8: raised to the new hip line and shortened, so the thigh and knee show.
   // They used to reach to +7s against a foot line of +13.5s, hiding two thirds of the leg
   // — and with it every knee bend, foot plant and ankle angle the gait produces.
-  const shortsY = dims.hipY - 1 * s, shortsH = 10 * s;
+  // AE9: the shorts are wider than the jersey hem above them. Basketball shorts flare out
+  // from the waist; drawn narrower than the torso they read as trousers painted on the box.
+  const shortsY = dims.shortsY, shortsH = dims.shortsH, shortsW = bodyW + 2 * s;
   const shg = ctx.createLinearGradient(-bodyW / 2, 0, bodyW / 2, 0);
   shg.addColorStop(0, shade(char.shorts, 0.72)); shg.addColorStop(0.5, char.shorts); shg.addColorStop(1, shade(char.shorts, 1.18));
   ctx.save(); ctx.scale(hipTurnX, 1);
-  ctx.fillStyle = shg; rr(ctx, -bodyW / 2 + 1 * s, shortsY, bodyW - 2 * s, shortsH, 3 * s); ctx.fill();
+  ctx.fillStyle = shg; rr(ctx, -shortsW / 2, shortsY, shortsW, shortsH, 3 * s); ctx.fill();
   ctx.fillStyle = trim; // side stripes
-  ctx.fillRect(-bodyW / 2 + 1 * s, shortsY, 2.4 * s, shortsH);
-  ctx.fillRect(bodyW / 2 - 3.4 * s, shortsY, 2.4 * s, shortsH);
+  ctx.fillRect(-shortsW / 2, shortsY, 2.4 * s, shortsH);
+  ctx.fillRect(shortsW / 2 - 2.4 * s, shortsY, 2.4 * s, shortsH);
+  // leg-opening hem: the shorts end in a band, which is what separates cloth from thigh
+  ctx.fillStyle = shade(char.shorts, 0.72);
+  ctx.fillRect(-shortsW / 2, shortsY + shortsH - 1.6 * s, shortsW, 1.6 * s);
   ctx.fillStyle = shade(trim, 0.9); // logo patch
   rr(ctx, -bodyW * 0.16, shortsY + shortsH * 0.5, bodyW * 0.14, shortsH * 0.28, 1.5 * s); ctx.fill();
   ctx.restore();
@@ -272,7 +277,7 @@ export function drawCharacter(ctx, char, x, y, scale, pose = 'idle', phase = 0, 
     const dtc = opts.dt || 0;
     const hemY = shortsY + shortsH;
     cloth.hem.forEach((st, i) => {
-      const ax = (i === 0 ? -1 : 1) * bodyW * 0.26;
+      const ax = (i === 0 ? -1 : 1) * shortsW * 0.33;
       updateStrand(st, ax, hemY, dtc, cloth.wind);
       ctx.strokeStyle = shade(char.shorts, 0.85);
       ctx.lineWidth = 3.2 * s; ctx.lineCap = 'round'; ctx.lineJoin = 'round';
@@ -287,8 +292,9 @@ export function drawCharacter(ctx, char, x, y, scale, pose = 'idle', phase = 0, 
   // hand goes (shot release point, guide hand, arm pump, celebrate, knockout); this draws it.
   const { armL1, armL2, armW } = dims;
   const sleeveLower = char.sleeve ? (char.sleeveColor || '#222') : char.skin;
-  const drawArmL = () => limb(ctx, sk.shoulder.l, sk.hand.l, armL1, armL2, sk.bendArm.l, armW, char.skin, { cap: armW * 0.66, capColor: shade(char.skin, 1.05), lowerColor: char.sleeve ? sleeveLower : char.skin });
-  const drawArmR = () => limb(ctx, sk.shoulder.r, sk.hand.r, armL1, armL2, sk.bendArm.r, armW, char.skin, { cap: armW * 0.66, capColor: shade(char.skin, 1.05), lowerColor: sleeveLower });
+  const handR = armW * 0.86;   // a hand, not a dot: at 0.66 the arm just ended bluntly
+  const drawArmL = () => limb(ctx, sk.shoulder.l, sk.hand.l, armL1, armL2, sk.bendArm.l, armW, char.skin, { cap: handR, capColor: shade(char.skin, 1.05), lowerColor: char.sleeve ? sleeveLower : char.skin });
+  const drawArmR = () => limb(ctx, sk.shoulder.r, sk.hand.r, armL1, armL2, sk.bendArm.r, armW, char.skin, { cap: handR, capColor: shade(char.skin, 1.05), lowerColor: sleeveLower });
   // Back arm (away from camera) goes behind the jersey; the front arm is drawn
   // after the torso so it reads on top. `facing >= 0` ⇒ right arm is the front one.
   const frontSide = facing >= 0 ? 'r' : 'l';
@@ -306,9 +312,13 @@ export function drawCharacter(ctx, char, x, y, scale, pose = 'idle', phase = 0, 
 
   // Torso — jersey, shaded across the body AND down it so it reads as a volume rather
   // than a flat panel.
+  // AE9: the jersey stops at the waistband instead of hanging to mid-thigh over the
+  // shorts. Live QA showed the old hem covered 8 of the shorts' 10s, so collar-to-thigh
+  // was one unbroken green mass and the hips had no visible line at all.
+  const jerseyH = dims.jerseyHemY - -bodyH;
   const tg = ctx.createLinearGradient(-bodyW / 2, 0, bodyW / 2, 0);
   tg.addColorStop(0, shade(char.jersey, 0.62)); tg.addColorStop(0.45, char.jersey); tg.addColorStop(1, shade(char.jersey, 1.24));
-  ctx.fillStyle = tg; rr(ctx, -bodyW / 2, -bodyH, bodyW, bodyH * 0.82, 6.5 * s); ctx.fill();
+  ctx.fillStyle = tg; rr(ctx, -bodyW / 2, -bodyH, bodyW, jerseyH, 6.5 * s); ctx.fill();
   // shoulder caps: deltoid mass so the arms grow out of the body instead of floating
   ctx.fillStyle = shade(char.jersey, 0.92);
   ctx.beginPath();
@@ -316,15 +326,21 @@ export function drawCharacter(ctx, char, x, y, scale, pose = 'idle', phase = 0, 
   ctx.ellipse(bodyW * 0.44, -bodyH * 0.80, bodyW * 0.17, bodyH * 0.13, 0, 0, Math.PI * 2);
   ctx.fill();
   // vertical form: light on the chest, shadow toward the hem
-  const tv = ctx.createLinearGradient(0, -bodyH, 0, -bodyH * 0.18);
+  const tv = ctx.createLinearGradient(0, -bodyH, 0, dims.jerseyHemY);
   tv.addColorStop(0, 'rgba(255,255,255,0.13)');
   tv.addColorStop(0.45, 'rgba(255,255,255,0)');
   tv.addColorStop(1, 'rgba(0,0,0,0.20)');
-  ctx.fillStyle = tv; rr(ctx, -bodyW / 2, -bodyH, bodyW, bodyH * 0.82, 6.5 * s); ctx.fill();
+  ctx.fillStyle = tv; rr(ctx, -bodyW / 2, -bodyH, bodyW, jerseyH, 6.5 * s); ctx.fill();
+  // Hem edge. The jersey and the shorts are two shades of one team colour, and at the
+  // ~66px the character actually occupies in play a shade step alone does not carry — the
+  // two blocks fused back into one. A lit edge along the hem is what the reference shows
+  // (cloth catches light where it ends) and it is the line that makes the waist read.
+  ctx.fillStyle = 'rgba(255,255,255,0.22)';
+  ctx.fillRect(-bodyW / 2 + 1 * s, dims.jerseyHemY - 1.2 * s, bodyW - 2 * s, 1.2 * s);
   // side stripes (trim)
   ctx.fillStyle = trim;
-  ctx.fillRect(-bodyW / 2, -bodyH + 4 * s, 2.4 * s, bodyH * 0.7);
-  ctx.fillRect(bodyW / 2 - 2.4 * s, -bodyH + 4 * s, 2.4 * s, bodyH * 0.7);
+  ctx.fillRect(-bodyW / 2, -bodyH + 4 * s, 2.4 * s, jerseyH - 4 * s);
+  ctx.fillRect(bodyW / 2 - 2.4 * s, -bodyH + 4 * s, 2.4 * s, jerseyH - 4 * s);
   // neckline (trim V)
   ctx.strokeStyle = trim; ctx.lineWidth = 2.2 * s; ctx.lineJoin = 'round';
   ctx.beginPath(); ctx.moveTo(-bodyW * 0.22, -bodyH + 1 * s); ctx.lineTo(0, -bodyH + 6 * s); ctx.lineTo(bodyW * 0.22, -bodyH + 1 * s); ctx.stroke();
@@ -337,13 +353,16 @@ export function drawCharacter(ctx, char, x, y, scale, pose = 'idle', phase = 0, 
     ctx.fillStyle = 'rgba(255,255,255,0.92)';
     ctx.font = `900 ${4.6 * s * big}px system-ui, sans-serif`;
     ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
-    ctx.fillText(char.team, 0, -bodyH * 0.72);
+    ctx.fillText(char.team, 0, -bodyH + 8.8 * s);
   }
   ctx.fillStyle = '#fff';
   ctx.font = `900 ${13 * s * big}px system-ui, sans-serif`;
   ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
-  ctx.fillText(String(char.number), 0, -bodyH * 0.42);
-  ctx.strokeStyle = trim; ctx.lineWidth = 0.8 * s; ctx.strokeText(String(char.number), 0, -bodyH * 0.42);
+  // Centred between the shoulder line and the hem. At -bodyH*0.42 the glyphs hung 4s past
+  // the shortened hem and sat on the shorts.
+  const numY = (dims.shoulderY + dims.jerseyHemY) / 2;
+  ctx.fillText(String(char.number), 0, numY);
+  ctx.strokeStyle = trim; ctx.lineWidth = 0.8 * s; ctx.strokeText(String(char.number), 0, numY);
   ctx.restore();
 
   // Rim light down the lit edge of the torso — cheap separation from the background,
@@ -352,7 +371,7 @@ export function drawCharacter(ctx, char, x, y, scale, pose = 'idle', phase = 0, 
   ctx.strokeStyle = 'rgba(255,255,255,0.30)'; ctx.lineWidth = 1.6 * s;
   ctx.beginPath();
   ctx.moveTo(bodyW / 2 - 0.8 * s, -bodyH + 7 * s);
-  ctx.lineTo(bodyW / 2 - 0.8 * s, -bodyH * 0.26);
+  ctx.lineTo(bodyW / 2 - 0.8 * s, dims.jerseyHemY - 2 * s);
   ctx.stroke();
   ctx.restore();
   ctx.restore(); // end of the turned torso

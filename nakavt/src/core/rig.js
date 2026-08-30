@@ -68,6 +68,14 @@ export function rigDims(scale, heightClass, out = {}) {
   out.legL1 = out.legL2 = (legSpan * 0.5) / REST_EXTENSION;
   out.legReach = out.legL1 + out.legL2;
   out.legW = 4.4 * s * big;
+  // AE9 garment lines. The shorts run hipY-1s to hipY+9s, but the jersey was drawn AFTER
+  // them and hung to -0.18*bodyH — which is BELOW the shorts waist by 8s of their 10s
+  // height. The shorts were therefore 98% hidden and the figure read as one green tunic
+  // from collar to thigh, with no waist. The reference silhouette is three blocks: jersey,
+  // shorts, leg. Pin the jersey hem here so the renderer and the tests agree on it.
+  out.shortsY = out.hipY - 1 * s;
+  out.shortsH = 10 * s;
+  out.jerseyHemY = out.hipY + 0.5 * s;   // overlaps the waistband, then stops
   out.shoulderY = -bodyH * 0.82;
   out.shoulderDx = bodyW * 0.46;
   out.armL1 = 11 * s * big;

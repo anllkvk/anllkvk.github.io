@@ -348,3 +348,27 @@ test('AE2: locomotion and resting hands are clamped inside full extension', () =
     }
   }
 });
+
+test('AE9: the shorts are a visible garment, not hidden under the jersey', () => {
+  // Live QA caught this and the whole AE8 proportion suite missed it, because every guard
+  // measured the SKELETON while the defect was in the DRAW ORDER: the shorts were drawn
+  // first, then the jersey was drawn over them down to -0.18*bodyH — 8s below the shorts
+  // waist, covering 8 of their 10s. The figure read as one green tunic from collar to
+  // thigh with no waist anywhere in the silhouette. The reference is three stacked blocks:
+  // jersey, shorts, leg. Guard the band each one actually occupies on screen.
+  for (const h of ['reg', 'tall', 'big']) {
+    const d = rigDims(1, h);
+    const jerseyBand = d.jerseyHemY - d.shoulderY;
+    const shortsBand = d.shortsY + d.shortsH - d.jerseyHemY;   // what is left uncovered
+    const legBand = d.footY - (d.shortsY + d.shortsH);
+
+    assert.ok(d.jerseyHemY < d.shortsY + d.shortsH,
+      `${h}: the jersey hem (${d.jerseyHemY}) hangs past the shorts hem — the shorts vanish`);
+    assert.ok(d.jerseyHemY > d.shortsY,
+      `${h}: the jersey stops above the waistband and leaves a bare gap at the hip`);
+    assert.ok(shortsBand > 0.28 * jerseyBand,
+      `${h}: only ${shortsBand.toFixed(1)} of shorts show under ${jerseyBand.toFixed(1)} of jersey`);
+    assert.ok(legBand > shortsBand,
+      `${h}: more shorts (${shortsBand.toFixed(1)}) than bare leg (${legBand.toFixed(1)})`);
+  }
+});
