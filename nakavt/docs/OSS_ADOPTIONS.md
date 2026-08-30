@@ -28,3 +28,23 @@ their code was used.
 - No real NBA names/logos/likenesses introduced.
 
 See `docs/OSS_RESEARCH.md` for the full candidate evaluation and classification table.
+
+## Character animation engine (AE1–AE7)
+
+All original implementations of public-domain algorithms; no third-party code was copied.
+Where an MIT-licensed project is the clearest precedent for a technique it is credited
+here even though the code was written from scratch (see `CHARACTER_ANIMATION_R&D.md` §6).
+
+| Technique | Where | Precedent / origin |
+|---|---|---|
+| Critically-damped spring ("SmoothDamp") | `core/anim.js` | Game Programming Gems 4; the same pattern drives limb lag in `cristhiandrm/2D-Procedural-Hyper-Motion-Controller` (MIT, C#) |
+| Decoupled physics anchor → damped visual body | `core/anim.js` | 2D-Procedural-Hyper-Motion-Controller (MIT, C#) — reimplemented, not ported |
+| COM-triggered step + arc-lerp swing foot | `core/gait.js` | `mradovic38/ik-proc-anim-2d` (MIT, C#) — reimplemented, not ported |
+| Two-bone IK (law of cosines) | `core/steering.js` | classic closed-form solution, public domain |
+| Verlet integration + distance constraints | `core/verlet.js` | Jakobsen, *Advanced Character Physics* (2001); public domain |
+| Penner easing curves | `core/ease.js` | Robert Penner easing equations, public domain |
+| Reynolds steering (arrive/seek/pursue) | `core/steering.js` | Craig Reynolds, 1999; public domain |
+
+**No NBA Live 08 asset, frame, texture, model, sound or logo is used anywhere in the
+project.** The reference footage informed movement *principles* only, is gitignored, and
+never leaves the developer machine.

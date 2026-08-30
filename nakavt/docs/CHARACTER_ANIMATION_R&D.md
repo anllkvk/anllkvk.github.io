@@ -432,38 +432,96 @@ Scored 1–5 (5 = best) for NAKAVT's constraints. **Higher total = better fit.**
 
 ---
 
-## 9. Animation roadmap (phased, each: implement → `npm test` → `node test/browser.mjs` → visual QA → commit)
+## 9. Animation roadmap — SHIPPED (AE1–AE7 complete, 2026-08-30)
 
-| Phase | Work | Acceptance |
-|---|---|---|
-| **AE1 — Rig scaffold** | Introduce a pure rig (root/pelvis, spine, shoulders, hips, neck) + joint-target data; render current look *through* the rig (visual parity). Split pose-gen from drawing. Rig carries **`stanceWidth` + `hipDrop`** channels from the start (§1.0 finding 3). | look unchanged; tests green |
-| **AE2 — Momentum layer** | smoothed-velocity → body lean + stride/swing scaling; squash/stretch on jump apex & landing; SmoothDamp limb lag (follow-through/secondary); **clamp arm hand-targets so elbows never straighten** (§1.0 finding 6). | run leans & scales with speed; limbs lag; arms never lock out |
-| **AE3 — Foot IK + planting** | COM-triggered step + arc-lerp swing foot; lock the plant foot (no sliding); **ankle/foot angle driven by stride phase — plant foot flat, trail foot plantar-flexed** (§1.0 finding 1); STOP = **widen base + drop COM + plant both feet** (finding 2); **per-foot contact shadow** (finding 4). | no foot-skating; visible hard stop; toe points on push-off |
-| **AE4 — Shot chain** | replace `armUp` with `gather(dip)→leg drive→extend→wrist release→follow-through hold→land absorb`, eased sub-phases; jump load/apex/land. | RUN→SHOOT reads as a real jump shot |
-| **AE5 — Ball-tracking hands** | hand-IK to the ball carry/reach point; head **stabilised against torso pitch _and_ aimed at the ball** (§1.0 finding 5); rebound = reach toward the ball's real position + catch + land absorb. | ball reads "held/reached," not glued |
-| **AE6 — State blending** | crossfade pose weights between states; pelvis-led TURN/PIVOT; direction-change crossover. | no pose popping; smooth turns |
-| **AE7 — Secondary FX + perf + QA** | Verlet jersey hem/hair; profile 60/45 FPS w/ 10 movers; visual QA against the two acceptance chains; tune. | acceptance chains pass, 60 FPS |
+Every phase: implement → `npm test` → visual QA in real Chrome → commit → push.
+Test count went **39 → 149**, all green.
 
-New tests (pure layer): COM step-trigger fires when COM leaves foot span; plant foot stays
-fixed while body translates; blend weight ∈ [0,1] and reaches target; shot phase timing
-monotonic; hand-IK target equals ball position within reach; **ankle angle is flat on the plant foot and pointed on the swing foot**; **arm hand-target never exceeds the clamped reach**. Plus the two E2E acceptance
-chains below.
+| Phase | Shipped | Module | Acceptance |
+|---|---|---|---|
+| **AE1 — Rig scaffold** | Pure rig: proportions, pose generation, skeleton resolution, split out of the renderer. `stanceWidth`/`hipDrop` carried from the start. | `core/rig.js` | ✅ pose sheet **byte-identical** to the pre-refactor render |
+| **AE2 — Momentum** | Critically-damped spring; smoothed speed → lean + stride length + cadence; squash/stretch from real vertical motion; limb lag; elbow clamp. | `core/anim.js` | ✅ lean and stride scale with speed; arms never lock out |
+| **AE3 — Foot planting** | World-space feet: one planted and pinned, the other swings on an arc. Ankle angle (flat plant, pointed toe). Braking stop = wide base + dropped COM. Per-foot shadow. | `core/gait.js` | ✅ plant foot moves **0.0px** across 400 sprint frames |
+| **AE4 — Shot chain** | gather → drive → extend → wrist release → **held** follow-through → land absorb, off the two gameplay clocks. | `core/shotchain.js` | ✅ the shot reads as a sequence, not a ramp |
+| **AE5 — Ball & gaze** | Shared carry point (ball and hand cannot disagree); hands posed *to* the ball wherever it is; head stabilised against lean **and** aimed at the ball. | `core/rig.js` | ✅ hand tracks the ball to the floor, to head height, and *reaches* for one out of range |
+| **AE6 — Blending** | Pose crossfade on the resolved skeleton (feet excluded — the gait owns those); pelvis-led turn through side-on with the shoulders trailing. | `core/blend.js` | ✅ largest per-frame joint jump cut to **under half** |
+| **AE7 — Secondary + perf** | Verlet jersey hem and dread swing; performance profile; acceptance chains. | `core/verlet.js` | ✅ **1.56 ms/frame for 10 movers** (15.1 ms headroom at 60 FPS) |
+
+### What the frame analysis changed
+
+All six §1.0 findings shipped: the ankle channel (AE3), the two-foot braking stop
+(AE3), stance width and hip drop (AE1→AE4), the per-foot shadow (AE3),
+stabilise-*and*-aim for the head (AE5), and the elbow clamp (AE2).
+
+### Bugs the work uncovered — all pre-existing, all the same shape
+
+Four separate cases of **a limb target placed where the limb cannot reach**, so the IK
+silently clamped it and the intended motion never appeared:
+
+1. **Legs too short to stand.** Hip-to-floor was `18.5*s` but the leg bones totalled
+   `18*s`, so every normal-height knee was pinned straight and feet were already being
+   drawn short of their target. Fatal once AE3 asks a foot to stay where it was planted.
+   Leg length is now derived from the hip-to-floor span with slack.
+2. **Resting hands beyond the arm.** `17.72*s` of reach on a `17*s` arm — the elbows were
+   locked in every non-shooting pose, which is much of why the arms read as sticks.
+3. **The shot release ~44px from a ~27px arm**, so the arm sat at max extension from the
+   first frame and the entire extension ramp was invisible.
+4. **The guide hand anchored to the body centre** but measured from its own shoulder, a
+   shoulder-width further out than intended.
+
+Every one now has a test that sweeps heights, draw scales and facings and fails if a
+target ever lands outside the limb. Two more modelling bugs: feet aimed their step at the
+body centre line and **crossed over**; and the braking stance widened the hips but not the
+feet, so the wide base was invisible.
+
+### Things that were invisible until the renderer was told about them
+
+The rig moved joints the renderer did not draw from. `hipDrop` moved the pelvis while the
+torso was drawn from a fixed origin, so a gather or a landing absorb only moved hidden
+hips; `lean` was a whole-body canvas translate, which slides a sprite rather than carrying
+a body over its feet. Both now move the drawn upper body. A raised arm was also drawn
+*under* the head, hiding the release pose.
+
+### Tooling note
+
+Two QA failures worth recording, because both produced **false confidence** rather than
+visible errors:
+
+- A patch script run with stdout and stderr both redirected to `/dev/null` swallowed a
+  failed anchor match. AE4's scene wiring never landed, the unit tests and QA strips
+  passed anyway (they call the rig directly), and the miss was only caught during AE5.
+  Fixed in the AE5 commit; edits are now verified by grepping for the symbol.
+- `python -m http.server` sends no `Cache-Control`, so Chrome applied heuristic freshness
+  and re-served a stale module after an edit — a visual strip can "prove" a change works
+  while rendering the previous build. The local QA server now sends `no-store`.
 
 ---
 
-## 10. Acceptance test (definition of done)
-
-The new system is **only** accepted if these two chains look clearly better — weight,
-articulated joints, no instant pose pops, physical ball relationship, momentum:
+## 10. Acceptance test — MET
 
 ```
-Chain 1:  RUN → SPRINT → STOP → TURN → SHOOT
-Chain 2:  RUN → CHASE BALL → REBOUND → JUMP → CATCH → LAND → SHOOT
+Chain 1:  RUN → SPRINT → STOP → TURN → SHOOT                     ✅
+Chain 2:  RUN → CHASE BALL → REBOUND → JUMP → CATCH → LAND → SHOOT ✅
 ```
 
-Quality bar: **not** "we added more animations" — the pass condition is *"movement quality is
-visibly different."* Captured as before/after screenshots + a short headless-capture of each
-chain in `test/`.
+Captured as before/after filmstrips by loading the **pre-AE1 renderer straight out of git**
+alongside the current one and running both through the same timeline, so the comparison is
+the same motion through two engines rather than two different takes.
+
+**Before:** all twelve frames of each chain are near-identical — the same standing figure
+whether running, stopping, turning or shooting, with the ball drifting past a body that
+never reacts to it.
+
+**After:** strides differ by speed, the stop drops and widens, the turn passes through
+side-on with the shoulders trailing, the shot rises and holds and lands, and the arm tracks
+the falling ball the whole way down.
+
+The bar was *"movement quality is visibly different"*, not *"we added more animations"* —
+and the difference is structural: at any instant the pose is asymmetric, the base is loaded,
+a foot is pinned to the floor, the head is level, and the hand is where the ball is.
+
+Local-only artefacts (gitignored): `reference/shots/ae7_chain1.png`,
+`reference/shots/ae7_chain2.png`, plus per-phase strips for AE2–AE6.
 
 ---
 
