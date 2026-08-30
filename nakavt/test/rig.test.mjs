@@ -233,38 +233,68 @@ function* parityCases() {
   }
 }
 
-test('AE1 parity: the rig reproduces the old inline skeleton exactly', () => {
-  let checked = 0;
-  for (const { want, got, tag } of parityCases()) {
-    near(got.hip.l.x, want.hipL.x); near(got.hip.l.y, want.hipL.y);
-    near(got.hip.r.x, want.hipR.x); near(got.hip.r.y, want.hipR.y);
-    near(got.foot.l.x, want.footL.x); near(got.foot.l.y, want.footL.y);
-    near(got.foot.r.x, want.footR.x); near(got.foot.r.y, want.footR.y);
-    near(got.shoulder.l.x, want.shoL.x); near(got.shoulder.l.y, want.shoL.y);
-    near(got.shoulder.r.x, want.shoR.x); near(got.shoulder.r.y, want.shoR.y);
-    near(got.head.x, want.head.x); near(got.head.y, want.head.y);
-    assert.equal(got.bendArm.l, want.bendL, 'bendArm.l ' + tag);
-    assert.equal(got.bendArm.r, want.bendR, 'bendArm.r ' + tag);
-    assert.equal(got.bendLeg, want.bendLeg, 'bendLeg ' + tag);
-    checked++;
+/**
+ * AE1's parity sweep is retired here, deliberately. It existed to prove AE1 was a pure
+ * refactor and then guarded AE2–AE7 against accidental proportion drift, and it did both.
+ * AE8 changes the proportions ON PURPOSE — the old figure was 2.9 heads tall with two
+ * thirds of its leg hidden behind the shorts — so there is no longer an "old skeleton" to
+ * hold parity with. What replaces it is a guard on the proportions that matter, which is
+ * the thing the sweep was really protecting.
+ */
+test('AE8 proportions: the figure is athletic-chibi, not baby-chibi', () => {
+  for (const h of ['normal', 'tall', 'big']) {
+    const d = rigDims(1, h);
+    const total = d.footY - (d.headY - d.headR);
+    const headsTall = total / (2 * d.headR);
+    assert.ok(headsTall > 3.4 && headsTall < 4.6, `${h}: ${headsTall.toFixed(2)} heads tall`);
   }
-  assert.equal(checked, PARITY_HEIGHTS.length * PARITY_SCALES.length * PARITY_POSES.length * PARITY_PHASES.length * 2);
 });
 
-test('AE1 parity: celebrate and knockout hands are unchanged by AE2/AE4', () => {
-  // AE2 only clamps the locomotion/resting arms, and AE4 only reworked the shot, so the
-  // other genuinely-extended poses keep their exact old hand targets.
-  const extended = new Set(['celebrate', 'knockout']);
-  let checked = 0;
-  for (const { want, got, name, tag } of parityCases()) {
-    if (!extended.has(name)) continue;
-    near(got.hand.l.x, want.handL.x, 1e-9, 'handL.x ' + tag);
-    near(got.hand.l.y, want.handL.y, 1e-9);
-    near(got.hand.r.x, want.handR.x, 1e-9, 'handR.x ' + tag);
-    near(got.hand.r.y, want.handR.y, 1e-9);
-    checked++;
+test('AE8 proportions: the legs are a real fraction of the height', () => {
+  for (const h of ['normal', 'tall', 'big']) {
+    const d = rigDims(1, h);
+    const total = d.footY - (d.headY - d.headR);
+    const legFrac = (d.footY - d.hipY) / total;
+    assert.ok(legFrac > 0.35, `${h}: legs are only ${(legFrac * 100).toFixed(0)}% of height`);
   }
-  assert.ok(checked > 0);
+});
+
+test('AE8: the shorts leave most of the leg visible, so the gait can be seen', () => {
+  // The old shorts ran to +7s against a +13.5s floor, hiding two thirds of the leg — and
+  // with it every knee bend and foot plant AE3 produces. This is the regression guard.
+  for (const h of ['normal', 'tall', 'big']) {
+    const d = rigDims(1, h);
+    const shortsBottom = d.hipY - 1 + 10;       // matches the renderer: hipY - 1s, height 10s
+    const visible = d.footY - shortsBottom;
+    assert.ok(visible / d.legReach > 0.4, `${h}: only ${((visible / d.legReach) * 100).toFixed(0)}% of the leg is visible`);
+  }
+});
+
+test('AE8: there is a neck between the torso and the head', () => {
+  const d = rigDims(1, 'normal');
+  assert.ok(d.headY < d.neckY, 'the head centre sits above the collar line');
+  assert.ok(d.headY + d.headR > d.neckY - 9, 'and overlaps it, so the silhouette has no gap');
+  assert.ok(d.neckW > 0 && d.neckW < d.bodyW * 0.5, 'the neck is narrower than the torso');
+});
+
+test('AE8: arms stay proportionate to the taller torso', () => {
+  const d = rigDims(1, 'normal');
+  const arm = d.armL1 + d.armL2;
+  const torso = d.bodyH * 0.82;
+  assert.ok(arm > torso * 0.55, `arm ${arm.toFixed(1)} is too short for a ${torso.toFixed(1)} torso`);
+});
+
+test('celebrate raises both hands overhead; knockout throws them out and down', () => {
+  // Retired along with the parity sweep (AE8 moved the shoulders), so this now pins the
+  // INTENT of those two poses rather than their exact pre-AE1 pixel targets.
+  const dims = rigDims(1, 'normal');
+  const cel = resolveRig(dims, generatePose('celebrate', 0.5, 1, 1), makeSkeleton());
+  assert.ok(cel.hand.l.y < cel.shoulder.l.y, 'left hand is above the shoulder');
+  assert.ok(cel.hand.r.y < cel.shoulder.r.y, 'right hand is above the shoulder');
+
+  const ko = resolveRig(dims, generatePose('knockout', 0.5, 1, 1), makeSkeleton());
+  assert.ok(ko.hand.l.y > ko.shoulder.l.y, 'knocked out, the hands fall below the shoulders');
+  assert.ok(ko.hand.l.x < ko.shoulder.l.x && ko.hand.r.x > ko.shoulder.r.x, 'and splay outward');
 });
 
 test('AE2: lean carries the pelvis over the feet instead of sliding the whole body', () => {
@@ -294,14 +324,14 @@ test('AE2: a faster run leans the body further over its feet', () => {
   assert.ok(fast.lean > slow.lean, `sprint lean ${fast.lean} should exceed jog lean ${slow.lean}`);
 });
 
-test('AE2: the old resting/running hand targets were beyond full arm reach', () => {
-  // This is the frame finding (1.0-6) reproduced as a test: the pre-AE2 hand targets sat
-  // *outside* the arm, so the IK pinned the elbow straight and the arms read as sticks.
-  const dims = rigDims(1, 'normal');
-  const armLen = dims.armL1 + dims.armL2;
+test('AE2: the old resting/running hand targets were beyond the old arm reach', () => {
+  // Frame finding 1.0-6 reproduced as a test. Compared against the arm length OF THAT
+  // BUILD (8.5+8.5 = 17*s) — AE8 later lengthened the arm, which would mask the original
+  // defect if this compared against today's geometry.
+  const LEGACY_ARM = 17;
   const legacy = legacyJoints(1, 'normal', 'idle', 0, 1);
   const reach = Math.hypot(legacy.handR.x - legacy.shoR.x, legacy.handR.y - legacy.shoR.y);
-  assert.ok(reach > armLen, `legacy rest reach ${reach} should exceed arm length ${armLen}`);
+  assert.ok(reach > LEGACY_ARM, `legacy rest reach ${reach.toFixed(2)} should exceed the ${LEGACY_ARM} arm of that build`);
 });
 
 test('AE2: locomotion and resting hands are clamped inside full extension', () => {

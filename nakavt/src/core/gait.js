@@ -19,7 +19,8 @@ export const GAIT = Object.freeze({
   // a foot placed further than the leg can extend would be clamped by the IK and drawn
   // somewhere other than where it was planted, which is exactly the skating we are
   // removing. These fractions keep every plant comfortably inside the leg.
-  triggerFrac: 0.30,   // how far the COM may lead the plant foot before a step is forced
+  triggerFrac: 0.26,   // how far the COM may lead the plant foot before a step is forced
+  lockFrac: 0.80,      // a plant this far from the COM forces a step: knees must not lock
   stepLenMinFrac: 0.20, // a slow step lands this far ahead of the COM
   stepLenMaxFrac: 0.40, // a sprint step lands this far ahead
   arcFrac: 0.20,       // how high the swing foot lifts at mid-swing
@@ -50,6 +51,7 @@ export function makeGaitState() {
     to: 0,           // world x it is heading for
     t: 0,            // 0..1 swing progress
     dur: GAIT.stepDurMax,
+    since: 0,        // s the current foot has been bearing weight
     ready: false,
     // Handed to the rig each frame as local-space foot overrides.
     out: { l: { x: 0, y: 0, ankle: 0 }, r: { x: 0, y: 0, ankle: 0 } },
@@ -74,7 +76,9 @@ export function updateGait(gait, input, dt) {
   const moving = !!input.moving;
   const reach = input.legReach || 20;
   const trigger = reach * GAIT.triggerFrac;
+  const lockOut = reach * GAIT.lockFrac;
   const arc = reach * GAIT.arcFrac;
+  const vx = input.vx || 0;
 
   if (!gait.ready) {
     // Plant both feet under the character rather than sliding them in from nowhere.
@@ -89,21 +93,47 @@ export function updateGait(gait, input, dt) {
 
   const stepLen = reach * (GAIT.stepLenMinFrac + (GAIT.stepLenMaxFrac - GAIT.stepLenMinFrac) * speed01);
   gait.dur = GAIT.stepDurMax + (GAIT.stepDurMin - GAIT.stepDurMax) * speed01;
+  gait.since += dt;
+
+  // Cadence has to be physically possible, not just tuned. A foot lands stepLen AHEAD of
+  // the body and may trail lockOut BEHIND it, so a stance phase has (lockOut + stepLen) of
+  // room. Only one foot swings at a time, so each foot stands for about two swing
+  // durations — meaning 2*dur*speed must fit in that room, i.e. dur <= 0.6*reach/speed.
+  //
+  // Without this clamp a sprinting body covers more ground during a single swing than the
+  // leg can span, so every stance ends over-extended and the knee draws as a locked stick.
+  // That is what the live in-game footage showed and no unit test had caught.
+  const feasibleDur = (0.55 * reach) / Math.max(1, Math.abs(vx));
+  gait.dur = Math.max(0.05, Math.min(gait.dur, feasibleDur));
+  const maxStance = gait.dur * 1.05;
 
   // Launch first, then advance in the same frame: otherwise a step spends its first frame
   // sitting flat at the old plant position, which shows up as a one-frame stall.
   if (!gait.swing && moving) {
     // The COM has run out ahead of the planted foot — take a step with the other one.
     const plant = gait.foot[gait.support];
-    if (Math.abs(comX - plant.x) > trigger) {
+    // Two reasons to step. The normal one is the COM getting far enough past the plant.
+    // The second is a safety: a fast body outruns its own swing, and the planted foot ends
+    // up so far behind that the leg reaches full extension and the knee locks straight —
+    // which is exactly the "drawn, not animated" tell the whole engine exists to remove.
+    const stretched = Math.abs(comX - plant.x) > lockOut;
+    const overdue = gait.since >= maxStance;
+    if (stretched || overdue || Math.abs(comX - plant.x) > trigger) {
       const k = other(gait.support);
       gait.swing = k;
       gait.from = gait.foot[k].x;
       // Each foot steps along ITS OWN side of the body. Aiming both at the centre line
       // made the swinging foot cross over, which (a) the reference never does and (b) put
       // the foot further from its hip than the leg could reach, so the IK moved it.
-      gait.to = comX + (k === 'r' ? halfWidth : -halfWidth) + facing * stepLen;
+      //
+      // The target also LEADS the body: it is placed where the COM will be by the time the
+      // foot lands, not where the COM is now. Without that, a sprinting body has already
+      // travelled past the landing spot before the foot arrives, so it starts every stance
+      // phase behind and finishes it over-extended.
+      const lead = vx * gait.dur;
+      gait.to = comX + lead + (k === 'r' ? halfWidth : -halfWidth) + facing * stepLen;
       gait.t = 0;
+      gait.since = 0;
     }
   }
 

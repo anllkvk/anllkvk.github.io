@@ -286,3 +286,32 @@ test('without a gait the rig still falls back to the sine stride', () => {
   assert.equal(sk.ankle.r, 0);
   assert.notEqual(sk.foot.l.x, sk.foot.r.x, 'but the legacy stride still splits the feet');
 });
+
+test('NO LOCKED KNEES: a sprinting body never over-extends its planted leg', () => {
+  // Found in live in-game footage, not in the unit tests: a fast body outruns its own
+  // swing, so the plant ends up far enough behind that the leg reaches full extension and
+  // the knee draws as a straight stick. The lock-out trigger plus predictive foot placement
+  // keep the stance leg inside a bend.
+  for (const h of ['normal', 'tall', 'big']) {
+    for (const scale of [0.86, 0.95, 1.6]) {
+      const dims = rigDims(scale, h);
+      const halfWidth = dims.hipDx + dims.s * 1.5;
+      const g = makeGaitState();
+      const pose = basePose();
+      let comX = 0, worst = 0;
+      const vx = 220 * scale;                   // full sprint
+      updateGait(g, { comX, facing: 1, speed01: 1, moving: true, halfWidth, legReach: dims.legReach, vx }, 1 / 60);
+      for (let i = 1; i <= 600; i++) {
+        comX += vx * (1 / 60);
+        updateGait(g, { comX, facing: 1, speed01: 1, moving: true, halfWidth, legReach: dims.legReach, vx }, 1 / 60);
+        generatePose('run', i / 60, 1, scale, pose);
+        pose.feet = gaitToLocal(g, comX, dims.footY);
+        const sk = resolveRig(dims, pose, makeSkeleton());
+        for (const k of ['l', 'r']) {
+          worst = Math.max(worst, Math.hypot(sk.foot[k].x - sk.hip[k].x, sk.foot[k].y - sk.hip[k].y) / dims.legReach);
+        }
+      }
+      assert.ok(worst < 0.99, `${h}@${scale}: leg reached ${(worst * 100).toFixed(1)}% of full extension`);
+    }
+  }
+});

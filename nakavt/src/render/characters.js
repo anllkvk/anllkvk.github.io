@@ -73,7 +73,7 @@ function limb(ctx, base, target, l1, l2, bend, w, color, opts = {}) {
   return { mid, end };
 }
 
-function drawHair(ctx, char, hx, hy, hr) {
+function drawHair(ctx, char, hx, hy, hr, simulatedDreads = false) {
   const hc = char.hairColor || '#1a1208';
   const g = ctx.createRadialGradient(hx - hr * 0.3, hy - hr * 0.9, hr * 0.15, hx, hy - hr * 0.4, hr * 1.7);
   g.addColorStop(0, shade(hc, 1.35)); g.addColorStop(1, shade(hc, 0.85));
@@ -108,9 +108,14 @@ function drawHair(ctx, char, hx, hy, hr) {
       break;
     case 'dreads':
       ctx.beginPath(); ctx.arc(hx, hy - hr * 0.35, hr * 1.12, Math.PI, 0); ctx.fill();
-      for (let i = -3; i <= 3; i++) {
-        const dx = hx + i * hr * 0.42; const len = hr * (1.1 + (i % 2 ? 0.3 : 0));
-        rr(ctx, dx - hr * 0.14, hy - hr * 0.4, hr * 0.28, len, hr * 0.14); ctx.fill();
+      // The hanging locks are skipped when the Verlet strands are simulating them — drawing
+      // both stacked a static blob behind a swinging one on each side, which read as a pair
+      // of headphones clamped to the head rather than as hair.
+      if (!simulatedDreads) {
+        for (let i = -3; i <= 3; i++) {
+          const dx = hx + i * hr * 0.42; const len = hr * (1.1 + (i % 2 ? 0.3 : 0));
+          rr(ctx, dx - hr * 0.14, hy - hr * 0.4, hr * 0.28, len, hr * 0.14); ctx.fill();
+        }
       }
       break;
     default: break;
@@ -213,10 +218,6 @@ export function drawCharacter(ctx, char, x, y, scale, pose = 'idle', phase = 0, 
 
   if (lift) ctx.translate(0, -lift); // raise the body for the jump; shadow stays down
 
-  // AE6: the hips lead the turn. Everything below the waist is drawn under this scale;
-  // the torso above uses the shoulder scale, which trails it (overlapping action).
-  if (turn) { ctx.save(); ctx.scale(turn.hips, 1); }
-
   // Legs — articulated hip→knee→ankle via 2-bone IK, with a shoe cap. Hip and foot
   // targets come from the rig; this only draws the chain between them.
   const { legL1, legL2, legW } = dims;
@@ -237,25 +238,34 @@ export function drawCharacter(ctx, char, x, y, scale, pose = 'idle', phase = 0, 
   // draw the trailing leg first (depth), then the leading one
   const lead = facing >= 0 ? 1 : -1;
   drawLeg(-lead); drawLeg(lead);
-  if (turn) ctx.restore();
 
   // Everything above the hips rides the lean AND the crouch; the feet just drawn do not.
   // Without the vertical half, a gather or a landing absorb only moved the hidden hips
   // and the character never visibly sank.
   ctx.save();
   ctx.translate(sk.lean, sk.hipDrop);
-  if (turn) ctx.scale(turn.shoulders, 1);
+  // AE6 turn, corrected: the scale is applied ONLY to the torso and shorts below, never to
+  // the arms or legs. Those are IK chains solved to real targets — a planted foot, a hand on
+  // the ball — and squashing them horizontally distorts the solved geometry, which showed up
+  // in-game as legs splaying off at impossible angles whenever the player turned. A box with
+  // a number on it reads as rotating when it narrows; a limb just reads as broken.
+  const turnX = turn ? turn.shoulders : 1;
+  const hipTurnX = turn ? turn.hips : 1;
 
-  // Shorts (over the top of the thighs) — NBA format: main + side stripe + patch
-  const shortsY = -6 * s, shortsH = 13 * s;
+  // Shorts. AE8: raised to the new hip line and shortened, so the thigh and knee show.
+  // They used to reach to +7s against a foot line of +13.5s, hiding two thirds of the leg
+  // — and with it every knee bend, foot plant and ankle angle the gait produces.
+  const shortsY = dims.hipY - 1 * s, shortsH = 10 * s;
   const shg = ctx.createLinearGradient(-bodyW / 2, 0, bodyW / 2, 0);
   shg.addColorStop(0, shade(char.shorts, 0.72)); shg.addColorStop(0.5, char.shorts); shg.addColorStop(1, shade(char.shorts, 1.18));
+  ctx.save(); ctx.scale(hipTurnX, 1);
   ctx.fillStyle = shg; rr(ctx, -bodyW / 2 + 1 * s, shortsY, bodyW - 2 * s, shortsH, 3 * s); ctx.fill();
   ctx.fillStyle = trim; // side stripes
   ctx.fillRect(-bodyW / 2 + 1 * s, shortsY, 2.4 * s, shortsH);
   ctx.fillRect(bodyW / 2 - 3.4 * s, shortsY, 2.4 * s, shortsH);
   ctx.fillStyle = shade(trim, 0.9); // logo patch
   rr(ctx, -bodyW * 0.16, shortsY + shortsH * 0.5, bodyW * 0.14, shortsH * 0.28, 1.5 * s); ctx.fill();
+  ctx.restore();
 
   // AE7: the jersey hem, hanging off the bottom of the shorts and swinging with the body
   if (cloth) {
@@ -288,10 +298,29 @@ export function drawCharacter(ctx, char, x, y, scale, pose = 'idle', phase = 0, 
   const armOverHead = sk.hand[frontSide].y < sk.head.y;
   (facing >= 0 ? drawArmL : drawArmR)();
 
-  // Torso — jersey main color, shaded
+  // Neck — drawn before the torso so the jersey collar overlaps it. Without this the head
+  // sat straight on a box, which is a large part of why the figure read as a toy.
+  ctx.save(); ctx.scale(turnX, 1);
+  ctx.fillStyle = shade(char.skin, 0.82);
+  rr(ctx, -dims.neckW / 2, dims.neckY - 6 * s, dims.neckW, 9 * s, 2 * s); ctx.fill();
+
+  // Torso — jersey, shaded across the body AND down it so it reads as a volume rather
+  // than a flat panel.
   const tg = ctx.createLinearGradient(-bodyW / 2, 0, bodyW / 2, 0);
-  tg.addColorStop(0, shade(char.jersey, 0.66)); tg.addColorStop(0.45, char.jersey); tg.addColorStop(1, shade(char.jersey, 1.22));
-  ctx.fillStyle = tg; rr(ctx, -bodyW / 2, -bodyH, bodyW, bodyH * 0.82, 6 * s); ctx.fill();
+  tg.addColorStop(0, shade(char.jersey, 0.62)); tg.addColorStop(0.45, char.jersey); tg.addColorStop(1, shade(char.jersey, 1.24));
+  ctx.fillStyle = tg; rr(ctx, -bodyW / 2, -bodyH, bodyW, bodyH * 0.82, 6.5 * s); ctx.fill();
+  // shoulder caps: deltoid mass so the arms grow out of the body instead of floating
+  ctx.fillStyle = shade(char.jersey, 0.92);
+  ctx.beginPath();
+  ctx.ellipse(-bodyW * 0.44, -bodyH * 0.80, bodyW * 0.17, bodyH * 0.13, 0, 0, Math.PI * 2);
+  ctx.ellipse(bodyW * 0.44, -bodyH * 0.80, bodyW * 0.17, bodyH * 0.13, 0, 0, Math.PI * 2);
+  ctx.fill();
+  // vertical form: light on the chest, shadow toward the hem
+  const tv = ctx.createLinearGradient(0, -bodyH, 0, -bodyH * 0.18);
+  tv.addColorStop(0, 'rgba(255,255,255,0.13)');
+  tv.addColorStop(0.45, 'rgba(255,255,255,0)');
+  tv.addColorStop(1, 'rgba(0,0,0,0.20)');
+  ctx.fillStyle = tv; rr(ctx, -bodyW / 2, -bodyH, bodyW, bodyH * 0.82, 6.5 * s); ctx.fill();
   // side stripes (trim)
   ctx.fillStyle = trim;
   ctx.fillRect(-bodyW / 2, -bodyH + 4 * s, 2.4 * s, bodyH * 0.7);
@@ -299,19 +328,34 @@ export function drawCharacter(ctx, char, x, y, scale, pose = 'idle', phase = 0, 
   // neckline (trim V)
   ctx.strokeStyle = trim; ctx.lineWidth = 2.2 * s; ctx.lineJoin = 'round';
   ctx.beginPath(); ctx.moveTo(-bodyW * 0.22, -bodyH + 1 * s); ctx.lineTo(0, -bodyH + 6 * s); ctx.lineTo(bodyW * 0.22, -bodyH + 1 * s); ctx.stroke();
-  // team wordmark
+  // Jersey text. The AE6 turn draws the torso under a negative horizontal scale as the
+  // body swings around, which mirrors everything inside it — including the wordmark and
+  // the number, which then read backwards. Undo that flip for the text only.
+  ctx.save();
+  if (turnX < 0) ctx.scale(-1, 1);
   if (char.team) {
     ctx.fillStyle = 'rgba(255,255,255,0.92)';
     ctx.font = `900 ${4.6 * s * big}px system-ui, sans-serif`;
     ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
     ctx.fillText(char.team, 0, -bodyH * 0.72);
   }
-  // big number
   ctx.fillStyle = '#fff';
   ctx.font = `900 ${13 * s * big}px system-ui, sans-serif`;
   ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
   ctx.fillText(String(char.number), 0, -bodyH * 0.42);
   ctx.strokeStyle = trim; ctx.lineWidth = 0.8 * s; ctx.strokeText(String(char.number), 0, -bodyH * 0.42);
+  ctx.restore();
+
+  // Rim light down the lit edge of the torso — cheap separation from the background,
+  // and the main thing that stops a flat fill reading as cardboard.
+  ctx.save();
+  ctx.strokeStyle = 'rgba(255,255,255,0.30)'; ctx.lineWidth = 1.6 * s;
+  ctx.beginPath();
+  ctx.moveTo(bodyW / 2 - 0.8 * s, -bodyH + 7 * s);
+  ctx.lineTo(bodyW / 2 - 0.8 * s, -bodyH * 0.26);
+  ctx.stroke();
+  ctx.restore();
+  ctx.restore(); // end of the turned torso
 
   // Front arm — drawn over the jersey so the shooting/guide hand reads on top.
   if (!armOverHead) drawFrontArm();
@@ -340,17 +384,17 @@ export function drawCharacter(ctx, char, x, y, scale, pose = 'idle', phase = 0, 
     }
   }
 
-  drawHair(ctx, char, hx, hy, headR);
+  drawHair(ctx, char, hx, hy, headR, !!(cloth && cloth.dread));
 
   // AE7: dreads get real swing on top of the drawn hair, anchored at the head
   if (cloth && cloth.dread) {
     const dtc = opts.dt || 0;
     cloth.dread.forEach((st, i) => {
-      const ax = hx + (i === 0 ? -1 : 1) * headR * 0.72;
-      const ay = hy + headR * 0.25;
+      const ax = hx + (i === 0 ? -1 : 1) * headR * 0.52;
+      const ay = hy + headR * 0.10;
       updateStrand(st, ax, ay, dtc, cloth.wind);
-      ctx.strokeStyle = shade(char.hairColor || '#1a1208', 0.95);
-      ctx.lineWidth = headR * 0.26; ctx.lineCap = 'round'; ctx.lineJoin = 'round';
+      ctx.strokeStyle = shade(char.hairColor || '#1a1208', 0.9);
+      ctx.lineWidth = headR * 0.17; ctx.lineCap = 'round'; ctx.lineJoin = 'round';
       ctx.beginPath();
       ctx.moveTo(st.pts[0].x, st.pts[0].y);
       for (let k = 1; k < st.n; k++) ctx.lineTo(st.pts[k].x, st.pts[k].y);

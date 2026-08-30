@@ -158,6 +158,7 @@ export class Scene {
     if (!E || !E.anim || dt <= 0) return;
     if (!E.animPrev) E.animPrev = { x: E.pos.x, y: E.pos.y };
     const speed = Math.hypot(E.pos.x - E.animPrev.x, E.pos.y - E.animPrev.y) / dt;
+    const vx = (E.pos.x - E.animPrev.x) / dt;   // signed, for predictive foot placement
     E.animPrev.x = E.pos.x; E.animPrev.y = E.pos.y;
     const facing = E.facing || 1;
     updateAnim(E.anim, { speed, maxSpeed: MOVE.maxSpeed, facing, lift }, dt);
@@ -172,6 +173,7 @@ export class Scene {
       comX: E.pos.x,
       facing,
       speed01: E.anim.speed01.v,
+      vx,
       moving: speed > 12,
       halfWidth: dims.hipDx * E.anim.stance.stanceWidth + dims.s * 1.5,
       legReach: dims.legReach,

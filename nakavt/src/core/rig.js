@@ -22,8 +22,15 @@ import { shotChain, gatherPose } from './shotchain.js';
 /**
  * How much of its full length a standing leg uses. Below 1 so the knee keeps a bend at
  * rest — a locked knee is the single clearest "this is a drawing" tell (doc §1.0).
+ *
+ * It also sets how far a foot can be planted sideways before the leg runs out: with the hip
+ * h above the floor and the leg h/REST_EXTENSION long, the horizontal room is
+ * sqrt(R² - h²) = R·sqrt(1 - REST_EXTENSION²). At 0.9 that was only 0.44R of room and a
+ * standing leg was ALREADY 90% extended, so a normal stride pushed straight past full
+ * extension and the knee locked. 0.82 gives 0.57R of room and a visibly bent standing knee,
+ * which is what the reference shows in every grounded frame.
  */
-export const REST_EXTENSION = 0.9;
+export const REST_EXTENSION = 0.82;
 
 /** How much of the torso's lean the neck cancels so the head stays level (AE5). */
 export const HEAD_STABILISE = 0.4;
@@ -39,12 +46,16 @@ export function heightScale(heightClass) {
  */
 export function rigDims(scale, heightClass, out = {}) {
   const s = scale, big = heightScale(heightClass);
-  const bodyW = 25 * s * big, bodyH = 34 * s * big, headR = 13.5 * s * big;
+  const bodyW = 25 * s * big, bodyH = 38 * s * big, headR = 8.8 * s * big;
   out.s = s; out.big = big;
   out.bodyW = bodyW;
   out.bodyH = bodyH;
   out.headR = headR;
-  out.hipY = -5 * s;
+  // AE8 proportions. The hips used to sit at -5s, which put them *below* the shorts and
+  // left only 6.5s of a 18.5s leg visible — roughly a third. Every knee bend, foot plant
+  // and ankle angle AE3 produces was hidden behind the shorts. Raising the hips both
+  // lengthens the leg (bones are derived from this span) and exposes the thigh.
+  out.hipY = -14 * s;
   out.hipDx = 5.4 * s * big;
   out.footY = 13.5 * s;
   // Leg bones are derived from the hip-to-floor span rather than hard-coded, so the knee
@@ -59,10 +70,13 @@ export function rigDims(scale, heightClass, out = {}) {
   out.legW = 4.4 * s * big;
   out.shoulderY = -bodyH * 0.82;
   out.shoulderDx = bodyW * 0.46;
-  out.armL1 = 8.5 * s * big;
-  out.armL2 = 8.5 * s * big;
+  out.armL1 = 11 * s * big;
+  out.armL2 = 11 * s * big;
   out.armW = 3.9 * s * big;
-  out.headY = -bodyH - headR * 0.4;
+  // A neck gap, so the head reads as sitting ON shoulders rather than fused to a box.
+  out.neckY = -bodyH + 1.5 * s;
+  out.neckW = bodyW * 0.30;
+  out.headY = -bodyH - headR * 0.62;
   return out;
 }
 
@@ -192,6 +206,7 @@ export function makeSkeleton() {
     bendLeg: 1,
     lean: 0,               // px the upper body carries ahead of the feet (AE2)
     hipDrop: 0,            // px the upper body sinks over planted feet (AE3/AE4)
+    accomDrop: 0,          // extra sink so a wide plant stays reachable (AE8)
     ankle: { l: 0, r: 0 }, // rad; 0 = flat on the floor, +ve = toe pointed (AE3)
     headAim: 0,            // px the gaze shifts toward the ball (AE5)
     headStab: 0,           // px the head counters the torso lean to stay level (AE5)
@@ -340,6 +355,33 @@ export function resolveRig(dims, pose, sk = makeSkeleton()) {
   sk.pelvis.x += pose.lean;
   sk.hip.l.x += pose.lean;
   sk.hip.r.x += pose.lean;
+
+  // The pelvis accommodates the plant. If a foot is planted further out than the leg can
+  // reach from the current hip height, the hips drop until it can — which is what a real
+  // body does when it strides wide, and is why a low wide stance looks the way it does.
+  // The alternative would be to move the foot, i.e. to un-plant it, which is the skating
+  // this whole layer exists to remove. Bounded, so an extreme case sinks rather than snaps.
+  if (pose.feet) {
+    const maxLeg = dims.legReach * 0.97;
+    let need = 0;
+    for (const k of ['l', 'r']) {
+      const dx = sk.foot[k].x - sk.hip[k].x;
+      const room = maxLeg * maxLeg - dx * dx;
+      if (room <= 0) continue;                       // unreachable sideways; gait bounds this
+      const maxDy = Math.sqrt(room);
+      const dy = sk.foot[k].y - sk.hip[k].y;
+      if (dy > maxDy) need = Math.max(need, dy - maxDy);
+    }
+    if (need > 0) {
+      const drop = Math.min(need, dims.legReach * 0.35);
+      sk.pelvis.y += drop;
+      sk.hip.l.y += drop;
+      sk.hip.r.y += drop;
+      sk.accomDrop = drop;
+      sk.hipDrop += drop;
+    } else sk.accomDrop = 0;
+  } else sk.accomDrop = 0;
+
 
   return sk;
 }
