@@ -17,11 +17,16 @@ import { analytics } from './core/events.js';
 import { drawArenaScene, drawBall, drawVignette, invalidateArenaCache } from './render/arena.js';
 import { drawCharacter } from './render/characters.js';
 import { makeAnimState, updateAnim } from './core/anim.js';
-import { makeSkeleton, rigDims } from './core/rig.js';
+import { makeSkeleton, rigDims, ballCarry } from './core/rig.js';
+import { shotChain } from './core/shotchain.js';
 import { makeGaitState, updateGait, brakeStance } from './core/gait.js';
 
 /** A character's persistent animation state plus its own rig skeleton (AE1/AE2). */
 const _dimsScratch = {};
+const _ballDims = {};
+const _chainScratch = {};
+const _carry = { x: 0, y: 0 };
+const _ballLocal = { x: 0, y: 0 };
 
 function newAnim() {
   const a = makeAnimState();
@@ -177,10 +182,33 @@ export class Scene {
     return E.role === 'front' ? 0.92 : 0.86;
   }
 
-  /** Jump-shot lift in px — shared by the animation state and the renderer. */
-  _shotLift(H) {
-    if (!H || !H.ball || H.ball.state !== 'flight') return 0;
-    return Math.sin(Math.min(1, H.ball.t / 0.32) * Math.PI) * 14;
+  /**
+   * Seconds since this character's shot left the hand, or null if it is not shooting.
+   * The human's in-flight ball is state 'flight'; an AI's is state 'ball'.
+   */
+  _shotT(E) {
+    if (!E || !E.ball) return null;
+    if (E.isHuman) return E.ball.state === 'flight' ? E.ball.t : null;
+    return E.state === 'ball' ? E.ball.t : null;
+  }
+
+  /** Jump height in px, straight off the shot chain so every layer agrees on it (AE4). */
+  _shotLift(E) {
+    const t = this._shotT(E);
+    return t == null ? 0 : shotChain(t, _chainScratch).lift;
+  }
+
+  /**
+   * The human's current animation pose. Decided once and used by BOTH the ball update and
+   * the draw pass: if they disagreed the ball would sit where no hand is, which is exactly
+   * the failure AE5 exists to remove.
+   */
+  _humanPose(H) {
+    if (H.charging) return 'aim';
+    if (H.ball.state === 'flight') return 'shoot';
+    if (Math.hypot(H.vel.x, H.vel.y) > 20) return 'run';
+    if (H.hasBall && H.ball.state === 'held') return 'dribble';
+    return 'idle';
   }
 
   _makeHuman(player, role) {
@@ -254,7 +282,8 @@ export class Scene {
       d.safety = (d.safety || 0) + dt;
       this._aiStep(d.a, dt, PACE.autoScale, () => this._autoMake(d.a));
       if (!d.winner) this._aiStep(d.b, dt, PACE.autoScale, () => this._autoMake(d.b));
-      this._animStep(d.a, dt); this._animStep(d.b, dt);
+      this._animStep(d.a, dt, this._shotLift(d.a));
+      this._animStep(d.b, dt, this._shotLift(d.b));
       // Safety (rare): if it drags AND no shot is mid-air, resolve deterministically
       // (better shooter wins) — no RNG, so seeded runs stay reproducible.
       if (!d.winner && d.safety > 8 && !d.a.ball && !d.b.ball) {
@@ -270,7 +299,7 @@ export class Scene {
         this._updateBall(d.human, dt);
         this._animStep(d.human, dt, this._shotLift(d.human));
       }
-      this._animStep(d.opp, dt);
+      this._animStep(d.opp, dt, this._shotLift(d.opp));
       if (d.phase === 'ko' && d.koVictim) d.koVictim.koT = Math.min(1, (d.koVictim.koT || 0) + dt / PACE.koTime);
       if (d.timer <= 0) this._finishDuel();
       return;
@@ -280,7 +309,7 @@ export class Scene {
     this._updateHuman(d.human, dt);
     if (!d.winner) this._aiStep(d.opp, dt, 1, () => { this.sfx.swish(); this._score('opp'); });
     this._animStep(d.human, dt, this._shotLift(d.human));
-    this._animStep(d.opp, dt);
+    this._animStep(d.opp, dt, this._shotLift(d.opp));
     this._emitHud();
   }
 
@@ -317,9 +346,14 @@ export class Scene {
     const b = H.ball, L = this.layout;
     b.rot += dt * 7;
     if (b.state === 'held') {
-      // ball sits at the hand, slightly toward the hoop
+      // AE5: the ball sits at the carry point the rig will pose the hand to (rig.ballCarry),
+      // not at a fixed body offset that no hand was ever near. z is 0 because the carry
+      // point already carries the height.
       const dir = L.hoop.x >= H.pos.x ? 1 : -1;
-      b.pos.x = H.pos.x + 14 * dir; b.pos.y = H.pos.y - 30; b.z = 44;
+      const ch = this.charsById.get(H.id);
+      const dims = rigDims(this._drawScale(H), ch && ch.height, _ballDims);
+      const c = ballCarry(dims, this._humanPose(H), dir, _carry);
+      b.pos.x = H.pos.x + c.x; b.pos.y = H.pos.y + c.y; b.z = 0;
       return;
     }
     if (b.state === 'flight') {
@@ -755,19 +789,32 @@ export class Scene {
   }
 
   _drawHuman(H) {
-    let pose = 'idle', phase = this.t;
-    const opts = { facing: H.facing, anim: H.anim, dt: this._dt || 0, comX: H.pos.x };
-    const moving = Math.hypot(H.vel.x, H.vel.y) > 20;
+    const pose = this._humanPose(H);
+    const shotT = this._shotT(H);
+    let phase = this.t;
+    const opts = {
+      facing: H.facing, anim: H.anim, dt: this._dt || 0, comX: H.pos.x,
+      // AE4: the shot chain runs off the ball's own clock, and the gather off the power sweep
+      shotT: shotT || 0,
+      charge: H.charging ? H.power : 0,
+    };
     // Squash/stretch now comes from the momentum layer (AE2), which derives it from the
     // body's real vertical motion — stretch while rising, squash on touchdown — instead of
     // two hand-rolled cases that could not agree with each other.
     opts.sx = H.anim.sx; opts.sy = H.anim.sy;
-    if (H.charging) { pose = 'aim'; phase = this.t; opts.sy *= 0.95; opts.sx *= 1.04; } // gather/crouch
-    else if (H.ball.state === 'flight') {
-      pose = 'shoot'; phase = Math.min(1, H.ball.t / 0.25);
-      opts.lift = this._shotLift(H);
-    } else if (moving) { pose = 'run'; phase = this.t; }
-    else if (H.hasBall && H.ball.state === 'held') { pose = 'dribble'; phase = this.t; }
+    if (pose === 'shoot') phase = H.ball.t;
+    // AE5: hand the ball over in local space whenever it is close enough to be worth
+    // reaching for — held, loose at our feet, or coming down off the rim.
+    const b = H.ball;
+    if (b && b.state !== 'flight' && b.state !== 'scored') {
+      _ballLocal.x = b.pos.x - H.pos.x;
+      _ballLocal.y = (b.pos.y - (b.z || 0)) - H.pos.y;
+      if (Math.hypot(_ballLocal.x, _ballLocal.y) < 90) {
+        opts.ballAt = _ballLocal;
+        // a dribble is one-handed; gathering to shoot or reaching for a loose ball is not
+        opts.twoHanded = pose !== 'dribble';
+      }
+    }
     // streak aura
     if (this.streak >= STREAK.onFire) opts.glow = { color: 'rgba(255,59,59,0.7)', a: 0.6 };
     else if (this.streak >= STREAK.hot) opts.glow = { color: 'rgba(255,140,26,0.65)', a: 0.5 };
@@ -788,7 +835,10 @@ export class Scene {
     const facing = O.facing != null ? O.facing : (this.layout.hoop.x >= O.pos.x ? 1 : -1);
     drawCharacter(this.ctx, this.charsById.get(O.id), O.pos.x, O.pos.y, sc,
       pose, pose === 'knockout' ? O.koT : this.t + (O.drift || 0),
-      { facing, anim: O.anim, dt: this._dt || 0, comX: O.pos.x, sx: O.anim.sx, sy: O.anim.sy });
+      {
+        facing, anim: O.anim, dt: this._dt || 0, comX: O.pos.x,
+        shotT: this._shotT(O) || 0, sx: O.anim.sx, sy: O.anim.sy,
+      });
   }
 
   _nameTag(O) {

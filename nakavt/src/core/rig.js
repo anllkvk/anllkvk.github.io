@@ -25,6 +25,9 @@ import { shotChain, gatherPose } from './shotchain.js';
  */
 export const REST_EXTENSION = 0.9;
 
+/** How much of the torso's lean the neck cancels so the head stays level (AE5). */
+export const HEAD_STABILISE = 0.4;
+
 /** Height class -> overall size multiplier. */
 export function heightScale(heightClass) {
   return heightClass === 'big' ? 1.2 : heightClass === 'tall' ? 1.08 : 1;
@@ -93,6 +96,10 @@ export function basePose(out = {}) {
   // AE3: when set, { l:{x,y,ankle}, r:{...} } local-space feet from the gait state. These
   // win over the sine stride, because they are the planted positions — see core/gait.js.
   out.feet = null;
+  // AE5: the ball in local space, when this character is holding or reaching for one.
+  // The hands are posed TO it; it is never posed to them.
+  out.ballAt = null;
+  out.twoHanded = true;
   return out;
 }
 
@@ -186,6 +193,8 @@ export function makeSkeleton() {
     lean: 0,               // px the upper body carries ahead of the feet (AE2)
     hipDrop: 0,            // px the upper body sinks over planted feet (AE3/AE4)
     ankle: { l: 0, r: 0 }, // rad; 0 = flat on the floor, +ve = toe pointed (AE3)
+    headAim: 0,            // px the gaze shifts toward the ball (AE5)
+    headStab: 0,           // px the head counters the torso lean to stay level (AE5)
   };
 }
 
@@ -307,6 +316,25 @@ export function resolveRig(dims, pose, sk = makeSkeleton()) {
   // (§1.0: the plant foot stays pinned while the body passes over it). So the lean moves
   // the pelvis and everything above it; the feet stay where they were planted. The
   // renderer applies sk.lean to the torso/arms/head it draws in body space.
+  // AE5: hands go to the ball, for every state except the shot (whose arm the chain
+  // owns) and the knockout. A held ball and a loose one are the same code path — the
+  // difference is only whether it is inside the arm's reach.
+  if (pose.ballAt && pose.armMode !== 'shoot' && pose.armMode !== 'knockout') {
+    handsToBall(dims, sk, pose.ballAt, facing, pose.twoHanded);
+  }
+
+  // AE5 head. Frame finding §1.0-5: the head is stabilised against the torso pitch AND
+  // aimed at the ball — both, not either. Without the first it bobs with the body; without
+  // the second the player never looks at what they are doing.
+  sk.headStab = -pose.lean * HEAD_STABILISE;
+  sk.headAim = 0;
+  if (pose.ballAt) {
+    const dx = pose.ballAt.x - sk.head.x;
+    const dy = pose.ballAt.y - sk.head.y;
+    const d = Math.hypot(dx, dy) || 1;
+    sk.headAim = Math.max(-1, Math.min(1, dx / d));
+  }
+
   sk.lean = pose.lean;
   sk.hipDrop = pose.hipDrop;
   sk.pelvis.x += pose.lean;
@@ -314,4 +342,66 @@ export function resolveRig(dims, pose, sk = makeSkeleton()) {
   sk.hip.r.x += pose.lean;
 
   return sk;
+}
+
+/**
+ * Where a carried ball sits, in local space (AE5).
+ *
+ * This is exported so the scene can put the ball here and the rig can pose the hand to the
+ * same point — the two cannot disagree, which is the whole trick. Previously the ball sat
+ * at a fixed body offset well above the head and no hand was near it, which is exactly the
+ * "reads as a decal" problem in doc §1.5.
+ */
+export function ballCarry(dims, poseName, facing, out = { x: 0, y: 0 }) {
+  const { s, bodyW, shoulderY, armL1, armL2 } = dims;
+  const arm = armL1 + armL2;
+  switch (poseName) {
+    case 'dribble':
+      // low and out to the ball side, where a dribbler's hand actually is
+      out.x = facing * bodyW * 0.60;
+      out.y = shoulderY + arm * 0.86;
+      break;
+    case 'aim':
+      // the set point: up at the chest, ready to go
+      out.x = facing * bodyW * 0.42;
+      out.y = shoulderY + 2 * s;
+      break;
+    default:
+      // carried at waist height, slightly ahead
+      out.x = facing * bodyW * 0.50;
+      out.y = shoulderY + arm * 0.58;
+      break;
+  }
+  return out;
+}
+
+/**
+ * Pose the hands to a ball that is actually somewhere (AE5).
+ *
+ * `ballAt` is the ball in local space. The near hand is placed ON it and the off hand
+ * cups it from the other side, both clamped to what the arm can reach — so a ball just
+ * out of range reads as *reaching for it*, which is the point (doc §1.5). Returns true if
+ * the hands were re-posed.
+ */
+export function handsToBall(dims, sk, ballAt, facing, twoHanded = true) {
+  if (!ballAt) return false;
+  const arm = dims.armL1 + dims.armL2;
+  // Reaching for the ball is one of the few moments that genuinely extends the arm (the
+  // shot is the other), so it is exempt from the locomotion elbow clamp — otherwise a
+  // ball just outside the everyday swing radius could never actually be held.
+  const REACH = 0.98;
+  const near = facing >= 0 ? 'r' : 'l';
+  const off = facing >= 0 ? 'l' : 'r';
+  const gap = dims.armW * 0.9;
+
+  sk.hand[near].x = ballAt.x;
+  sk.hand[near].y = ballAt.y;
+  clampReach(sk.shoulder[near], sk.hand[near], arm, REACH);
+
+  if (twoHanded) {
+    sk.hand[off].x = ballAt.x - facing * gap * 2;
+    sk.hand[off].y = ballAt.y + gap * 0.4;
+    clampReach(sk.shoulder[off], sk.hand[off], arm, REACH);
+  }
+  return true;
 }

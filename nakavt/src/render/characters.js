@@ -131,6 +131,8 @@ export function drawCharacter(ctx, char, x, y, scale, pose = 'idle', phase = 0, 
   const anim = opts.anim || null;
   const dims = rigDims(s, char.height, _dims);
   const P = generatePose(pose, phase, facing, s, _pose, anim, opts.shotT || 0, opts.charge || 0);
+  // AE5: opts.ballAt is the ball in this character's local space, when it has one.
+  if (opts.ballAt) { P.ballAt = opts.ballAt; P.twoHanded = opts.twoHanded !== false; }
   // AE3: real planted feet + the braking stance, when the caller keeps a gait state.
   if (anim && anim.gait && anim.gait.ready) {
     P.feet = gaitToLocal(anim.gait, opts.comX || 0, dims.footY);
@@ -266,7 +268,9 @@ export function drawCharacter(ctx, char, x, y, scale, pose = 'idle', phase = 0, 
   if (!armOverHead) drawFrontArm();
 
   // Head — sphere-shaded
-  const hx = sk.head.x, hy = sk.head.y;
+  // AE5: the head counters part of the torso lean so it stays level over the body,
+  // instead of being dragged along by it (frame finding 1.0-5).
+  const hx = sk.head.x + sk.headStab, hy = sk.head.y;
   const hg = ctx.createRadialGradient(hx - headR * 0.35, hy - headR * 0.4, headR * 0.12, hx, hy, headR * 1.15);
   hg.addColorStop(0, shade(char.skin, 1.2)); hg.addColorStop(0.7, char.skin); hg.addColorStop(1, shade(char.skin, 0.72));
   ctx.fillStyle = hg; ctx.beginPath(); ctx.arc(hx, hy, headR, 0, Math.PI * 2); ctx.fill();
@@ -310,10 +314,14 @@ export function drawCharacter(ctx, char, x, y, scale, pose = 'idle', phase = 0, 
     ctx.beginPath();
     ctx.ellipse(hx - headR * 0.4, eyeY, 3 * s, 3.4 * s, 0, 0, Math.PI * 2);
     ctx.ellipse(hx + headR * 0.4, eyeY, 3 * s, 3.4 * s, 0, 0, Math.PI * 2); ctx.fill();
+    // AE5: the gaze tracks the ball when there is one, and otherwise looks where the
+    // player is facing. Eyes that follow the ball are a large part of why the reference
+    // reads as a player rather than a sprite.
+    const gaze = sk.headAim !== 0 ? sk.headAim : facing * 0.4;
     ctx.fillStyle = '#20140c';
     ctx.beginPath();
-    ctx.arc(hx - headR * 0.4 + facing * 0.6 * s, eyeY, 1.7 * s, 0, Math.PI * 2);
-    ctx.arc(hx + headR * 0.4 + facing * 0.6 * s, eyeY, 1.7 * s, 0, Math.PI * 2); ctx.fill();
+    ctx.arc(hx - headR * 0.4 + gaze * 1.5 * s, eyeY, 1.7 * s, 0, Math.PI * 2);
+    ctx.arc(hx + headR * 0.4 + gaze * 1.5 * s, eyeY, 1.7 * s, 0, Math.PI * 2); ctx.fill();
   }
   // brow for intensity
   if (pose === 'aim' || pose === 'shoot') {
