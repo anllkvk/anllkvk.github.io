@@ -246,7 +246,7 @@ export class Scene {
     this._dt = dt; // the draw pass needs it to advance the limb lag
     if (this.flash) { this.flash.ttl -= dt; if (this.flash.ttl <= 0) this.flash = null; }
     // cosmetic layer (never gates gameplay)
-    this.cam.zoomTo(this.finalDuel ? FX.camZoomFinal : 1, 3);
+    this.cam.zoomTo(this.finalDuel ? FX.camZoomFinal : FX.camZoomBase, 3);
     this.cam.update(dt);
     this.particles.update(dt);
     if (this.screenFlash > 0) this.screenFlash = Math.max(0, this.screenFlash - dt * 2.2);
@@ -708,18 +708,30 @@ export class Scene {
     // --- world (inside camera transform) ---
     this.cam.begin(ctx);
 
+    // The scoreboard hangs in the arena, so it is drawn inside the camera transform — and
+    // the AE12 zoom pushed it off the top of the frame. Solve for the world y that lands it
+    // at the screen position it has always had, against the camera's own focus point and
+    // live zoom, so it holds through the base zoom, the final-duel zoom and a punch alike.
+    const camZ = this.cam.zoom || 1;
+    const camCy = this.cam.cy !== undefined ? this.cam.cy : H / 2;
     drawArenaScene(ctx, this.layout, this.arena, {
-      scoreboardY: H * 0.115,
+      scoreboardY: camCy + (H * 0.115 - camCy) / camZ,
       scoreboard: { top: this.arena.name.toUpperCase(), bottom: `${this.match.aliveCount} LEFT` },
     });
 
     // waiting queue — cached idle sprites (blit, not re-drawn)
+    // The queue lines up along the near edge of the floor, which the AE12 zoom pushed off
+    // the bottom of the frame. Like the scoreboard it is furniture rather than play, so it
+    // is pinned to the screen position it has always had rather than moved in world space.
     const waiting = this.match.queue.slice(2);
+    const queueY = camCy + (H * 0.99 - camCy) / camZ;
+    const queueX0 = this.cam.cx !== undefined ? this.cam.cx : W / 2;
     waiting.forEach((id, i) => {
       const ch = this.charsById.get(id);
-      const x = W * 0.16 + i * (W * 0.68 / Math.max(1, waiting.length));
+      const wx = W * 0.16 + i * (W * 0.68 / Math.max(1, waiting.length));
+      const x = queueX0 + (wx - queueX0) / camZ;
       const bob = Math.sin(this.t * 3 + i) * 1.2;
-      this.sprites.draw(ctx, ch, x, H * 0.99 + bob, 0.5, 'idle', { alpha: 0.82 });
+      this.sprites.draw(ctx, ch, x, queueY + bob, 0.5 / camZ, 'idle', { alpha: 0.82 });
     });
 
     const d = this.duel;

@@ -32,6 +32,11 @@ function rgb(hex) {
 }
 const c255 = (v) => Math.max(0, Math.min(255, Math.round(v)));
 function shade(hex, m) { const { r, g, b } = rgb(hex); return `rgb(${c255(r * m)},${c255(g * m)},${c255(b * m)})`; }
+/** `hex` darkened by `m`, then pulled `t` of the way toward `towards`. */
+function shadeToward(hex, m, towards, t) {
+  const a = rgb(hex), b = rgb(towards);
+  return `rgb(${c255(a.r * m + (b.r - a.r * m) * t)},${c255(a.g * m + (b.g - a.g * m) * t)},${c255(a.b * m + (b.b - a.b * m) * t)})`;
+}
 
 /**
  * ONE key light for the whole character, in local space (AE11).
@@ -48,11 +53,20 @@ function shade(hex, m) { const { r, g, b } = rgb(hex); return `rgb(${c255(r * m)
  */
 const LIGHT = Object.freeze({ x: -0.55, y: -0.84 });   // points from the surface toward the light
 
+/**
+ * Floor bounce (AE12). A polished court is a big warm reflector directly under the player,
+ * and the shadow side of a real body on one is never neutral-dark — it is filled with the
+ * colour of the floor. Shading everything toward black instead is what makes a figure look
+ * cut out and dropped onto the scene rather than standing in it. Every shadow terminates
+ * toward this instead of toward nothing, and the undersides get an explicit lift.
+ */
+const BOUNCE = '#d7a86a';
+
 /** Material response. Cloth is matte and broad; skin picks up more; rubber is glossy. */
 const MAT = Object.freeze({
-  cloth: { lit: 1.16, dark: 0.68, mid: 0.52 },
-  skin:  { lit: 1.24, dark: 0.70, mid: 0.48 },
-  gloss: { lit: 1.34, dark: 0.58, mid: 0.62 },
+  cloth: { lit: 1.16, dark: 0.68, mid: 0.52, bounce: 0.20 },
+  skin:  { lit: 1.24, dark: 0.70, mid: 0.48, bounce: 0.26 },
+  gloss: { lit: 1.34, dark: 0.58, mid: 0.62, bounce: 0.16 },
 });
 
 /**
@@ -66,7 +80,7 @@ function lightGrad(ctx, cx, cy, radius, base, m = MAT.cloth) {
   );
   g.addColorStop(0, shade(base, m.lit));
   g.addColorStop(m.mid, base);
-  g.addColorStop(1, shade(base, m.dark));
+  g.addColorStop(1, shadeToward(base, m.dark, BOUNCE, m.bounce || 0));
   return g;
 }
 
@@ -203,6 +217,28 @@ function drawHair(ctx, char, hx, hy, hr, simulatedDreads = false) {
       break;
     default: break;
   }
+
+  // STRANDS (AE12). Every style above is one solid silhouette, which reads as a moulded
+  // cap rather than as hair. A few strokes following the skull — lighter where the key
+  // light grazes the crown, darker at the hairline where hair meets forehead — give the
+  // mass a direction and a root without touching any style's outline.
+  if (char.hair === 'bald') return;
+  ctx.save();
+  ctx.beginPath(); ctx.arc(hx, hy - hr * 0.30, hr * 1.34, 0, Math.PI * 2); ctx.clip();
+  ctx.lineCap = 'round';
+  ctx.strokeStyle = shade(hc, 1.55); ctx.lineWidth = hr * 0.10;
+  for (let i = -1; i <= 1; i++) {
+    const a0 = Math.PI * (1.14 + i * 0.10);
+    ctx.beginPath();
+    ctx.arc(hx + LIGHT.x * hr * 0.18, hy - hr * 0.26, hr * (0.86 + i * 0.10), a0, a0 + 0.46);
+    ctx.stroke();
+  }
+  // hairline: hair sits ON the forehead, it does not fade into it
+  ctx.strokeStyle = shade(hc, 0.62); ctx.lineWidth = hr * 0.13;
+  ctx.beginPath();
+  ctx.arc(hx, hy - hr * 0.16, hr * 1.00, Math.PI * 1.06, Math.PI * 1.94);
+  ctx.stroke();
+  ctx.restore();
 }
 
 /**
@@ -455,8 +491,33 @@ export function drawCharacter(ctx, char, x, y, scale, pose = 'idle', phase = 0, 
   const { armL1, armL2, armW } = dims;
   const sleeveLower = char.sleeve ? (char.sleeveColor || '#222') : char.skin;
   const handR = armW * 0.86;   // a hand, not a dot: at 0.66 the arm just ended bluntly
-  const drawArmL = () => limb(ctx, sk.shoulder.l, sk.hand.l, armL1, armL2, sk.bendArm.l, armW, char.skin, { cap: handR, capColor: shade(char.skin, 1.05), lowerColor: char.sleeve ? sleeveLower : char.skin });
-  const drawArmR = () => limb(ctx, sk.shoulder.r, sk.hand.r, armL1, armL2, sk.bendArm.r, armW, char.skin, { cap: handR, capColor: shade(char.skin, 1.05), lowerColor: sleeveLower });
+  /**
+   * A hand (AE12). The wrist cap was a circle, which at any zoom is a knob on the end of a
+   * tube. This is a palm angled along the forearm with a thumb off its inner edge — two
+   * marks, but they are the two that make an arm end in a hand. When the character is
+   * holding the ball the palm turns to face it and the thumb rides under, which is the
+   * difference between gripping and touching.
+   */
+  const drawHand = (k) => {
+    const j = twoBoneIK(sk.shoulder[k], sk.hand[k], armL1, armL2, sk.bendArm[k]);
+    const w = sk.hand[k];
+    const ang = Math.atan2(w.y - j.mid.y, w.x - j.mid.x);   // along the forearm
+    const side = k === 'l' ? -1 : 1;
+    ctx.save();
+    ctx.translate(w.x, w.y);
+    ctx.rotate(ang);
+    ctx.fillStyle = lightGrad(ctx, 0, 0, handR * 1.4, char.skin, MAT.skin);
+    ctx.beginPath();
+    ctx.ellipse(handR * 0.28, 0, handR * 1.18, handR * 0.94, 0, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.fillStyle = shade(char.skin, 0.94);
+    ctx.beginPath();
+    ctx.ellipse(handR * 0.10, side * handR * 0.72, handR * 0.52, handR * 0.34, side * 0.5, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.restore();
+  };
+  const drawArmL = () => { limb(ctx, sk.shoulder.l, sk.hand.l, armL1, armL2, sk.bendArm.l, armW, char.skin, { lowerColor: char.sleeve ? sleeveLower : char.skin }); drawHand('l'); };
+  const drawArmR = () => { limb(ctx, sk.shoulder.r, sk.hand.r, armL1, armL2, sk.bendArm.r, armW, char.skin, { lowerColor: sleeveLower }); drawHand('r'); };
   // Back arm (away from camera) goes behind the jersey; the front arm is drawn
   // after the torso so it reads on top. `facing >= 0` ⇒ right arm is the front one.
   const frontSide = facing >= 0 ? 'r' : 'l';
@@ -498,6 +559,35 @@ export function drawCharacter(ctx, char, x, y, scale, pose = 'idle', phase = 0, 
   // (cloth catches light where it ends) and it is the line that makes the waist read.
   ctx.fillStyle = 'rgba(255,255,255,0.22)';
   ctx.fillRect(-bodyW / 2 + 1 * s, dims.jerseyHemY - 1.2 * s, bodyW - 2 * s, 1.2 * s);
+  // FOLDS (AE12). A jersey drawn as one filled rounded rect is a painted panel: it cannot
+  // say that there is cloth hanging on a body underneath it. Three cheap creases do —
+  // one from each armpit, one across the waist — and because their depth is driven by the
+  // lean and the turn the shirt gathers when the body works and settles when it does not.
+  const workT = Math.min(1, Math.abs(sk.leanAngle || 0) / 0.26 + Math.abs(1 - (turn ? turn.shoulders : 1)) * 1.4);
+  const fold = 0.05 + 0.10 * workT;
+  ctx.save();
+  rr(ctx, -bodyW / 2, -bodyH, bodyW, jerseyH, 6.5 * s); ctx.clip();
+  ctx.strokeStyle = 'rgba(0,0,0,' + fold.toFixed(3) + ')';
+  ctx.lineWidth = 2.0 * s; ctx.lineCap = 'round';
+  ctx.beginPath();
+  // armpit creases, sweeping in and down toward the opposite hip
+  ctx.moveTo(-bodyW * 0.46, -bodyH * 0.70);
+  ctx.quadraticCurveTo(-bodyW * 0.12, -bodyH * 0.56, bodyW * 0.10, -bodyH * 0.40);
+  ctx.moveTo(bodyW * 0.46, -bodyH * 0.70);
+  ctx.quadraticCurveTo(bodyW * 0.16, -bodyH * 0.54, -bodyW * 0.06, -bodyH * 0.36);
+  // the shirt gathers just above the hem, where it meets the shorts
+  ctx.moveTo(-bodyW * 0.40, dims.jerseyHemY - 4.5 * s);
+  ctx.quadraticCurveTo(0, dims.jerseyHemY - 2.6 * s, bodyW * 0.40, dims.jerseyHemY - 4.8 * s);
+  ctx.stroke();
+  // the lit side of each crease
+  ctx.strokeStyle = 'rgba(255,255,255,' + (fold * 0.55).toFixed(3) + ')';
+  ctx.lineWidth = 1.1 * s;
+  ctx.beginPath();
+  ctx.moveTo(-bodyW * 0.46, -bodyH * 0.70 - 1.4 * s);
+  ctx.quadraticCurveTo(-bodyW * 0.12, -bodyH * 0.56 - 1.4 * s, bodyW * 0.10, -bodyH * 0.40 - 1.4 * s);
+  ctx.stroke();
+  ctx.restore();
+
   // side stripes (trim)
   ctx.fillStyle = trim;
   ctx.fillRect(-bodyW / 2, -bodyH + 4 * s, 2.4 * s, jerseyH - 4 * s);
