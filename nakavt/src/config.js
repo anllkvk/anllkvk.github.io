@@ -150,7 +150,14 @@ export const FX = Object.freeze({
   camShakeKnockoutDur: 0.28,
   camShakeMiss: 3,
   camShakeMissDur: 0.14,
-  camZoomFinal: 1.12, // final-duel zoom
+  // AE12: the camera sits closer. The character is ~66px of art at scale 1, and at that
+  // size no amount of shading pays for itself — silhouette is all that survives. 1.35 puts
+  // it at ~84px with the hoop, the key, the rival and the player all still in frame.
+  // Measured past this: 1.7 and 2.0 both crop the players against the bottom edge, because
+  // the camera zooms about the viewport centre while the action sits below it. Going closer
+  // than this needs a camera that follows the play, which is a different piece of work.
+  camZoomBase: 1.35,
+  camZoomFinal: 1.51, // final-duel zoom (camZoomBase * the old 1.12 ratio)
   flashPerfect: 0.32, // white screen-flash alpha on perfect
   trailFrames: 7, // ball motion-trail length
   vignette: 0.28, // base vignette strength

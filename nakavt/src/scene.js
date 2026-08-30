@@ -16,6 +16,26 @@ import { resolveAiShot } from './core/shot.js';
 import { analytics } from './core/events.js';
 import { drawArenaScene, drawBall, drawVignette, invalidateArenaCache } from './render/arena.js';
 import { drawCharacter } from './render/characters.js';
+import { makeAnimState, updateAnim } from './core/anim.js';
+import { makeSkeleton, rigDims, ballCarry } from './core/rig.js';
+import { shotChain } from './core/shotchain.js';
+import { makeBlendState } from './core/blend.js';
+import { makeGaitState, updateGait, brakeStance } from './core/gait.js';
+
+/** A character's persistent animation state plus its own rig skeleton (AE1/AE2). */
+const _dimsScratch = {};
+const _ballDims = {};
+const _chainScratch = {};
+const _carry = { x: 0, y: 0 };
+const _ballLocal = { x: 0, y: 0 };
+
+function newAnim() {
+  const a = makeAnimState();
+  a.sk = makeSkeleton();
+  a.gait = makeGaitState();
+  a.blend = makeBlendState();
+  return a;
+}
 import { Camera } from './render/camera.js';
 import { Particles } from './render/particles.js';
 import { SpriteCache } from './render/sprites.js';
@@ -129,14 +149,81 @@ export class Scene {
     }
   }
 
+  /**
+   * Advance a character's momentum state (AE2). Speed is measured from how far the entity
+   * actually moved, so it works for the human (velocity-driven) and the AI (steering
+   * writes straight to pos) without either needing to report a velocity.
+   */
+  _animStep(E, dt, lift = 0) {
+    if (!E || !E.anim || dt <= 0) return;
+    if (!E.animPrev) E.animPrev = { x: E.pos.x, y: E.pos.y };
+    const speed = Math.hypot(E.pos.x - E.animPrev.x, E.pos.y - E.animPrev.y) / dt;
+    const vx = (E.pos.x - E.animPrev.x) / dt;   // signed, for predictive foot placement
+    E.animPrev.x = E.pos.x; E.animPrev.y = E.pos.y;
+    const facing = E.facing || 1;
+    updateAnim(E.anim, { speed, maxSpeed: MOVE.maxSpeed, facing, lift }, dt);
+    // AE3: the step cycle runs in world space so a planted foot can genuinely stay put
+    // while the body travels over it. scale is the draw scale used for this entity.
+    const ch = this.charsById.get(E.id);
+    const dims = rigDims(this._drawScale(E), ch && ch.height, _dimsScratch);
+    // One braking stance per frame, shared by the gait and the draw pass: the wide,
+    // low stop only reads if the FEET widen too, not just the hips (doc 1.0 finding 2).
+    E.anim.stance = brakeStance(E.anim.brake.v);
+    updateGait(E.anim.gait, {
+      comX: E.pos.x,
+      facing,
+      speed01: E.anim.speed01.v,
+      vx,
+      moving: speed > 12,
+      halfWidth: dims.hipDx * E.anim.stance.stanceWidth + dims.s * 1.5,
+      legReach: dims.legReach,
+    }, dt);
+  }
+
+  /** The draw scale an entity is rendered at. Shared by the gait and the draw pass. */
+  _drawScale(E) {
+    if (E.isHuman) return 0.95;
+    return E.role === 'front' ? 0.92 : 0.86;
+  }
+
+  /**
+   * Seconds since this character's shot left the hand, or null if it is not shooting.
+   * The human's in-flight ball is state 'flight'; an AI's is state 'ball'.
+   */
+  _shotT(E) {
+    if (!E || !E.ball) return null;
+    if (E.isHuman) return E.ball.state === 'flight' ? E.ball.t : null;
+    return E.state === 'ball' ? E.ball.t : null;
+  }
+
+  /** Jump height in px, straight off the shot chain so every layer agrees on it (AE4). */
+  _shotLift(E) {
+    const t = this._shotT(E);
+    return t == null ? 0 : shotChain(t, _chainScratch).lift;
+  }
+
+  /**
+   * The human's current animation pose. Decided once and used by BOTH the ball update and
+   * the draw pass: if they disagreed the ball would sit where no hand is, which is exactly
+   * the failure AE5 exists to remove.
+   */
+  _humanPose(H) {
+    if (H.charging) return 'aim';
+    if (H.ball.state === 'flight') return 'shoot';
+    if (Math.hypot(H.vel.x, H.vel.y) > 20) return 'run';
+    if (H.hasBall && H.ball.state === 'held') return 'dribble';
+    return 'idle';
+  }
+
   _makeHuman(player, role) {
     const L = this.layout;
     const pos = { x: L.lineX, y: L.ftY };
     return {
       id: player.id, player, role, isHuman: true,
       pos, vel: { x: 0, y: 0 }, facing: 1,
+      anim: newAnim(), animPrev: { x: pos.x, y: pos.y },
       hasBall: true, charging: false, power: 0, powerDir: 1, attempts: 0,
-      looseTimer: 0, landT: 0,
+      looseTimer: 0,
       ball: { state: 'held', pos: { ...pos }, vel: { x: 0, y: 0 }, z: 40, rot: 0, t: 0, from: null, to: null, quality: null, made: false },
     };
   }
@@ -147,6 +234,7 @@ export class Scene {
       id: player.id, player, role, isHuman: false,
       pos: { x: role === 'front' ? L.lineX + 70 : L.lineX - 70, y: L.ftY + 6 },
       vel: { x: 0, y: 0 }, drift: Math.random() * Math.PI * 2, facing: 1,
+      anim: newAnim(), animPrev: null,
       state: 'wait', timer: this.match.aiReaction(player) + (role === 'chaser' ? 0.5 : 0),
       attempts: 0, ball: null, looseTimer: 0,
     };
@@ -155,9 +243,10 @@ export class Scene {
   // ---- update ----
   update(dt) {
     this.t += dt;
+    this._dt = dt; // the draw pass needs it to advance the limb lag
     if (this.flash) { this.flash.ttl -= dt; if (this.flash.ttl <= 0) this.flash = null; }
     // cosmetic layer (never gates gameplay)
-    this.cam.zoomTo(this.finalDuel ? FX.camZoomFinal : 1, 3);
+    this.cam.zoomTo(this.finalDuel ? FX.camZoomFinal : FX.camZoomBase, 3);
     this.cam.update(dt);
     this.particles.update(dt);
     if (this.screenFlash > 0) this.screenFlash = Math.max(0, this.screenFlash - dt * 2.2);
@@ -197,6 +286,8 @@ export class Scene {
       d.safety = (d.safety || 0) + dt;
       this._aiStep(d.a, dt, PACE.autoScale, () => this._autoMake(d.a));
       if (!d.winner) this._aiStep(d.b, dt, PACE.autoScale, () => this._autoMake(d.b));
+      this._animStep(d.a, dt, this._shotLift(d.a));
+      this._animStep(d.b, dt, this._shotLift(d.b));
       // Safety (rare): if it drags AND no shot is mid-air, resolve deterministically
       // (better shooter wins) — no RNG, so seeded runs stay reproducible.
       if (!d.winner && d.safety > 8 && !d.a.ball && !d.b.ball) {
@@ -208,7 +299,11 @@ export class Scene {
     }
     if (d.phase === 'resolve' || d.phase === 'ko') {
       d.timer -= dt;
-      if (d.human) { this._updateBall(d.human, dt); if (d.human.landT > 0) d.human.landT = Math.max(0, d.human.landT - dt); }
+      if (d.human) {
+        this._updateBall(d.human, dt);
+        this._animStep(d.human, dt, this._shotLift(d.human));
+      }
+      this._animStep(d.opp, dt, this._shotLift(d.opp));
       if (d.phase === 'ko' && d.koVictim) d.koVictim.koT = Math.min(1, (d.koVictim.koT || 0) + dt / PACE.koTime);
       if (d.timer <= 0) this._finishDuel();
       return;
@@ -217,6 +312,8 @@ export class Scene {
     // live
     this._updateHuman(d.human, dt);
     if (!d.winner) this._aiStep(d.opp, dt, 1, () => { this.sfx.swish(); this._score('opp'); });
+    this._animStep(d.human, dt, this._shotLift(d.human));
+    this._animStep(d.opp, dt, this._shotLift(d.opp));
     this._emitHud();
   }
 
@@ -240,7 +337,6 @@ export class Scene {
     if (Math.abs(this.move.x) > 0.1) H.facing = this.move.x > 0 ? 1 : -1;
     else if (H.charging || H.hasBall) H.facing = L.hoop.x >= H.pos.x ? 1 : -1;
 
-    if (H.landT > 0) H.landT = Math.max(0, H.landT - dt);
     // charging
     if (H.charging) {
       H.power += (dt / SHOTPWR.chargeSeconds) * 2 * H.powerDir;
@@ -254,9 +350,14 @@ export class Scene {
     const b = H.ball, L = this.layout;
     b.rot += dt * 7;
     if (b.state === 'held') {
-      // ball sits at the hand, slightly toward the hoop
+      // AE5: the ball sits at the carry point the rig will pose the hand to (rig.ballCarry),
+      // not at a fixed body offset that no hand was ever near. z is 0 because the carry
+      // point already carries the height.
       const dir = L.hoop.x >= H.pos.x ? 1 : -1;
-      b.pos.x = H.pos.x + 14 * dir; b.pos.y = H.pos.y - 30; b.z = 44;
+      const ch = this.charsById.get(H.id);
+      const dims = rigDims(this._drawScale(H), ch && ch.height, _ballDims);
+      const c = ballCarry(dims, this._humanPose(H), dir, _carry);
+      b.pos.x = H.pos.x + c.x; b.pos.y = H.pos.y + c.y; b.z = 0;
       return;
     }
     if (b.state === 'flight') {
@@ -316,7 +417,6 @@ export class Scene {
 
   _onMake(H) {
     if (this.duel.winner) { return; }
-    H.landT = 0.2; // land the jump shot with a squash
     const res = H._lastRes || { quality: SHOT.GOOD };
     this.stats.made++;
     const hoop = this.layout.hoop;
@@ -357,7 +457,6 @@ export class Scene {
 
   _onMiss(H) {
     if (this.duel.winner) return;
-    H.landT = 0.2;
     this.streak = 0; this.sfx.rim();
     this.cam.shake(FX.camShakeMiss, FX.camShakeMissDur);
     this.particles.burst(this.layout.hoop.x, this.layout.hoop.y, 5, { color: 'rgba(255,120,60,0.8)', speed: 70, size: 2, max: 0.4, grav: 200 });
@@ -609,18 +708,30 @@ export class Scene {
     // --- world (inside camera transform) ---
     this.cam.begin(ctx);
 
+    // The scoreboard hangs in the arena, so it is drawn inside the camera transform — and
+    // the AE12 zoom pushed it off the top of the frame. Solve for the world y that lands it
+    // at the screen position it has always had, against the camera's own focus point and
+    // live zoom, so it holds through the base zoom, the final-duel zoom and a punch alike.
+    const camZ = this.cam.zoom || 1;
+    const camCy = this.cam.cy !== undefined ? this.cam.cy : H / 2;
     drawArenaScene(ctx, this.layout, this.arena, {
-      scoreboardY: H * 0.115,
+      scoreboardY: camCy + (H * 0.115 - camCy) / camZ,
       scoreboard: { top: this.arena.name.toUpperCase(), bottom: `${this.match.aliveCount} LEFT` },
     });
 
     // waiting queue — cached idle sprites (blit, not re-drawn)
+    // The queue lines up along the near edge of the floor, which the AE12 zoom pushed off
+    // the bottom of the frame. Like the scoreboard it is furniture rather than play, so it
+    // is pinned to the screen position it has always had rather than moved in world space.
     const waiting = this.match.queue.slice(2);
+    const queueY = camCy + (H * 0.99 - camCy) / camZ;
+    const queueX0 = this.cam.cx !== undefined ? this.cam.cx : W / 2;
     waiting.forEach((id, i) => {
       const ch = this.charsById.get(id);
-      const x = W * 0.16 + i * (W * 0.68 / Math.max(1, waiting.length));
+      const wx = W * 0.16 + i * (W * 0.68 / Math.max(1, waiting.length));
+      const x = queueX0 + (wx - queueX0) / camZ;
       const bob = Math.sin(this.t * 3 + i) * 1.2;
-      this.sprites.draw(ctx, ch, x, H * 0.99 + bob, 0.5, 'idle', { alpha: 0.82 });
+      this.sprites.draw(ctx, ch, x, queueY + bob, 0.5 / camZ, 'idle', { alpha: 0.82 });
     });
 
     const d = this.duel;
@@ -694,26 +805,36 @@ export class Scene {
   }
 
   _drawHuman(H) {
-    let pose = 'idle', phase = this.t;
-    const opts = { facing: H.facing };
-    const moving = Math.hypot(H.vel.x, H.vel.y) > 20;
-    if (H.charging) { pose = 'aim'; phase = this.t; opts.sy = 1 - 0.05; opts.sx = 1 + 0.04; } // gather/crouch
-    else if (H.ball.state === 'flight') {
-      pose = 'shoot'; phase = Math.min(1, H.ball.t / 0.25);
-      const jp = Math.min(1, H.ball.t / 0.32);
-      opts.lift = Math.sin(jp * Math.PI) * 14; // jump shot
-      opts.sy = 1 + FX.stretchShoot * Math.sin(jp * Math.PI);
-    } else if (moving) { pose = 'run'; phase = this.t; }
-    else if (H.hasBall && H.ball.state === 'held') { pose = 'dribble'; phase = this.t; }
-    // landing squash after a shot
-    if (H.landT > 0 && pose !== 'shoot') {
-      const k = H.landT / 0.2; // 1 → 0
-      opts.sy = 1 - FX.squashLand * k; opts.sx = 1 + FX.squashLand * 0.7 * k;
+    const pose = this._humanPose(H);
+    const shotT = this._shotT(H);
+    let phase = this.t;
+    const opts = {
+      facing: H.facing, anim: H.anim, dt: this._dt || 0, comX: H.pos.x,
+      // AE4: the shot chain runs off the ball's own clock, and the gather off the power sweep
+      shotT: shotT || 0,
+      charge: H.charging ? H.power : 0,
+    };
+    // Squash/stretch now comes from the momentum layer (AE2), which derives it from the
+    // body's real vertical motion — stretch while rising, squash on touchdown — instead of
+    // two hand-rolled cases that could not agree with each other.
+    opts.sx = H.anim.sx; opts.sy = H.anim.sy;
+    if (pose === 'shoot') phase = H.ball.t;
+    // AE5: hand the ball over in local space whenever it is close enough to be worth
+    // reaching for — held, loose at our feet, or coming down off the rim.
+    const b = H.ball;
+    if (b && b.state !== 'flight' && b.state !== 'scored') {
+      _ballLocal.x = b.pos.x - H.pos.x;
+      _ballLocal.y = (b.pos.y - (b.z || 0)) - H.pos.y;
+      if (Math.hypot(_ballLocal.x, _ballLocal.y) < 90) {
+        opts.ballAt = _ballLocal;
+        // a dribble is one-handed; gathering to shoot or reaching for a loose ball is not
+        opts.twoHanded = pose !== 'dribble';
+      }
     }
     // streak aura
     if (this.streak >= STREAK.onFire) opts.glow = { color: 'rgba(255,59,59,0.7)', a: 0.6 };
     else if (this.streak >= STREAK.hot) opts.glow = { color: 'rgba(255,140,26,0.65)', a: 0.5 };
-    drawCharacter(this.ctx, this.charsById.get(H.id), H.pos.x, H.pos.y, 0.95, pose, phase, opts);
+    drawCharacter(this.ctx, this.charsById.get(H.id), H.pos.x, H.pos.y, this._drawScale(H), pose, phase, opts);
     // "YOU" marker
     const ctx = this.ctx;
     ctx.fillStyle = COLORS.secondary; ctx.font = '900 12px system-ui'; ctx.textAlign = 'center';
@@ -726,10 +847,14 @@ export class Scene {
     if (O.koT != null) pose = 'knockout';
     else if (O.state === 'chase') pose = 'run';
     else if (O.state === 'ball' && O.ball) pose = 'shoot';
-    const sc = O.role === 'front' ? 0.92 : 0.86;
+    const sc = this._drawScale(O);
     const facing = O.facing != null ? O.facing : (this.layout.hoop.x >= O.pos.x ? 1 : -1);
     drawCharacter(this.ctx, this.charsById.get(O.id), O.pos.x, O.pos.y, sc,
-      pose, pose === 'knockout' ? O.koT : this.t + (O.drift || 0), { facing });
+      pose, pose === 'knockout' ? O.koT : this.t + (O.drift || 0),
+      {
+        facing, anim: O.anim, dt: this._dt || 0, comX: O.pos.x,
+        shotT: this._shotT(O) || 0, sx: O.anim.sx, sy: O.anim.sy,
+      });
   }
 
   _nameTag(O) {

@@ -2,13 +2,15 @@
 import { createServer } from 'node:http';
 import { readFile } from 'node:fs/promises';
 import { extname, join, normalize } from 'node:path';
+import { fileURLToPath } from 'node:url';
 import { createRequire } from 'node:module';
 import { execSync } from 'node:child_process';
 
 const require = createRequire(import.meta.url);
 const pwPath = execSync('npm root -g').toString().trim() + '/playwright';
 const { chromium } = require(pwPath);
-const ROOT = new URL('..', import.meta.url).pathname;
+// .pathname on a file: URL yields '/C:/...' on Windows, which no path join can resolve.
+const ROOT = fileURLToPath(new URL('..', import.meta.url));
 const MIME = { '.html': 'text/html', '.js': 'text/javascript', '.css': 'text/css', '.json': 'application/json' };
 
 const server = createServer(async (req, res) => {
@@ -22,7 +24,9 @@ const server = createServer(async (req, res) => {
 });
 await new Promise((r) => server.listen(0, r));
 const base = `http://localhost:${server.address().port}/`;
-const browser = await chromium.launch({ executablePath: '/opt/pw-browsers/chromium-1194/chrome-linux/chrome', args: ['--no-sandbox'] });
+// No executablePath: it was hard-coded to a Linux cloud path (/opt/pw-browsers/...),
+// so this tool could not run on any other machine. Let Playwright resolve its own browser.
+const browser = await chromium.launch({ args: ['--no-sandbox'] });
 const page = await browser.newContext({ viewport: { width: 900, height: 520 }, deviceScaleFactor: 2 }).then((c) => c.newPage());
 const errs = [];
 page.on('console', (m) => { if (m.type() === 'error') errs.push(m.text()); });

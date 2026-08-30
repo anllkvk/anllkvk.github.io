@@ -1,3 +1,10 @@
 test/shot-*.png
 node_modules/
 node_modules_pw
+
+# Local-only animation reference (NBA Live 08 footage / frames): copyrighted +
+# far too large for the repo. Keep these on your machine, never commit them.
+reference/
+*.mp4
+*.mov
+*.webm
