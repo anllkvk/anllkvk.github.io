@@ -17,12 +17,16 @@ import { analytics } from './core/events.js';
 import { drawArenaScene, drawBall, drawVignette, invalidateArenaCache } from './render/arena.js';
 import { drawCharacter } from './render/characters.js';
 import { makeAnimState, updateAnim } from './core/anim.js';
-import { makeSkeleton } from './core/rig.js';
+import { makeSkeleton, rigDims } from './core/rig.js';
+import { makeGaitState, updateGait, brakeStance } from './core/gait.js';
 
 /** A character's persistent animation state plus its own rig skeleton (AE1/AE2). */
+const _dimsScratch = {};
+
 function newAnim() {
   const a = makeAnimState();
   a.sk = makeSkeleton();
+  a.gait = makeGaitState();
   return a;
 }
 import { Camera } from './render/camera.js';
@@ -148,7 +152,29 @@ export class Scene {
     if (!E.animPrev) E.animPrev = { x: E.pos.x, y: E.pos.y };
     const speed = Math.hypot(E.pos.x - E.animPrev.x, E.pos.y - E.animPrev.y) / dt;
     E.animPrev.x = E.pos.x; E.animPrev.y = E.pos.y;
-    updateAnim(E.anim, { speed, maxSpeed: MOVE.maxSpeed, facing: E.facing || 1, lift }, dt);
+    const facing = E.facing || 1;
+    updateAnim(E.anim, { speed, maxSpeed: MOVE.maxSpeed, facing, lift }, dt);
+    // AE3: the step cycle runs in world space so a planted foot can genuinely stay put
+    // while the body travels over it. scale is the draw scale used for this entity.
+    const ch = this.charsById.get(E.id);
+    const dims = rigDims(this._drawScale(E), ch && ch.height, _dimsScratch);
+    // One braking stance per frame, shared by the gait and the draw pass: the wide,
+    // low stop only reads if the FEET widen too, not just the hips (doc 1.0 finding 2).
+    E.anim.stance = brakeStance(E.anim.brake.v);
+    updateGait(E.anim.gait, {
+      comX: E.pos.x,
+      facing,
+      speed01: E.anim.speed01.v,
+      moving: speed > 12,
+      halfWidth: dims.hipDx * E.anim.stance.stanceWidth + dims.s * 1.5,
+      legReach: dims.legReach,
+    }, dt);
+  }
+
+  /** The draw scale an entity is rendered at. Shared by the gait and the draw pass. */
+  _drawScale(E) {
+    if (E.isHuman) return 0.95;
+    return E.role === 'front' ? 0.92 : 0.86;
   }
 
   /** Jump-shot lift in px — shared by the animation state and the renderer. */
@@ -730,7 +756,7 @@ export class Scene {
 
   _drawHuman(H) {
     let pose = 'idle', phase = this.t;
-    const opts = { facing: H.facing, anim: H.anim, dt: this._dt || 0 };
+    const opts = { facing: H.facing, anim: H.anim, dt: this._dt || 0, comX: H.pos.x };
     const moving = Math.hypot(H.vel.x, H.vel.y) > 20;
     // Squash/stretch now comes from the momentum layer (AE2), which derives it from the
     // body's real vertical motion — stretch while rising, squash on touchdown — instead of
@@ -745,7 +771,7 @@ export class Scene {
     // streak aura
     if (this.streak >= STREAK.onFire) opts.glow = { color: 'rgba(255,59,59,0.7)', a: 0.6 };
     else if (this.streak >= STREAK.hot) opts.glow = { color: 'rgba(255,140,26,0.65)', a: 0.5 };
-    drawCharacter(this.ctx, this.charsById.get(H.id), H.pos.x, H.pos.y, 0.95, pose, phase, opts);
+    drawCharacter(this.ctx, this.charsById.get(H.id), H.pos.x, H.pos.y, this._drawScale(H), pose, phase, opts);
     // "YOU" marker
     const ctx = this.ctx;
     ctx.fillStyle = COLORS.secondary; ctx.font = '900 12px system-ui'; ctx.textAlign = 'center';
@@ -758,11 +784,11 @@ export class Scene {
     if (O.koT != null) pose = 'knockout';
     else if (O.state === 'chase') pose = 'run';
     else if (O.state === 'ball' && O.ball) pose = 'shoot';
-    const sc = O.role === 'front' ? 0.92 : 0.86;
+    const sc = this._drawScale(O);
     const facing = O.facing != null ? O.facing : (this.layout.hoop.x >= O.pos.x ? 1 : -1);
     drawCharacter(this.ctx, this.charsById.get(O.id), O.pos.x, O.pos.y, sc,
       pose, pose === 'knockout' ? O.koT : this.t + (O.drift || 0),
-      { facing, anim: O.anim, dt: this._dt || 0, sx: O.anim.sx, sy: O.anim.sy });
+      { facing, anim: O.anim, dt: this._dt || 0, comX: O.pos.x, sx: O.anim.sx, sy: O.anim.sy });
   }
 
   _nameTag(O) {

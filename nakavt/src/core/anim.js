@@ -27,6 +27,8 @@ export const ANIM = Object.freeze({
   landTime: 0.20,        // s, how long the landing squash takes to unwind
   liftVelRef: 90,        // px/s of lift that counts as "fully rising"
   armReach: 0.86,        // fraction of full arm length a locomotion hand may reach
+  brakeRelease: 0.26,    // s, how slowly the braking crouch stands back up (AE3)
+  brakeRef: 2600,        // px/s^2 of deceleration that counts as a full stop (AE3)
 });
 
 /** A damped scalar: current value + its spring velocity. */
@@ -70,6 +72,9 @@ export function makeAnimState() {
     lift: 0,                  // last frame's jump height, px
     liftVel: 0,               // px/s
     land: 0,                  // 1 at touchdown, decaying to 0
+    brake: makeDamped(0),     // 0..1 how hard the character is decelerating (AE3)
+    stance: null,             // { stanceWidth, hipDrop } from gait.brakeStance(), set by the caller
+    rawSpeed: 0,              // last frame's unsmoothed speed, for the brake signal
     sx: 1,                    // squash/stretch, applied by the renderer
     sy: 1,
     hand: {                   // damped hand positions — the limb lag / follow-through
@@ -99,11 +104,26 @@ export function updateAnim(anim, input, dt) {
     anim.speed01.v = target01;
     anim.lean.v = target01 * ANIM.leanMax * facing;
     anim.lift = input.lift || 0;
+    anim.rawSpeed = input.speed || 0;
     anim.ready = true;
   }
 
   smoothDamp(anim.speed01, target01, ANIM.speedSmooth, dt);
   smoothDamp(anim.lean, target01 * ANIM.leanMax * facing, ANIM.leanSmooth, dt);
+
+  // Braking: how hard the character is shedding speed. AE3 turns this into the wide, low,
+  // both-feet-planted stop the reference actually uses (doc 1.0 finding 2).
+  //
+  // This is an attack/release envelope, not a plain damp. A stop is an *impulse* — the
+  // deceleration exists for a frame or two and is then gone — so damping toward it would
+  // barely register. Instead the crouch snaps on and unwinds slowly, which is also how the
+  // real motion works: you drop fast and stand back up gradually.
+  const speed = input.speed || 0;
+  const decel = dt > 0 ? Math.max(0, (anim.rawSpeed - speed) / dt) : 0;
+  anim.rawSpeed = speed;
+  const hit = Math.min(1, decel / ANIM.brakeRef);
+  if (hit > anim.brake.v) { anim.brake.v = hit; anim.brake.vel = 0; }
+  else smoothDamp(anim.brake, 0, ANIM.brakeRelease, dt);
 
   // Vertical momentum: stretch while rising, squash on touchdown.
   const lift = input.lift || 0;

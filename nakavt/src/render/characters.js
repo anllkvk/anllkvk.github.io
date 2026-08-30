@@ -14,6 +14,7 @@
 import { twoBoneIK } from '../core/steering.js';
 import { rigDims, basePose, generatePose, makeSkeleton, resolveRig } from '../core/rig.js';
 import { applyLimbLag } from '../core/anim.js';
+import { gaitToLocal } from '../core/gait.js';
 
 // One rig scratch set for the module: pose generation and skeleton resolution are pure and
 // synchronous, so reusing these keeps drawing allocation-free no matter how many players
@@ -130,6 +131,11 @@ export function drawCharacter(ctx, char, x, y, scale, pose = 'idle', phase = 0, 
   const anim = opts.anim || null;
   const dims = rigDims(s, char.height, _dims);
   const P = generatePose(pose, phase, facing, s, _pose, anim);
+  // AE3: real planted feet + the braking stance, when the caller keeps a gait state.
+  if (anim && anim.gait && anim.gait.ready) {
+    P.feet = gaitToLocal(anim.gait, opts.comX || 0, dims.footY);
+    if (anim.stance) { P.stanceWidth = anim.stance.stanceWidth; P.hipDrop = anim.stance.hipDrop; }
+  }
   const sk = resolveRig(dims, P, (anim && anim.sk) || _sk);
   if (anim) applyLimbLag(anim, sk, opts.dt || 0);
   const { bob, lean, armUp, fall, spin, crouch } = P;
@@ -157,10 +163,21 @@ export function drawCharacter(ctx, char, x, y, scale, pose = 'idle', phase = 0, 
   // Contact shadow (shrinks as the player lifts off)
   ctx.save();
   ctx.globalAlpha *= 0.28;
-  const shR = bodyW * 0.82 * (1 - Math.min(0.5, lift / (60 * s || 1)));
-  const sg = ctx.createRadialGradient(0, 9 * s, 0, 0, 9 * s, bodyW);
-  sg.addColorStop(0, 'rgba(0,0,0,0.55)'); sg.addColorStop(1, 'rgba(0,0,0,0)');
-  ctx.fillStyle = sg; ctx.beginPath(); ctx.ellipse(0, 9 * s - bob - crouch, shR, 6 * s, 0, 0, Math.PI * 2); ctx.fill();
+  // A tight shadow under each foot rather than one blob under the body: in the reference
+  // the ground contact reads per-foot, and it fades as that foot lifts (finding 1.0-4).
+  const airFade = 1 - Math.min(0.6, lift / (60 * s || 1));
+  const shY = 9 * s - bob - crouch;
+  for (const k of ['l', 'r']) {
+    const fx = sk.foot[k].x;
+    const up = Math.max(0, dims.footY - sk.foot[k].y);        // how far this foot is lifted
+    const a = airFade * Math.max(0.15, 1 - up / (8 * s));
+    const rx = bodyW * 0.30 * (0.75 + 0.25 * a);
+    const g = ctx.createRadialGradient(fx, shY, 0, fx, shY, rx * 1.6);
+    g.addColorStop(0, 'rgba(0,0,0,' + (0.5 * a).toFixed(3) + ')');
+    g.addColorStop(1, 'rgba(0,0,0,0)');
+    ctx.fillStyle = g;
+    ctx.beginPath(); ctx.ellipse(fx, shY, rx, 3.6 * s, 0, 0, Math.PI * 2); ctx.fill();
+  }
   ctx.restore();
 
   if (lift) ctx.translate(0, -lift); // raise the body for the jump; shadow stays down
@@ -171,11 +188,13 @@ export function drawCharacter(ctx, char, x, y, scale, pose = 'idle', phase = 0, 
   const drawLeg = (side) => {
     const k = side === 1 ? 'r' : 'l';
     const { end } = limb(ctx, sk.hip[k], sk.foot[k], legL1, legL2, sk.bendLeg, legW, char.skin);
-    // sock band + shoe (oriented toward facing)
+    // sock band + shoe. The shoe rotates with the ankle — flat while the foot is planted,
+    // toe pointed just after push-off. Frame finding 1.0-1: that angle, not the foot's
+    // position, is what makes a stride read as a real push rather than a slide.
     ctx.fillStyle = '#f2f2f2';
     ctx.beginPath(); ctx.arc(end.x, end.y - 1.5 * s, 3.4 * s, 0, Math.PI * 2); ctx.fill();
     ctx.fillStyle = shade(trim, 1.0);
-    ctx.save(); ctx.translate(end.x, end.y + 1.5 * s);
+    ctx.save(); ctx.translate(end.x, end.y + 1.5 * s); ctx.rotate(sk.ankle[k]);
     ctx.beginPath(); ctx.ellipse(facing * 1.6 * s, 0, 5.6 * s, 3.1 * s, 0, 0, Math.PI * 2); ctx.fill();
     ctx.fillStyle = shade(trim, 0.7); ctx.fillRect(-5.6 * s + facing * 1.6 * s, 1.4 * s, 11.2 * s, 1.4 * s);
     ctx.restore();

@@ -18,6 +18,12 @@
 
 import { strideScale, strideCadence, clampReach } from './anim.js';
 
+/**
+ * How much of its full length a standing leg uses. Below 1 so the knee keeps a bend at
+ * rest — a locked knee is the single clearest "this is a drawing" tell (doc §1.0).
+ */
+export const REST_EXTENSION = 0.9;
+
 /** Height class -> overall size multiplier. */
 export function heightScale(heightClass) {
   return heightClass === 'big' ? 1.2 : heightClass === 'tall' ? 1.08 : 1;
@@ -36,10 +42,17 @@ export function rigDims(scale, heightClass, out = {}) {
   out.headR = headR;
   out.hipY = -5 * s;
   out.hipDx = 5.4 * s * big;
-  out.legL1 = 9 * s * big;
-  out.legL2 = 9 * s * big;
-  out.legW = 4.4 * s * big;
   out.footY = 13.5 * s;
+  // Leg bones are derived from the hip-to-floor span rather than hard-coded, so the knee
+  // always has slack to bend. The old fixed 9*s*big bones were SHORTER than that span for
+  // normal-height characters (18*s of leg for an 18.5*s drop), which pinned every knee
+  // straight and made the IK place the foot short of its target — fatal once AE3 asks the
+  // foot to stay exactly where it was planted. REST_EXTENSION < 1 keeps a standing knee
+  // softly bent, which is also what the reference shows in every grounded frame.
+  const legSpan = out.footY - out.hipY;
+  out.legL1 = out.legL2 = (legSpan * 0.5) / REST_EXTENSION;
+  out.legReach = out.legL1 + out.legL2;
+  out.legW = 4.4 * s * big;
   out.shoulderY = -bodyH * 0.82;
   out.shoulderDx = bodyW * 0.46;
   out.armL1 = 8.5 * s * big;
@@ -74,6 +87,9 @@ export function basePose(out = {}) {
   out.stanceWidth = 1;    // multiplies hip separation + the resting foot offset
   out.hipDrop = 0;        // px the pelvis sinks while the feet stay planted
   out.strideScale = 1;    // AE2: stride amplitude multiplier (speed-driven)
+  // AE3: when set, { l:{x,y,ankle}, r:{...} } local-space feet from the gait state. These
+  // win over the sine stride, because they are the planted positions — see core/gait.js.
+  out.feet = null;
   return out;
 }
 
@@ -145,7 +161,8 @@ export function makeSkeleton() {
     head: pt(),
     bendArm: { l: -1, r: 1 },
     bendLeg: 1,
-    lean: 0,   // px the upper body carries ahead of the feet (AE2)
+    lean: 0,               // px the upper body carries ahead of the feet (AE2)
+    ankle: { l: 0, r: 0 }, // rad; 0 = flat on the floor, +ve = toe pointed (AE3)
   };
 }
 
@@ -173,9 +190,18 @@ export function resolveRig(dims, pose, sk = makeSkeleton()) {
   const stride = pose.strideScale;
   for (const side of SIDES) {
     const k = side === 1 ? 'r' : 'l';
-    const ph = side === 1 ? pose.swing : -pose.swing;
-    sk.foot[k].x = side * hx + (pose.running ? ph * 7 * s * facing * stride : side * 1.5 * s * w);
-    sk.foot[k].y = footY - (pose.running ? Math.max(0, ph * facing) * 5 * s * stride : 0) - pose.tuck;
+    if (pose.feet) {
+      // AE3: real planted feet from the gait state. Already local-space and already
+      // carrying the step arc and ankle, so the sine stride is bypassed entirely.
+      sk.foot[k].x = pose.feet[k].x;
+      sk.foot[k].y = pose.feet[k].y - pose.tuck;
+      sk.ankle[k] = pose.feet[k].ankle;
+    } else {
+      const ph = side === 1 ? pose.swing : -pose.swing;
+      sk.foot[k].x = side * hx + (pose.running ? ph * 7 * s * facing * stride : side * 1.5 * s * w);
+      sk.foot[k].y = footY - (pose.running ? Math.max(0, ph * facing) * 5 * s * stride : 0) - pose.tuck;
+      sk.ankle[k] = 0;
+    }
   }
 
   sk.shoulder.l.x = -shoulderDx; sk.shoulder.l.y = shoulderY;
