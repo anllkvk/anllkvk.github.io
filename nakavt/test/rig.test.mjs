@@ -54,12 +54,15 @@ test('generatePose marks exactly the stride poses as running', () => {
   }
 });
 
-test('generatePose: shoot ramps armUp to full extension and holds', () => {
-  const early = generatePose('shoot', 0.1, 1, 1);
-  const late = generatePose('shoot', 0.9, 1, 1);
-  assert.ok(late.armUp > early.armUp);
-  assert.equal(generatePose('shoot', 5, 1, 1).armUp, 1);
-  assert.equal(late.armMode, 'shoot');
+test('generatePose: the shot pose reads its extension from the shot chain', () => {
+  const p0 = basePose(), p1 = basePose(), p2 = basePose();
+  const early = generatePose('shoot', 0, 1, 1, p0, null, 0.01);
+  const peak = generatePose('shoot', 0, 1, 1, p1, null, 0.30);
+  assert.ok(peak.armUp > early.armUp, 'the arm extends as the chain runs');
+  assert.equal(peak.armUp, 1, 'and reaches full extension through the follow-through');
+  assert.equal(peak.armMode, 'shoot');
+  const done = generatePose('shoot', 0, 1, 1, p2, null, 1.5);
+  assert.ok(done.armUp < 0.2, 'and comes back down once the chain finishes');
 });
 
 test('generatePose: the knee bend follows facing', () => {
@@ -124,11 +127,11 @@ test('resolveRig reuses the skeleton object (allocation-free per frame)', () => 
   assert.equal(out.hand.l, handL);
 });
 
-test('the shooting hand extends further as the release progresses', () => {
+test('the shooting hand rises through the chain toward the release', () => {
   const dims = rigDims(1, 'normal');
-  const gather = resolveRig(dims, generatePose('shoot', 0.05, 1, 1), makeSkeleton());
-  const release = resolveRig(dims, generatePose('shoot', 0.9, 1, 1), makeSkeleton());
-  assert.ok(release.hand.r.y < gather.hand.r.y, 'shooting hand rises toward the release');
+  const drive = resolveRig(dims, generatePose('shoot', 0, 1, 1, basePose(), null, 0.01), makeSkeleton());
+  const release = resolveRig(dims, generatePose('shoot', 0, 1, 1, basePose(), null, 0.25), makeSkeleton());
+  assert.ok(release.hand.r.y < drive.hand.r.y, 'shooting hand rises toward the release');
 });
 
 test('facing -1 mirrors which arm shoots', () => {
@@ -196,7 +199,10 @@ function legacyJoints(scale, heightClass, poseName, phase, facing) {
   };
 }
 
-const PARITY_POSES = ['idle', 'miss', 'dribble', 'walk', 'run', 'rebound', 'aim', 'shoot', 'celebrate', 'knockout'];
+// 'aim' and 'shoot' are deliberately absent: AE4 replaced their single ramped value with
+// the timed shot chain, so there is nothing left to hold parity with. They have their own
+// tests in shotchain.test.mjs.
+const PARITY_POSES = ['idle', 'miss', 'dribble', 'walk', 'run', 'rebound', 'celebrate', 'knockout'];
 const PARITY_PHASES = [0, 0.17, 0.43, 0.6, 1.3, 2.7];
 const PARITY_HEIGHTS = ['normal', 'tall', 'big'];
 const PARITY_SCALES = [0.86, 0.95, 1.4];
@@ -245,10 +251,10 @@ test('AE1 parity: the rig reproduces the old inline skeleton exactly', () => {
   assert.equal(checked, PARITY_HEIGHTS.length * PARITY_SCALES.length * PARITY_POSES.length * PARITY_PHASES.length * 2);
 });
 
-test('AE1 parity: shot, celebrate and knockout hands are unchanged by AE2', () => {
-  // AE2 only clamps the locomotion/resting arms; the poses that genuinely extend keep
-  // their exact old hand targets.
-  const extended = new Set(['aim', 'shoot', 'celebrate', 'knockout']);
+test('AE1 parity: celebrate and knockout hands are unchanged by AE2/AE4', () => {
+  // AE2 only clamps the locomotion/resting arms, and AE4 only reworked the shot, so the
+  // other genuinely-extended poses keep their exact old hand targets.
+  const extended = new Set(['celebrate', 'knockout']);
   let checked = 0;
   for (const { want, got, name, tag } of parityCases()) {
     if (!extended.has(name)) continue;

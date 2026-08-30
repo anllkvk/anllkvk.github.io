@@ -120,7 +120,7 @@ export function drawCharacter(ctx, char, x, y, scale, pose = 'idle', phase = 0, 
   const facing = opts.facing || 1;
   const trim = char.jerseyTrim || '#ffffff';
   const sqx = opts.sx || 1, sqy = opts.sy || 1;      // squash/stretch
-  const lift = (opts.lift || 0) * s;                 // visual jump height (px)
+  let lift = (opts.lift || 0) * s;                   // visual jump height (px)
   ctx.save();
   ctx.translate(x, y);
   if (sqx !== 1 || sqy !== 1) ctx.scale(sqx, sqy);   // squash/stretch around the feet
@@ -130,12 +130,14 @@ export function drawCharacter(ctx, char, x, y, scale, pose = 'idle', phase = 0, 
   // draws, just without lean/stride scaling or limb lag — used by the pose sheet.
   const anim = opts.anim || null;
   const dims = rigDims(s, char.height, _dims);
-  const P = generatePose(pose, phase, facing, s, _pose, anim);
+  const P = generatePose(pose, phase, facing, s, _pose, anim, opts.shotT || 0, opts.charge || 0);
   // AE3: real planted feet + the braking stance, when the caller keeps a gait state.
   if (anim && anim.gait && anim.gait.ready) {
     P.feet = gaitToLocal(anim.gait, opts.comX || 0, dims.footY);
     if (anim.stance) { P.stanceWidth = anim.stance.stanceWidth; P.hipDrop = anim.stance.hipDrop; }
   }
+  // AE4: the shot chain owns the jump arc unless the caller overrode it.
+  if (!opts.lift && P.shotLift) lift = P.shotLift;
   const sk = resolveRig(dims, P, (anim && anim.sk) || _sk);
   if (anim) applyLimbLag(anim, sk, opts.dt || 0);
   const { bob, lean, armUp, fall, spin, crouch } = P;
@@ -203,9 +205,11 @@ export function drawCharacter(ctx, char, x, y, scale, pose = 'idle', phase = 0, 
   const lead = facing >= 0 ? 1 : -1;
   drawLeg(-lead); drawLeg(lead);
 
-  // Everything above the hips rides the lean; the feet just drawn do not.
+  // Everything above the hips rides the lean AND the crouch; the feet just drawn do not.
+  // Without the vertical half, a gather or a landing absorb only moved the hidden hips
+  // and the character never visibly sank.
   ctx.save();
-  ctx.translate(sk.lean, 0);
+  ctx.translate(sk.lean, sk.hipDrop);
 
   // Shorts (over the top of the thighs) — NBA format: main + side stripe + patch
   const shortsY = -6 * s, shortsH = 13 * s;
@@ -226,7 +230,11 @@ export function drawCharacter(ctx, char, x, y, scale, pose = 'idle', phase = 0, 
   const drawArmR = () => limb(ctx, sk.shoulder.r, sk.hand.r, armL1, armL2, sk.bendArm.r, armW, char.skin, { cap: armW * 0.66, capColor: shade(char.skin, 1.05), lowerColor: sleeveLower });
   // Back arm (away from camera) goes behind the jersey; the front arm is drawn
   // after the torso so it reads on top. `facing >= 0` ⇒ right arm is the front one.
+  const frontSide = facing >= 0 ? 'r' : 'l';
   const drawFrontArm = facing >= 0 ? drawArmR : drawArmL;
+  // Depth rule: an arm raised above the head (a shot release, a celebration, a rebound
+  // reach) has to be drawn OVER the head, or the pose that matters most is hidden by it.
+  const armOverHead = sk.hand[frontSide].y < sk.head.y;
   (facing >= 0 ? drawArmL : drawArmR)();
 
   // Torso — jersey main color, shaded
@@ -255,7 +263,7 @@ export function drawCharacter(ctx, char, x, y, scale, pose = 'idle', phase = 0, 
   ctx.strokeStyle = trim; ctx.lineWidth = 0.8 * s; ctx.strokeText(String(char.number), 0, -bodyH * 0.42);
 
   // Front arm — drawn over the jersey so the shooting/guide hand reads on top.
-  drawFrontArm();
+  if (!armOverHead) drawFrontArm();
 
   // Head — sphere-shaded
   const hx = sk.head.x, hy = sk.head.y;
@@ -326,6 +334,8 @@ export function drawCharacter(ctx, char, x, y, scale, pose = 'idle', phase = 0, 
   // head rim light
   ctx.strokeStyle = 'rgba(255,255,255,0.22)'; ctx.lineWidth = 1.4 * s;
   ctx.beginPath(); ctx.arc(hx, hy, headR - 0.8 * s, Math.PI * 1.15, Math.PI * 1.55); ctx.stroke();
+
+  if (armOverHead) drawFrontArm();
 
   ctx.restore(); // end of the leaned upper body
   ctx.restore();

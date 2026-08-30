@@ -17,6 +17,7 @@
  */
 
 import { strideScale, strideCadence, clampReach } from './anim.js';
+import { shotChain, gatherPose } from './shotchain.js';
 
 /**
  * How much of its full length a standing leg uses. Below 1 so the knee keeps a bend at
@@ -87,6 +88,8 @@ export function basePose(out = {}) {
   out.stanceWidth = 1;    // multiplies hip separation + the resting foot offset
   out.hipDrop = 0;        // px the pelvis sinks while the feet stay planted
   out.strideScale = 1;    // AE2: stride amplitude multiplier (speed-driven)
+  out.wrist = 0;          // AE4: 0..1 wrist snap past the release
+  out.shotLift = 0;       // AE4: px of jump the shot chain asks for
   // AE3: when set, { l:{x,y,ankle}, r:{...} } local-space feet from the gait state. These
   // win over the sine stride, because they are the planted positions — see core/gait.js.
   out.feet = null;
@@ -101,7 +104,12 @@ export function basePose(out = {}) {
  * lean and stride scale with the smoothed speed instead of being fixed per pose. Without
  * it the output is exactly the AE1 pose, which is what the parity test pins.
  */
-export function generatePose(poseName, phase, facing, s, out = basePose(), anim = null) {
+// Scratch objects for the shot chain: pose generation runs once per character per
+// frame and must not allocate.
+const _chain = {};
+const _gather = {};
+
+export function generatePose(poseName, phase, facing, s, out = basePose(), anim = null, shotT = 0, charge = 0) {
   basePose(out);
   out.facing = facing;
 
@@ -109,19 +117,33 @@ export function generatePose(poseName, phase, facing, s, out = basePose(), anim 
   if (poseName === 'dribble') out.bob = Math.sin(phase * 4) * 1.2 * s;
   if (poseName === 'walk') { out.bob = Math.abs(Math.sin(phase * 10)) * 2 * s; out.lean = 2 * s * facing; }
   if (poseName === 'run' || poseName === 'rebound') { out.bob = Math.abs(Math.sin(phase * 14)) * 3 * s; out.lean = 4 * s * facing; }
+  // AE4: shoot and aim are driven by the shot chain (core/shotchain.js) rather than a
+  // single ramped value. shotT is seconds since the ball left the hand; charge is 0..1
+  // through the power sweep. Both come from gameplay clocks that already existed.
   if (poseName === 'shoot') {
-    out.armUp = Math.min(1, phase * 1.7);
-    out.bob = -out.armUp * 5 * s;
-    out.crouch = (1 - out.armUp) * 2 * s;
+    const c = shotChain(shotT, _chain);
+    out.armUp = c.armExt;
+    out.wrist = c.wrist;
+    out.shotLift = c.lift * s;
+    out.hipDrop = c.hipDrop * s;
+    out.stanceWidth = c.stanceWidth;
+    out.bob = -c.armExt * 2 * s;
   }
-  if (poseName === 'aim') { out.armUp = 0.5 + Math.sin(phase * 6) * 0.04; out.crouch = 3 * s; }
+  if (poseName === 'aim') {
+    const g = gatherPose(charge, _gather);
+    out.armUp = g.armExt;
+    out.hipDrop = g.hipDrop * s;
+    out.stanceWidth = g.stanceWidth;
+    // a small live tremor so a held gather is a moving hold, never a frozen frame
+    out.armUp += Math.sin(phase * 6) * 0.03;
+  }
   if (poseName === 'celebrate') { out.armUp = 1; out.bob = -Math.abs(Math.sin(phase * 8)) * 7 * s; }
   if (poseName === 'knockout') { out.fall = Math.min(1, phase); out.spin = phase * 1.1; }
 
   out.running = STRIDE_POSES.includes(poseName);
   out.strideHz = poseName === 'walk' ? 10 : 14;
   out.swing = out.running ? Math.sin(phase * out.strideHz) : 0;
-  out.tuck = (poseName === 'shoot' ? out.armUp : poseName === 'aim' ? 0.4 : 0) * 2.5 * s;
+  out.tuck = 0; // AE4: the shot's vertical travel is the jump lift, not a foot tuck
   out.bendLeg = facing >= 0 ? 1 : -1;
 
   // AE2 momentum: the body leans into the direction it is actually moving, and the stride
@@ -143,7 +165,7 @@ export function generatePose(poseName, phase, facing, s, out = basePose(), anim 
   else if (poseName === 'knockout') out.armMode = 'knockout';
   else if (poseName === 'aim' || poseName === 'shoot') {
     out.armMode = 'shoot';
-    out.shootRel = poseName === 'shoot' ? out.armUp : 0.5;
+    out.shootRel = out.armUp;
   }
   return out;
 }
@@ -162,6 +184,7 @@ export function makeSkeleton() {
     bendArm: { l: -1, r: 1 },
     bendLeg: 1,
     lean: 0,               // px the upper body carries ahead of the feet (AE2)
+    hipDrop: 0,            // px the upper body sinks over planted feet (AE3/AE4)
     ankle: { l: 0, r: 0 }, // rad; 0 = flat on the floor, +ve = toe pointed (AE3)
   };
 }
@@ -229,18 +252,38 @@ export function resolveRig(dims, pose, sk = makeSkeleton()) {
       sk.hand.r.x = sk.shoulder.r.x + 15 * s; sk.hand.r.y = shoulderY + 8 * s;
       break;
     case 'shoot': {
+      // The shooting arm is described as an ANGLE and a REACH from the shoulder, not as
+      // an absolute point. The old absolute release point sat ~44px from a ~27px arm, so
+      // the IK clamped it and the whole extension ramp was invisible — the arm was pinned
+      // at max reach from the first frame. In polar terms every pose is reachable by
+      // construction, and the arm visibly sweeps up as the shot extends.
       const rel = pose.shootRel;
-      const relX = facing * bodyW * 0.42, relY = shoulderY - 20 * s * rel - 8 * s;
-      const gX = facing * bodyW * 0.10, gY = shoulderY - 9 * s * rel + 1 * s;
-      if (facing >= 0) {
-        sk.hand.r.x = relX; sk.hand.r.y = relY;
-        sk.hand.l.x = gX; sk.hand.l.y = gY;
-        sk.bendArm.l = 1;
-      } else {
-        sk.hand.l.x = relX; sk.hand.l.y = relY;
-        sk.hand.r.x = gX; sk.hand.r.y = gY;
-        sk.bendArm.r = -1;
-      }
+      const armLen = dims.armL1 + dims.armL2;
+      // Everything is polar, including the wrist snap: the flop rotates the hand slightly
+      // back over the top and shortens the reach a touch, rather than adding a Cartesian
+      // offset that could push the target outside the arm again.
+      // Both offsets are measured from the hand's OWN shoulder. Anchoring the guide hand
+      // to the body centre instead put it a shoulder-width further from its shoulder than
+      // intended, which pushed that arm past full extension too.
+      // Up and FORWARD, not straight up: a vertical release puts the hand directly above
+      // the shoulder, which is inside the head's silhouette, so the whole raised arm
+      // disappears behind it. Angling it out keeps the release pose readable.
+      const relAng = -0.55 - 0.75 * rel + pose.wrist * 0.10;   // rad, negative = upward
+      const relDist = armLen * (0.52 + 0.42 * rel - 0.03 * pose.wrist);
+      const relDX = facing * Math.cos(relAng) * relDist;
+      const relDY = Math.sin(relAng) * relDist;
+      // The guide hand reaches up and INWARD, toward where the ball is being held.
+      const gAng = -0.72 - 0.30 * rel;
+      const gDist = armLen * (0.46 + 0.14 * rel);
+      const gDX = facing * Math.cos(gAng) * gDist;
+      const gDY = Math.sin(gAng) * gDist;
+      const shoot = facing >= 0 ? 'r' : 'l';
+      const guide = facing >= 0 ? 'l' : 'r';
+      sk.hand[shoot].x = sk.shoulder[shoot].x + relDX;
+      sk.hand[shoot].y = sk.shoulder[shoot].y + relDY;
+      sk.hand[guide].x = sk.shoulder[guide].x + gDX;
+      sk.hand[guide].y = sk.shoulder[guide].y + gDY;
+      sk.bendArm[guide] = facing >= 0 ? 1 : -1;
       break;
     }
     default:
@@ -265,6 +308,7 @@ export function resolveRig(dims, pose, sk = makeSkeleton()) {
   // the pelvis and everything above it; the feet stay where they were planted. The
   // renderer applies sk.lean to the torso/arms/head it draws in body space.
   sk.lean = pose.lean;
+  sk.hipDrop = pose.hipDrop;
   sk.pelvis.x += pose.lean;
   sk.hip.l.x += pose.lean;
   sk.hip.r.x += pose.lean;
