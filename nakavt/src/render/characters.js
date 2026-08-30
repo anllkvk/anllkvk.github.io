@@ -15,6 +15,7 @@ import { twoBoneIK } from '../core/steering.js';
 import { rigDims, basePose, generatePose, makeSkeleton, resolveRig } from '../core/rig.js';
 import { applyLimbLag } from '../core/anim.js';
 import { gaitToLocal } from '../core/gait.js';
+import { blendPose, updateTurn } from '../core/blend.js';
 
 // One rig scratch set for the module: pose generation and skeleton resolution are pure and
 // synchronous, so reusing these keeps drawing allocation-free no matter how many players
@@ -142,6 +143,13 @@ export function drawCharacter(ctx, char, x, y, scale, pose = 'idle', phase = 0, 
   if (!opts.lift && P.shotLift) lift = P.shotLift;
   const sk = resolveRig(dims, P, (anim && anim.sk) || _sk);
   if (anim) applyLimbLag(anim, sk, opts.dt || 0);
+  // AE6: crossfade away from the previous pose so a state change is a transition rather
+  // than a cut, and swing the body around instead of flipping `facing` instantly.
+  let turn = null;
+  if (anim && anim.blend) {
+    blendPose(anim.blend, sk, pose, opts.dt || 0);
+    turn = updateTurn(anim.blend, facing, opts.dt || 0, anim.turnOut || (anim.turnOut = { hips: 1, shoulders: 1 }));
+  }
   const { bob, lean, armUp, fall, spin, crouch } = P;
 
   if (pose === 'knockout') { ctx.translate(0, fall * 20 * s); ctx.rotate(spin * 0.9); ctx.globalAlpha = Math.max(0, 1 - fall * 0.6); }
@@ -186,6 +194,10 @@ export function drawCharacter(ctx, char, x, y, scale, pose = 'idle', phase = 0, 
 
   if (lift) ctx.translate(0, -lift); // raise the body for the jump; shadow stays down
 
+  // AE6: the hips lead the turn. Everything below the waist is drawn under this scale;
+  // the torso above uses the shoulder scale, which trails it (overlapping action).
+  if (turn) { ctx.save(); ctx.scale(turn.hips, 1); }
+
   // Legs — articulated hip→knee→ankle via 2-bone IK, with a shoe cap. Hip and foot
   // targets come from the rig; this only draws the chain between them.
   const { legL1, legL2, legW } = dims;
@@ -206,12 +218,14 @@ export function drawCharacter(ctx, char, x, y, scale, pose = 'idle', phase = 0, 
   // draw the trailing leg first (depth), then the leading one
   const lead = facing >= 0 ? 1 : -1;
   drawLeg(-lead); drawLeg(lead);
+  if (turn) ctx.restore();
 
   // Everything above the hips rides the lean AND the crouch; the feet just drawn do not.
   // Without the vertical half, a gather or a landing absorb only moved the hidden hips
   // and the character never visibly sank.
   ctx.save();
   ctx.translate(sk.lean, sk.hipDrop);
+  if (turn) ctx.scale(turn.shoulders, 1);
 
   // Shorts (over the top of the thighs) — NBA format: main + side stripe + patch
   const shortsY = -6 * s, shortsH = 13 * s;

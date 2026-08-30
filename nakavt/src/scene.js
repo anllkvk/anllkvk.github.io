@@ -19,6 +19,7 @@ import { drawCharacter } from './render/characters.js';
 import { makeAnimState, updateAnim } from './core/anim.js';
 import { makeSkeleton, rigDims, ballCarry } from './core/rig.js';
 import { shotChain } from './core/shotchain.js';
+import { makeBlendState } from './core/blend.js';
 import { makeGaitState, updateGait, brakeStance } from './core/gait.js';
 
 /** A character's persistent animation state plus its own rig skeleton (AE1/AE2). */
@@ -32,6 +33,7 @@ function newAnim() {
   const a = makeAnimState();
   a.sk = makeSkeleton();
   a.gait = makeGaitState();
+  a.blend = makeBlendState();
   return a;
 }
 import { Camera } from './render/camera.js';
