@@ -54,21 +54,68 @@ function capsule(ctx, x, y, w, h, r, base) {
  */
 function limb(ctx, base, target, l1, l2, bend, w, color, opts = {}) {
   const { mid, end } = twoBoneIK(base, target, l1, l2, bend);
-  const seg = (a, b, wa, wb, col) => {
+  /**
+   * One bone as a filled outline whose half-width is a function of the distance along it.
+   * A straight quad from wa to wb can only ever taper in one direction, which is why the
+   * limbs read as tubes: a real calf is WIDER than the knee above it before it narrows to
+   * the ankle, and no monotonic taper can say that. `bulge` moves the widest point along
+   * the bone and `peak` scales it, so one primitive draws both a thigh (mass at the top,
+   * narrowing to the knee) and a shank (a belly a third of the way down, then a hard
+   * narrowing into the ankle).
+   */
+  const bone = (a, b, wa, wb, col, peak = 1, bulge = 0.5) => {
     const ang = Math.atan2(b.y - a.y, b.x - a.x);
     const nx = Math.cos(ang + Math.PI / 2), ny = Math.sin(ang + Math.PI / 2);
+    // A bone with no bulge (peak 1 — every arm) is a plain trapezium, so take the cheap
+    // 4-point path for it rather than walking the profile. Only the legs pay for the curve.
+    if (peak === 1) {
+      ctx.beginPath();
+      ctx.moveTo(a.x + nx * wa, a.y + ny * wa); ctx.lineTo(b.x + nx * wb, b.y + ny * wb);
+      ctx.lineTo(b.x - nx * wb, b.y - ny * wb); ctx.lineTo(a.x - nx * wa, a.y - ny * wa);
+      ctx.closePath();
+      const gq = ctx.createLinearGradient(a.x - nx * wa, a.y - ny * wa, a.x + nx * wa, a.y + ny * wa);
+      gq.addColorStop(0, shade(col, 0.74)); gq.addColorStop(0.55, col); gq.addColorStop(1, shade(col, 1.16));
+      ctx.fillStyle = gq; ctx.fill();
+      return;
+    }
+    const N = 7;
+    const wAt = (t) => {
+      const lin = wa + (wb - wa) * t;
+      // a smooth hump centred on `bulge`, zero at both ends, so the joints stay put
+      const d = (t - bulge) / (t < bulge ? bulge : 1 - bulge || 1);
+      const hump = Math.max(0, 1 - d * d);
+      return lin * (1 + (peak - 1) * hump);
+    };
     ctx.beginPath();
-    ctx.moveTo(a.x + nx * wa, a.y + ny * wa); ctx.lineTo(b.x + nx * wb, b.y + ny * wb);
-    ctx.lineTo(b.x - nx * wb, b.y - ny * wb); ctx.lineTo(a.x - nx * wa, a.y - ny * wa);
+    for (let i = 0; i <= N; i++) {
+      const t = i / N, ww = wAt(t);
+      const px = a.x + (b.x - a.x) * t, py = a.y + (b.y - a.y) * t;
+      const X = px + nx * ww, Y = py + ny * ww;
+      if (i === 0) ctx.moveTo(X, Y); else ctx.lineTo(X, Y);
+    }
+    for (let i = N; i >= 0; i--) {
+      const t = i / N, ww = wAt(t);
+      const px = a.x + (b.x - a.x) * t, py = a.y + (b.y - a.y) * t;
+      ctx.lineTo(px - nx * ww, py - ny * ww);
+    }
     ctx.closePath();
-    const g = ctx.createLinearGradient(a.x, a.y, b.x, b.y);
-    g.addColorStop(0, shade(col, 0.82)); g.addColorStop(1, shade(col, 1.12));
+    const g = ctx.createLinearGradient(a.x - nx * wa, a.y - ny * wa, a.x + nx * wa, a.y + ny * wa);
+    g.addColorStop(0, shade(col, 0.74)); g.addColorStop(0.55, col); g.addColorStop(1, shade(col, 1.16));
     ctx.fillStyle = g; ctx.fill();
   };
-  seg(base, mid, w, w * 0.84, color);
-  seg(mid, end, w * 0.84, w * 0.68, opts.lowerColor || color);
-  ctx.fillStyle = shade(color, 0.9);
-  ctx.beginPath(); ctx.arc(mid.x, mid.y, w * 0.82, 0, Math.PI * 2); ctx.fill();
+  // Width profile along the chain. The defaults are the old even taper (arms); legs pass
+  // their own, measured off the reference: thigh mass at the hip, a narrow knee, a calf
+  // belly wider than that knee, and an ankle at half the thigh.
+  const P = opts.profile || { hip: 1, knee: 0.84, ankle: 0.68, calf: 1, calfAt: 0.5 };
+  bone(base, mid, w * P.hip, w * P.knee, color, P.thighPeak || 1, P.thighAt || 0.34);
+  bone(mid, end, w * P.knee, w * P.ankle, opts.lowerColor || color, P.calf, P.calfAt);
+  // Knee: a slightly flattened cap across the joint, so the leg has a readable hinge
+  // rather than a ball. Drawn along the shank's axis.
+  const ka = Math.atan2(end.y - mid.y, end.x - mid.x);
+  ctx.fillStyle = shade(color, 0.88);
+  ctx.save(); ctx.translate(mid.x, mid.y); ctx.rotate(ka);
+  ctx.beginPath(); ctx.ellipse(0, 0, w * (P.kneeCap || 0.82), w * (P.kneeCapW || 0.82), 0, 0, Math.PI * 2); ctx.fill();
+  ctx.restore();
   if (opts.cap) { ctx.fillStyle = opts.capColor || color; ctx.beginPath(); ctx.arc(end.x, end.y, opts.cap, 0, Math.PI * 2); ctx.fill(); }
   return { mid, end };
 }
@@ -121,6 +168,16 @@ function drawHair(ctx, char, hx, hy, hr, simulatedDreads = false) {
     default: break;
   }
 }
+
+/**
+ * Leg silhouette, as multiples of the leg's base half-width. Exported so a test can assert
+ * the ORDER these read in — thigh mass, a narrower knee, a calf belly wider than that knee,
+ * an ankle at about half the thigh — rather than the numbers themselves.
+ */
+export const LEG_PROFILE = Object.freeze({
+  hip: 1.16, knee: 0.70, ankle: 0.50, calf: 1.34, calfAt: 0.32,
+  thighPeak: 1.10, thighAt: 0.26, kneeCap: 0.62, kneeCapW: 0.74,
+});
 
 export function drawCharacter(ctx, char, x, y, scale, pose = 'idle', phase = 0, opts = {}) {
   const s = scale;
@@ -221,18 +278,51 @@ export function drawCharacter(ctx, char, x, y, scale, pose = 'idle', phase = 0, 
   // Legs — articulated hip→knee→ankle via 2-bone IK, with a shoe cap. Hip and foot
   // targets come from the rig; this only draws the chain between them.
   const { legL1, legL2, legW } = dims;
+  // AE10 leg volume, measured off the reference: the thigh carries mass high and narrows
+  // into the knee, the shank has a calf belly WIDER than that knee about a third of the way
+  // down, and the ankle is roughly half the thigh. The old even taper could not express the
+  // calf at all, so every leg read as a tube of constant thickness.
+  const LEG = LEG_PROFILE;
   const drawLeg = (side) => {
     const k = side === 1 ? 'r' : 'l';
-    const { end } = limb(ctx, sk.hip[k], sk.foot[k], legL1, legL2, sk.bendLeg, legW, char.skin);
-    // sock band + shoe. The shoe rotates with the ankle — flat while the foot is planted,
-    // toe pointed just after push-off. Frame finding 1.0-1: that angle, not the foot's
-    // position, is what makes a stride read as a real push rather than a slide.
-    ctx.fillStyle = '#f2f2f2';
-    ctx.beginPath(); ctx.arc(end.x, end.y - 1.5 * s, 3.4 * s, 0, Math.PI * 2); ctx.fill();
-    ctx.fillStyle = shade(trim, 1.0);
-    ctx.save(); ctx.translate(end.x, end.y + 1.5 * s); ctx.rotate(sk.ankle[k]);
-    ctx.beginPath(); ctx.ellipse(facing * 1.6 * s, 0, 5.6 * s, 3.1 * s, 0, 0, Math.PI * 2); ctx.fill();
-    ctx.fillStyle = shade(trim, 0.7); ctx.fillRect(-5.6 * s + facing * 1.6 * s, 1.4 * s, 11.2 * s, 1.4 * s);
+    const { end } = limb(ctx, sk.hip[k], sk.foot[k], legL1, legL2, sk.bendLeg, legW, char.skin, { profile: LEG });
+    // Sock: a light band at the ankle. It is what separates the dark shank from the shoe in
+    // the reference, and at gameplay scale it is most of what makes the ankle read as narrow.
+    ctx.fillStyle = '#f4f4f2';
+    ctx.beginPath(); ctx.ellipse(end.x, end.y - 2.4 * s, 2.5 * s, 3.2 * s, 0, 0, Math.PI * 2); ctx.fill();
+    // Shoe. The ellipse it replaces had no direction and no toe, so a planted foot and a
+    // pushed-off one looked identical. This is a basketball shoe silhouette — sole slab,
+    // toe box forward of the ankle, heel counter behind it, a collar rising over the
+    // ankle — built in a frame rotated by sk.ankle, exactly as the ellipse was. Foot
+    // POSITION is untouched: it still draws at `end`, which the gait/IK decided.
+    ctx.save();
+    ctx.translate(end.x, end.y + 1.2 * s);
+    ctx.rotate(sk.ankle[k]);
+    ctx.scale(facing, 1);                       // built pointing +x, mirrored to face
+    const L = 6.9 * s, H = 3.5 * s;             // toe reach forward, upper height
+    const heel = -3.5 * s;
+    ctx.beginPath();
+    ctx.moveTo(heel, 1.5 * s);                  // heel, at the ground
+    ctx.lineTo(heel - 0.5 * s, -1.1 * s);       // heel counter, kicked up behind
+    ctx.quadraticCurveTo(heel - 0.3 * s, -H, -1.0 * s, -H);   // collar over the ankle
+    ctx.quadraticCurveTo(1.6 * s, -H * 0.98, 3.0 * s, -H * 0.52); // instep falling away
+    ctx.quadraticCurveTo(L * 0.86, -H * 0.20, L, 0.55 * s);   // toe box
+    ctx.quadraticCurveTo(L * 0.99, 1.5 * s, L - 1.0 * s, 1.5 * s); // toe meets the sole
+    ctx.closePath();
+    const sg = ctx.createLinearGradient(0, -H, 0, 1.5 * s);
+    sg.addColorStop(0, shade(trim, 1.06)); sg.addColorStop(1, shade(trim, 0.86));
+    ctx.fillStyle = sg; ctx.fill();
+    // Sole slab: thicker at the heel, tapering to the toe — the line the shoe stands on.
+    ctx.beginPath();
+    ctx.moveTo(heel - 0.5 * s, 1.5 * s);
+    ctx.lineTo(L - 0.6 * s, 1.5 * s);
+    ctx.quadraticCurveTo(L * 0.72, 2.5 * s, 2.0 * s, 2.6 * s);
+    ctx.lineTo(heel - 0.4 * s, 2.6 * s);
+    ctx.closePath();
+    ctx.fillStyle = shade(trim, 0.60); ctx.fill();
+    // Midsole highlight, and the collar edge — two strokes that carry the shape at 66px.
+    ctx.strokeStyle = shade(trim, 0.72); ctx.lineWidth = 0.7 * s;
+    ctx.beginPath(); ctx.moveTo(heel, 0.4 * s); ctx.lineTo(L * 0.80, -0.1 * s); ctx.stroke();
     ctx.restore();
   };
   // draw the trailing leg first (depth), then the leading one
@@ -244,6 +334,24 @@ export function drawCharacter(ctx, char, x, y, scale, pose = 'idle', phase = 0, 
   // and the character never visibly sank.
   ctx.save();
   ctx.translate(sk.lean, sk.hipDrop);
+  // AE10: tilt the upper body about the pelvis. Everything from here on — shorts, jersey,
+  // arms, head — rides the tilt; the legs and feet above do not, so foot planting is
+  // untouched by construction.
+  const tilt = sk.leanAngle || 0;
+  if (tilt) { ctx.translate(0, dims.hipY); ctx.rotate(tilt); ctx.translate(0, -dims.hipY); }
+  // A hand that is holding something is posed to a point in the WORLD — the ball the scene
+  // drew (AE5), or the release point the shot chain owns (AE4) — not to a point on the
+  // body. Rotating the frame under it would carry it off that point, so those hands get
+  // the inverse rotation and land exactly where the rig put them. The shoulder still
+  // leads, which is the whole intent; only the far end of the arm is pinned.
+  if (tilt && (P.ballAt || pose === 'shoot' || pose === 'aim')) {
+    const ca = Math.cos(-tilt), sa = Math.sin(-tilt);
+    for (const k of ['l', 'r']) {
+      const h = sk.hand[k], dx = h.x, dy = h.y - dims.hipY;
+      h.x = dx * ca - dy * sa;
+      h.y = dims.hipY + dx * sa + dy * ca;
+    }
+  }
   // AE6 turn, corrected: the scale is applied ONLY to the torso and shorts below, never to
   // the arms or legs. Those are IK chains solved to real targets — a planted foot, a hand on
   // the ball — and squashing them horizontally distorts the solved geometry, which showed up
@@ -383,6 +491,11 @@ export function drawCharacter(ctx, char, x, y, scale, pose = 'idle', phase = 0, 
   // AE5: the head counters part of the torso lean so it stays level over the body,
   // instead of being dragged along by it (frame finding 1.0-5).
   const hx = sk.head.x + sk.headStab, hy = sk.head.y;
+  // The head rides the tilted frame with the rest of the upper body, but a runner's head
+  // stays close to level — the neck absorbs most of the torso angle. Counter-rotate the
+  // head group about its own centre so it keeps a little of the lean and loses the rest.
+  ctx.save();
+  if (tilt) { ctx.translate(hx, hy); ctx.rotate(-tilt * 0.7); ctx.translate(-hx, -hy); }
   const hg = ctx.createRadialGradient(hx - headR * 0.35, hy - headR * 0.4, headR * 0.12, hx, hy, headR * 1.15);
   hg.addColorStop(0, shade(char.skin, 1.2)); hg.addColorStop(0.7, char.skin); hg.addColorStop(1, shade(char.skin, 0.72));
   ctx.fillStyle = hg; ctx.beginPath(); ctx.arc(hx, hy, headR, 0, Math.PI * 2); ctx.fill();
@@ -470,6 +583,8 @@ export function drawCharacter(ctx, char, x, y, scale, pose = 'idle', phase = 0, 
   // head rim light
   ctx.strokeStyle = 'rgba(255,255,255,0.22)'; ctx.lineWidth = 1.4 * s;
   ctx.beginPath(); ctx.arc(hx, hy, headR - 0.8 * s, Math.PI * 1.15, Math.PI * 1.55); ctx.stroke();
+
+  ctx.restore(); // end of the head's counter-rotation — after the face, not before it
 
   if (armOverHead) drawFrontArm();
 

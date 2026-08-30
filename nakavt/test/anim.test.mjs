@@ -7,7 +7,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import {
   ANIM, makeDamped, smoothDamp, makeAnimState, updateAnim,
-  strideScale, strideCadence, clampReach, applyLimbLag,
+  strideScale, strideCadence, clampReach, applyLimbLag, leanTarget,
 } from '../src/core/anim.js';
 import { makeSkeleton } from '../src/core/rig.js';
 
@@ -181,4 +181,50 @@ test('limb lag converges: a held pose ends up exactly on target', () => {
   for (let i = 0; i < 120; i++) { sk.hand.r.x = 25; sk.hand.r.y = -8; applyLimbLag(a, sk, 1 / 60); }
   assert.ok(Math.abs(sk.hand.r.x - 25) < 1e-3, `settled at ${sk.hand.r.x}`);
   assert.ok(Math.abs(sk.hand.r.y + 8) < 1e-3);
+});
+
+test('AE10: lean is a different angle for each locomotion state', () => {
+  // A single speed-proportional number cannot distinguish a jog from a sprint from a hard
+  // start from a stop; the reference plainly uses a different torso angle for each. Assert
+  // the ORDERING rather than the constants, so the feel can be tuned without breaking this.
+  const L = (s, a, b) => leanTarget(s, a, b, 1);
+  const idle = L(0, 0, 0), walk = L(0.35, 0, 0), run = L(0.7, 0, 0), sprint = L(1, 0, 0);
+
+  assert.equal(idle, 0, 'a standing body does not lean');
+  assert.ok(walk > idle && run > walk && sprint > run, `not monotonic: ${walk}, ${run}, ${sprint}`);
+  // superlinear: the second half of the speed range must add more lean than the first,
+  // or a sprint just looks like a slightly faster jog
+  assert.ok(sprint - run > run - idle - (run - walk), 'lean arrives linearly, so sprint reads like a jog');
+
+  // Accelerating leans further than holding the same speed...
+  assert.ok(L(0.6, 1, 0) > L(0.6, 0, 0), 'no extra lean into an acceleration');
+  assert.ok(L(0.6, 1, 0) > sprint * 0.95, 'the start of a run should lean like a sprint');
+  // ...and braking brings the body back over its feet, past upright.
+  assert.ok(L(0.7, 0, 0.6) < walk, 'braking does not straighten the body');
+  assert.ok(L(0.2, 0, 1) < 0, 'a hard stop should settle the mass BEHIND the feet');
+
+  // Direction follows facing, always.
+  assert.ok(leanTarget(1, 0, 0, -1) < 0, 'lean does not mirror with facing');
+});
+
+test('AE10: acceleration is tracked, and only its positive half', () => {
+  const anim = makeAnimState();
+  updateAnim(anim, { speed: 0, maxSpeed: 200, facing: 1, lift: 0 }, 1 / 60);
+  for (let i = 0; i < 6; i++) updateAnim(anim, { speed: 200, maxSpeed: 200, facing: 1, lift: 0 }, 1 / 60);
+  assert.ok(anim.accel01.v > 0.2, `accelerating hard registered only ${anim.accel01.v.toFixed(2)}`);
+  // Slowing down must never RAISE the acceleration channel — shedding speed is the brake
+  // envelope's job. The envelope releases rather than snapping, so the property to assert
+  // is that it only ever falls from here, and has unwound once the release is over.
+  let prev = anim.accel01.v, peakBrake = 0;
+  for (let i = 0; i < 40; i++) {
+    updateAnim(anim, { speed: 0, maxSpeed: 200, facing: 1, lift: 0 }, 1 / 60);
+    assert.ok(anim.accel01.v <= prev + 1e-9, 'deceleration re-attacked the acceleration channel');
+    prev = anim.accel01.v;
+    peakBrake = Math.max(peakBrake, anim.brake.v);
+  }
+  assert.ok(anim.accel01.v < 0.05, 'accel01 is still up well past its release: ' + anim.accel01.v.toFixed(2));
+  // The brake is an envelope too: it fires ON the stop and releases. Its PEAK across the
+  // window is the signal, not its value once the body has been standing still for 0.67s.
+  assert.ok(peakBrake > 0.1, 'the brake envelope did not fire on a hard stop');
+  assert.ok(anim.brake.v < 0.05, 'the brake envelope never released');
 });

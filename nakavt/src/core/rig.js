@@ -218,6 +218,7 @@ export function makeSkeleton() {
     ankle: { l: 0, r: 0 }, // rad; 0 = flat on the floor, +ve = toe pointed (AE3)
     headAim: 0,            // px the gaze shifts toward the ball (AE5)
     headStab: 0,           // px the head counters the torso lean to stay level (AE5)
+    leanAngle: 0,          // rad the upper body tilts about the pelvis (AE10)
   };
 }
 
@@ -267,12 +268,51 @@ export function resolveRig(dims, pose, sk = makeSkeleton()) {
 
   switch (pose.armMode) {
     case 'swing': {
+      // AE10. Two things were wrong here.
+      //
+      // CONTRALATERAL. Both hands were driven by +pose.swing, mirrored only by which side
+      // of the body they start on, so the arms opened and closed together — a symmetric
+      // flap, not a swing. The legs have always alternated (the right leg takes +swing and
+      // the left -swing), so the arms were also out of sync with them. A run reads as a run
+      // because the arm OPPOSITE the forward leg comes forward; that is the whole cue.
+      //
+      // POLAR, NOT CARTESIAN. The hand was placed by offsetting x and y independently, so
+      // its distance from the shoulder changed through the cycle and the elbow straightened
+      // and re-bent as it swung. Placing it at a FIXED reach and varying only the ANGLE
+      // holds the elbow at a constant ~90 degrees all the way round, which is what the
+      // reference shows and what the shot arm below already does.
       const st = pose.strideScale;
-      const lift = Math.abs(pose.swing) * 3 * s * st;
-      sk.hand.l.x = sk.shoulder.l.x - 4 * s - pose.swing * 6 * s * facing * st;
-      sk.hand.l.y = shoulderY + 14 * s - lift;
-      sk.hand.r.x = sk.shoulder.r.x + 4 * s + pose.swing * 6 * s * facing * st;
-      sk.hand.r.y = shoulderY + 14 * s - lift;
+      const arm = dims.armL1 + dims.armL2;
+      // Reach sets the elbow angle AND how far the elbow flares off the body. At 0.68 the
+      // arm was folded enough to push the elbow 10px clear of a 12.5px torso half-width —
+      // a chicken wing, where the reference keeps the elbow near the ribs. 0.73 holds the
+      // bend just under a right angle and pulls the flare back to ~7px.
+      const R = arm * 0.73;
+      const phase = { l: pose.swing, r: -pose.swing };
+      for (const k of ['l', 'r']) {
+        const side = k === 'l' ? -1 : 1;
+        const fwd = phase[k] * facing;      // +1 = this arm is at the front of its swing
+        // The reference footage is shot from three-quarters, where the swing is mostly
+        // fore-and-aft. This camera is close to front-on, and a fore-and-aft swing
+        // projected onto it drags both forearms diagonally across the chest and over the
+        // number — which is what it did. So the sweep is kept in each arm's OWN lateral
+        // half-plane: the forward arm rises up and out toward the chest, the trailing one
+        // falls back to hanging. It never crosses the torso, it still alternates, and the
+        // alternation is what sells the run.
+        const amp = 0.30 * st;
+        const ang = Math.PI / 2 - side * (amp + fwd * amp);
+        // ...with a small genuine fore-and-aft offset on top, so the swing is not purely
+        // a lateral pump.
+        sk.hand[k].x = sk.shoulder[k].x + Math.cos(ang) * R + fwd * 1.2 * s * facing * st;
+        sk.hand[k].y = sk.shoulder[k].y + Math.sin(ang) * R;
+      }
+      // Elbows OUT, for the swing only. The default bend sides put both elbows on the
+      // inside: solved against a hand hanging below the shoulder they landed at x = 2.6
+      // against a torso half-width of 12.5 — i.e. almost on the body's centre line — so
+      // each upper arm cut diagonally across the chest and over the number, and no change
+      // to the hand target could fix it because the hand was never the part crossing.
+      sk.bendArm.l = 1;
+      sk.bendArm.r = -1;
       break;
     }
     case 'celebrate':
@@ -359,6 +399,13 @@ export function resolveRig(dims, pose, sk = makeSkeleton()) {
   }
 
   sk.lean = pose.lean;
+  // AE10: the lean is a TILT as well as a shift. Shifting alone slides the whole upper
+  // body forward and keeps it vertical, which reads as a body standing at an offset rather
+  // than a body leaning: the hips and the shoulders lead by exactly the same amount, so
+  // there is no diagonal anywhere in the silhouette. Tilting about the pelvis on top of
+  // the shift gives the shoulders the extra lead, and the renderer applies it to the upper
+  // body only — the legs are already drawn, planted, by the time it is used.
+  sk.leanAngle = Math.max(-0.30, Math.min(0.30, pose.lean / (dims.s * 40)));
   sk.hipDrop = pose.hipDrop;
   sk.pelvis.x += pose.lean;
   sk.hip.l.x += pose.lean;

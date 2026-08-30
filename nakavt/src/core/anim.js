@@ -15,7 +15,18 @@
 export const ANIM = Object.freeze({
   speedSmooth: 0.14,     // s, how fast the body "believes" a speed change
   leanSmooth: 0.10,      // s, lean settles slightly faster than speed
-  leanMax: 7,            // px of lean at full speed (was a flat 4)
+  // AE10: lean is no longer one number times speed. The reference uses a different torso
+  // angle for walking, running, sprinting, accelerating and braking, and a single
+  // speed-proportional shift cannot say any of that. Speed sets the baseline (superlinear,
+  // so a sprint is distinctly more than a jog rather than just a bit more), acceleration
+  // adds to it, and braking subtracts — hard enough to bring the body back upright over
+  // the feet, which is what a stop actually looks like.
+  leanMax: 10,           // px of lean at a steady full sprint
+  leanCurve: 1.2,        // >1 so the lean arrives late, at the sprint end of the range
+  leanAccel: 5.5,        // px of extra lean while actively gaining speed
+  leanBrake: 11,         // px removed while braking — enough to go past upright
+  accelRef: 1500,        // px/s^2 that counts as full acceleration
+  accelRelease: 0.20,    // s, how slowly the lean-into-a-start unwinds
   strideMin: 0.45,       // stride amplitude at a crawl
   strideMax: 1.25,       // stride amplitude at full speed
   cadenceMin: 9,         // stride Hz at a crawl
@@ -30,6 +41,23 @@ export const ANIM = Object.freeze({
   brakeRelease: 0.26,    // s, how slowly the braking crouch stands back up (AE3)
   brakeRef: 2600,        // px/s^2 of deceleration that counts as a full stop (AE3)
 });
+
+/**
+ * Signed lean in px for a given speed / acceleration / braking state (AE10).
+ *
+ *   idle          0
+ *   walk, run     the speed baseline, curved so it arrives at the sprint end
+ *   acceleration  baseline + an acceleration term: leaning into the start
+ *   sprint        the full baseline
+ *   deceleration  the brake term pulls the body back over its feet...
+ *   stop          ...and past upright for an instant, which is the recovery
+ *
+ * Exported so a test can assert the ORDERING of those states rather than the constants.
+ */
+export function leanTarget(speed01, accel01, brake01, facing) {
+  const base = Math.pow(Math.max(0, speed01), ANIM.leanCurve) * ANIM.leanMax;
+  return (base + accel01 * ANIM.leanAccel - brake01 * ANIM.leanBrake) * facing;
+}
 
 /** A damped scalar: current value + its spring velocity. */
 export function makeDamped(value = 0) {
@@ -68,6 +96,7 @@ export function smoothDamp(d, target, smoothTime, dt, maxSpeed = Infinity) {
 export function makeAnimState() {
   return {
     speed01: makeDamped(0),   // smoothed 0..1 speed — drives lean, stride, cadence
+    accel01: makeDamped(0),   // smoothed 0..1 acceleration — the extra lean into a start
     lean: makeDamped(0),      // smoothed signed lean in px
     lift: 0,                  // last frame's jump height, px
     liftVel: 0,               // px/s
@@ -102,14 +131,13 @@ export function updateAnim(anim, input, dt) {
   if (!anim.ready) {
     // Seed on the first frame so a character never swoops in from a stale pose.
     anim.speed01.v = target01;
-    anim.lean.v = target01 * ANIM.leanMax * facing;
+    anim.lean.v = leanTarget(target01, 0, 0, facing);
     anim.lift = input.lift || 0;
     anim.rawSpeed = input.speed || 0;
     anim.ready = true;
   }
 
   smoothDamp(anim.speed01, target01, ANIM.speedSmooth, dt);
-  smoothDamp(anim.lean, target01 * ANIM.leanMax * facing, ANIM.leanSmooth, dt);
 
   // Braking: how hard the character is shedding speed. AE3 turns this into the wide, low,
   // both-feet-planted stop the reference actually uses (doc 1.0 finding 2).
@@ -119,11 +147,27 @@ export function updateAnim(anim, input, dt) {
   // barely register. Instead the crouch snaps on and unwinds slowly, which is also how the
   // real motion works: you drop fast and stand back up gradually.
   const speed = input.speed || 0;
+  const prevSpeed = anim.rawSpeed;
   const decel = dt > 0 ? Math.max(0, (anim.rawSpeed - speed) / dt) : 0;
   anim.rawSpeed = speed;
   const hit = Math.min(1, decel / ANIM.brakeRef);
   if (hit > anim.brake.v) { anim.brake.v = hit; anim.brake.vel = 0; }
   else smoothDamp(anim.brake, 0, ANIM.brakeRelease, dt);
+
+  // Acceleration, as a 0..1 of how hard the body is gaining speed. Only the positive half:
+  // shedding speed is the brake envelope's job above.
+  //
+  // Like the brake, this is an attack/release envelope rather than a damp, and for the same
+  // reason — a change of speed is an IMPULSE. It exists for a frame or two and is then
+  // gone, so a value damping TOWARD it never gets anywhere near it (measured: 0.10 of a
+  // full-scale start). Snapping up and unwinding slowly is also the real shape: you lean
+  // into the first strides of a run and straighten up as it settles.
+  const accel = dt > 0 ? (speed - prevSpeed) / dt : 0;
+  const gain = Math.max(0, Math.min(1, accel / ANIM.accelRef));
+  if (gain > anim.accel01.v) { anim.accel01.v = gain; anim.accel01.vel = 0; }
+  else smoothDamp(anim.accel01, 0, ANIM.accelRelease, dt);
+  // Lean now depends on the brake envelope, so it is resolved here rather than above.
+  smoothDamp(anim.lean, leanTarget(anim.speed01.v, anim.accel01.v, anim.brake.v, facing), ANIM.leanSmooth, dt);
 
   // Vertical momentum: stretch while rising, squash on touchdown.
   const lift = input.lift || 0;

@@ -9,6 +9,7 @@ import assert from 'node:assert/strict';
 import {
   heightScale, rigDims, basePose, generatePose, makeSkeleton, resolveRig, STRIDE_POSES,
 } from '../src/core/rig.js';
+import { LEG_PROFILE } from '../src/render/characters.js';
 import { ANIM, makeAnimState, updateAnim } from '../src/core/anim.js';
 
 const near = (a, b, eps = 1e-9, msg = '') => assert.ok(Math.abs(a - b) < eps, `${msg} ${a} !== ${b}`);
@@ -371,4 +372,108 @@ test('AE9: the shorts are a visible garment, not hidden under the jersey', () =>
     assert.ok(legBand > shortsBand,
       `${h}: more shorts (${shortsBand.toFixed(1)}) than bare leg (${legBand.toFixed(1)})`);
   }
+});
+
+/* ── AE10: character silhouette and locomotion polish ─────────────────────────────── */
+
+test('AE10: the arms swing OPPOSITE the legs', () => {
+  // The single reason a run reads as a run. Both hands used to be driven by +pose.swing,
+  // mirrored only by which side of the body they hang from, so the arms opened and closed
+  // together — a symmetric flap — and were unrelated to what the legs were doing.
+  const dims = rigDims(1, 'reg');
+  const sk = makeSkeleton();
+  const anim = makeAnimState();
+  for (let i = 0; i < 40; i++) updateAnim(anim, { speed: 200, maxSpeed: 200, facing: 1, lift: 0 }, 1 / 60);
+
+  let checked = 0;
+  for (let i = 0; i < 60; i++) {
+    const P = generatePose('run', i * 0.01, 1, 1, undefined, anim, 0, 0);
+    resolveRig(dims, P, sk);
+    if (Math.abs(P.swing) < 0.35) continue;            // mid-stride: no side is "forward"
+    // Measure each limb against its OWN root, not in absolute x: the feet are planted a
+    // stance width apart, so comparing foot.r.x with foot.l.x mostly reports which side of
+    // the body a foot is on, and only reports the stride once the stride exceeds the stance.
+    const rightFootFwd = (sk.foot.r.x - sk.hip.r.x) > (sk.foot.l.x - sk.hip.l.x);
+    // On this near-front camera the swing is lateral, so the arm at the FRONT of its cycle
+    // is the raised one — height is the cue, not screen x. (A fore-and-aft x test would
+    // only re-measure which side of the body each arm hangs on.)
+    const leftHandFwd = (sk.hand.l.y - sk.shoulder.l.y) < (sk.hand.r.y - sk.shoulder.r.y);
+    assert.equal(leftHandFwd, rightFootFwd,
+      `swing ${P.swing.toFixed(2)}: right foot forward=${rightFootFwd} but left hand forward=${leftHandFwd}`);
+    checked++;
+  }
+  assert.ok(checked > 20, `only ${checked} usable phases in the cycle`);
+});
+
+test('AE10: the swinging elbow never straightens or collapses', () => {
+  // The hand used to be placed by independent x and y offsets, so its distance from the
+  // shoulder — which IS the elbow angle, for a two-bone chain — changed through the cycle
+  // and the arm pumped straight at the ends of the swing. Placing it at a fixed reach and
+  // varying the angle holds the bend; the small remaining variation is the forward hand
+  // rising toward the chest, which is in the reference.
+  const dims = rigDims(1, 'reg');
+  const arm = dims.armL1 + dims.armL2;
+  const sk = makeSkeleton();
+  const anim = makeAnimState();
+  for (let i = 0; i < 40; i++) updateAnim(anim, { speed: 200, maxSpeed: 200, facing: 1, lift: 0 }, 1 / 60);
+
+  let min = Infinity, max = 0;
+  for (let i = 0; i < 60; i++) {
+    const P = generatePose('run', i * 0.01, 1, 1, undefined, anim, 0, 0);
+    resolveRig(dims, P, sk);
+    for (const k of ['l', 'r']) {
+      const d = Math.hypot(sk.hand[k].x - sk.shoulder[k].x, sk.hand[k].y - sk.shoulder[k].y);
+      min = Math.min(min, d); max = Math.max(max, d);
+    }
+  }
+  assert.ok(max < arm * 0.80, `arm reaches ${(max / arm).toFixed(2)} of full length — that is a straight arm`);
+  assert.ok(min > arm * 0.55, `arm folds to ${(min / arm).toFixed(2)} of full length`);
+  assert.ok(max - min < arm * 0.16, `reach swings by ${(max - min).toFixed(1)}px — the elbow is pumping`);
+});
+
+test('AE10: the swing grows with speed', () => {
+  const dims = rigDims(1, 'reg');
+  const sk = makeSkeleton();
+  const span = (speed) => {
+    const anim = makeAnimState();
+    for (let i = 0; i < 60; i++) updateAnim(anim, { speed, maxSpeed: 200, facing: 1, lift: 0 }, 1 / 60);
+    let lo = Infinity, hi = -Infinity;
+    for (let i = 0; i < 60; i++) {
+      const P = generatePose('run', i * 0.01, 1, 1, undefined, anim, 0, 0);
+      resolveRig(dims, P, sk);
+      const x = sk.hand.r.x - sk.shoulder.r.x;
+      lo = Math.min(lo, x); hi = Math.max(hi, x);
+    }
+    return hi - lo;
+  };
+  assert.ok(span(200) > span(80) * 1.5, 'a sprint swings the arms barely more than a jog');
+});
+
+test('AE10: the leg reads thigh -> knee -> calf -> ankle, not as a tube', () => {
+  // A monotonic taper can only ever narrow. The reference silhouette has a calf BELLY that
+  // is wider than the knee above it, then a hard narrowing into the ankle; without that
+  // non-monotonic step the leg is a tube however carefully it is shaded.
+  const P = LEG_PROFILE;
+  assert.ok(P.hip > P.knee, 'the thigh carries more mass than the knee');
+  assert.ok(P.calf > 1, 'the calf belly widens the shank rather than tapering it');
+  assert.ok(P.knee * P.calf > P.knee, 'the widest calf point is wider than the knee');
+  assert.ok(P.ankle < P.knee, 'the ankle is narrower than the knee');
+  assert.ok(P.ankle < P.hip * 0.55, `the ankle is ${(P.ankle / P.hip).toFixed(2)} of the thigh — too thick to read`);
+  assert.ok(P.calfAt > 0.15 && P.calfAt < 0.5, 'the calf belly sits in the upper half of the shank');
+});
+
+test('AE10: the torso tilts with the lean instead of only sliding', () => {
+  const dims = rigDims(1, 'reg');
+  const sk = makeSkeleton();
+  const anim = makeAnimState();
+  for (let i = 0; i < 60; i++) updateAnim(anim, { speed: 200, maxSpeed: 200, facing: 1, lift: 0 }, 1 / 60);
+  const P = generatePose('run', 0.2, 1, 1, undefined, anim, 0, 0);
+  resolveRig(dims, P, sk);
+  assert.ok(sk.leanAngle > 0.1, `sprint tilt is only ${sk.leanAngle.toFixed(3)} rad`);
+  assert.ok(Math.abs(sk.leanAngle) <= 0.30, 'the tilt is clamped');
+  // and it reverses with facing, so a body never leans backwards into its own run
+  const P2 = generatePose('run', 0.2, -1, 1, undefined,
+    (() => { const a = makeAnimState(); for (let i = 0; i < 60; i++) updateAnim(a, { speed: 200, maxSpeed: 200, facing: -1, lift: 0 }, 1 / 60); return a; })(), 0, 0);
+  resolveRig(dims, P2, sk);
+  assert.ok(sk.leanAngle < -0.1, 'the tilt does not follow facing');
 });
