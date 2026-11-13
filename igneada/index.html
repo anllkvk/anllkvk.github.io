@@ -1,0 +1,565 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<meta name="robots" content="noindex, nofollow" />
+<title>İğneada Hafta Sonu</title>
+<meta name="description" content="21–22 Kasım 2026, iki çift, bir gece: İğneada Longoz Ormanları, Kıyıköy, yemek ve yol planı." />
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700;12..96,800&family=Figtree:wght@400;500;600;700&display=swap" rel="stylesheet" />
+<style>
+:root{
+  /* Palette: Karadeniz kıyısı + longoz ormanı. Koyu çam, deniz mavisi, kum sarısı. */
+  --bg:#f3f5f1;
+  --paper:#ffffff;
+  --ink:#172620;
+  --muted:#5b6b64;
+  --line:#d7ded9;
+  --pine:#1f5c45;
+  --pine-soft:#dfeee6;
+  --sea:#1f6f8f;
+  --sea-soft:#dcecf3;
+  --sand:#c9962f;
+  --sand-soft:#f7ebcf;
+  --warn:#9a4a1e;
+  --warn-soft:#f9e6da;
+  --display:"Bricolage Grotesque", "Segoe UI", Arial, sans-serif;
+  --body:"Figtree", "Segoe UI", Arial, sans-serif;
+  /* Layout: tek sütun, 760px okuma genişliği; kartlar grid ile yan yana, telefonda alt alta. */
+  color-scheme:light;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:#101915; --paper:#172420; --ink:#e8efea; --muted:#a3b3ab; --line:#2b3b34;
+    --pine:#7fcaa6; --pine-soft:#1c3328; --sea:#7cc4e0; --sea-soft:#163040;
+    --sand:#e4b85a; --sand-soft:#3a2f14; --warn:#f0a070; --warn-soft:#3d2416;
+    color-scheme:dark;
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#101915; --paper:#172420; --ink:#e8efea; --muted:#a3b3ab; --line:#2b3b34;
+  --pine:#7fcaa6; --pine-soft:#1c3328; --sea:#7cc4e0; --sea-soft:#163040;
+  --sand:#e4b85a; --sand-soft:#3a2f14; --warn:#f0a070; --warn-soft:#3d2416;
+  color-scheme:dark;
+}
+*{box-sizing:border-box}
+html{-webkit-text-size-adjust:100%}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--body);font-size:16px;line-height:1.55}
+a{color:var(--sea)}
+a:focus-visible,button:focus-visible,input:focus-visible{outline:3px solid var(--sand);outline-offset:2px}
+.wrap{max-width:860px;margin:0 auto;padding:0 16px 64px}
+header.hero{padding:40px 0 24px;border-bottom:1px solid var(--line)}
+.eyebrow{font-weight:600;color:var(--pine);letter-spacing:.04em;text-transform:uppercase;font-size:13px}
+h1{font-family:var(--display);font-weight:800;font-size:clamp(34px,6vw,54px);line-height:1.02;margin:8px 0 12px;text-wrap:balance;letter-spacing:-.01em}
+.lead{font-size:18px;color:var(--muted);max-width:60ch;margin:0}
+h2{font-family:var(--display);font-weight:700;font-size:26px;margin:0 0 6px;text-wrap:balance;letter-spacing:-.005em}
+h3{font-family:var(--display);font-weight:700;font-size:18px;margin:0 0 4px}
+section{padding:36px 0 0}
+.sub{color:var(--muted);margin:0 0 18px;max-width:65ch}
+.facts{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px;margin-top:22px}
+.fact{background:var(--paper);border:1px solid var(--line);border-radius:12px;padding:12px 14px}
+.fact .k{font-size:12px;color:var(--muted);text-transform:uppercase;letter-spacing:.05em;font-weight:600}
+.fact .v{font-family:var(--display);font-weight:700;font-size:20px;margin-top:2px;font-variant-numeric:tabular-nums}
+.card{background:var(--paper);border:1px solid var(--line);border-radius:14px;padding:18px}
+.grid{display:grid;gap:14px;grid-template-columns:repeat(auto-fit,minmax(260px,1fr))}
+.stack{display:grid;gap:12px}
+.chip{display:inline-block;font-size:12px;font-weight:600;padding:3px 9px;border-radius:999px;background:var(--pine-soft);color:var(--pine);margin:0 4px 4px 0}
+.chip.sea{background:var(--sea-soft);color:var(--sea)}
+.chip.sand{background:var(--sand-soft);color:var(--sand)}
+.chip.warn{background:var(--warn-soft);color:var(--warn)}
+.note{border-left:4px solid var(--sand);background:var(--sand-soft);padding:12px 14px;border-radius:0 10px 10px 0;margin:14px 0}
+.note.warn{border-color:var(--warn);background:var(--warn-soft)}
+.note.sea{border-color:var(--sea);background:var(--sea-soft)}
+/* hotel */
+.hotel{display:grid;grid-template-columns:1.4fr 1fr;gap:18px}
+@media (max-width:640px){.hotel{grid-template-columns:1fr}}
+.price{font-family:var(--display);font-size:34px;font-weight:800;font-variant-numeric:tabular-nums;line-height:1}
+.price small{font-family:var(--body);font-size:13px;font-weight:500;color:var(--muted);display:block;margin-top:6px}
+table{width:100%;border-collapse:collapse;font-size:15px}
+th,td{text-align:left;padding:8px 6px;border-bottom:1px solid var(--line);vertical-align:top}
+th{font-size:12px;text-transform:uppercase;letter-spacing:.05em;color:var(--muted);font-weight:600}
+td.num,th.num{text-align:right;font-variant-numeric:tabular-nums;white-space:nowrap}
+.tablewrap{overflow-x:auto}
+/* timeline */
+.day{margin-top:18px}
+.day h3{font-size:20px;display:flex;align-items:baseline;gap:10px;flex-wrap:wrap}
+.day h3 span{font-family:var(--body);font-weight:500;color:var(--muted);font-size:14px}
+.tl{list-style:none;margin:10px 0 0;padding:0;display:grid;gap:0}
+.tl li{display:grid;grid-template-columns:64px 1fr;gap:12px;padding:10px 0;border-top:1px solid var(--line)}
+.tl li:first-child{border-top:0}
+.tl time{font-family:var(--display);font-weight:700;color:var(--pine);font-variant-numeric:tabular-nums;font-size:15px;padding-top:2px}
+.tl b{display:block;font-weight:600}
+.tl p{margin:2px 0 0;color:var(--muted);font-size:15px}
+/* places */
+.place{display:grid;grid-template-columns:auto 1fr;gap:12px;align-items:start}
+.place input[type=checkbox]{width:22px;height:22px;margin-top:3px;accent-color:var(--pine);cursor:pointer}
+.place .meta{font-size:13px;color:var(--muted);margin-top:4px}
+.place p{margin:6px 0 0;font-size:15px}
+.place .links{margin-top:8px;display:flex;gap:12px;flex-wrap:wrap;font-size:14px;font-weight:600}
+.toolbar{display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin:14px 0}
+button{font:inherit;font-weight:600;border:1px solid var(--line);background:var(--paper);color:var(--ink);padding:9px 14px;border-radius:10px;cursor:pointer}
+button.primary{background:var(--pine);border-color:var(--pine);color:#fff}
+:root[data-theme="dark"] button.primary{color:#0f1b15}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]) button.primary{color:#0f1b15}}
+.count{font-size:14px;color:var(--muted)}
+.copied{font-size:14px;color:var(--pine);font-weight:600}
+/* food */
+.menu h3{display:flex;justify-content:space-between;gap:8px;align-items:baseline;flex-wrap:wrap}
+.menu h3 span{font-family:var(--body);font-size:13px;font-weight:600;color:var(--muted)}
+.menu ul{margin:8px 0 0;padding-left:20px}
+.menu li{margin:4px 0}
+.menu li small{color:var(--muted)}
+/* budget */
+.calc{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:10px;margin:12px 0}
+.calc label{display:grid;gap:4px;font-size:13px;color:var(--muted);font-weight:600}
+.calc input{font:inherit;padding:8px 10px;border:1px solid var(--line);border-radius:8px;background:var(--bg);color:var(--ink);width:100%;font-variant-numeric:tabular-nums}
+/* checklist */
+.check{list-style:none;padding:0;margin:0;display:grid;gap:6px;grid-template-columns:repeat(auto-fit,minmax(220px,1fr))}
+.check li label{display:flex;gap:10px;align-items:flex-start;padding:8px 10px;border:1px solid var(--line);border-radius:10px;background:var(--paper);cursor:pointer}
+.check input{accent-color:var(--pine);width:18px;height:18px;margin-top:3px;flex:none}
+.check input:checked + span{text-decoration:line-through;color:var(--muted)}
+footer{margin-top:40px;padding-top:16px;border-top:1px solid var(--line);font-size:13px;color:var(--muted)}
+footer a{color:var(--muted)}
+@media (prefers-reduced-motion:no-preference){button{transition:transform .08s}button:active{transform:scale(.97)}}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<header class="hero">
+  <div class="eyebrow">Cumartesi 21 – Pazar 22 Kasım 2026 · 2 çift · 1 gece</div>
+  <h1>İğneada Hafta Sonu</h1>
+  <p class="lead">Cumartesi sabah İstanbul'dan çıkıp pazar akşamı dönen, longoz ormanı yürüyüşü, deniz kenarında balık ve dönüşte Kıyıköy olan bir plan. Her yerin haritası, telefonu ve maliyeti aşağıda.</p>
+  <div class="facts">
+    <div class="fact"><div class="k">Yol</div><div class="v">~250 km</div><div class="meta" style="font-size:13px;color:var(--muted)">Avrupa yakasından 3–3,5 saat</div></div>
+    <div class="fact"><div class="k">Konaklama</div><div class="v">6.786 TL</div><div class="meta" style="font-size:13px;color:var(--muted)">2 oda, kahvaltı dahil</div></div>
+    <div class="fact"><div class="k">Gün batımı</div><div class="v">16:40</div><div class="meta" style="font-size:13px;color:var(--muted)">17:15'te karanlık</div></div>
+    <div class="fact"><div class="k">Hava (tipik)</div><div class="v">9–15 °C</div><div class="meta" style="font-size:13px;color:var(--muted)">Yağmur ihtimali yüksek</div></div>
+  </div>
+</header>
+
+<!-- ================= KONAKLAMA ================= -->
+<section id="otel">
+  <h2>Konaklama</h2>
+  <p class="sub">İğneada Resort Hotel &amp; Spa doldu; Inemare 16.207 TL ile pahalı. Pelin'in bulduğu İğneada Parlak Resort uygun fiyatlı tek makul seçenek. İki oda için ayrı ayrı rezervasyon yapın, 18 Kasım'a kadar iptal ücretsiz.</p>
+  <div class="card hotel">
+    <div>
+      <h3>İğneada Parlak Resort Hotel</h3>
+      <div class="meta" style="color:var(--muted);font-size:14px">İğneada merkez, denize yürüme mesafesi · 6,4 puan (34 yorum, hotels.com)</div>
+      <div style="margin:10px 0 6px">
+        <span class="chip">Ücretsiz kahvaltı 08:00–10:30</span>
+        <span class="chip">Ücretsiz otopark</span>
+        <span class="chip sea">Tümüyle geri ödemeli</span>
+        <span class="chip sand">Açık büfe</span>
+      </div>
+      <p style="margin:8px 0 0;font-size:15px">Önerilen oda: <b>Tek Büyük Yataklı Oda</b> (3 kişilik, 1 çift + 1 tek yatak, Pelin'in işaretlediği). 2 çift için bu odadan <b>2 adet</b> alın; Üç Kişilik Oda 4.672 TL ile gereksiz pahalı.</p>
+      <div class="note warn" style="margin-bottom:0">
+        <b>Dürüst not:</b> Expedia/hotels.com yorumlarında temizlik ve kahvaltı puanları düşük (5–6/10), bazı yorumlar odaları eski buluyor. Bir gece için idare eder; kahvaltıyı otelde yapıp sabah kahvesini Limanköy'de almak daha keyifli olur.
+      </div>
+    </div>
+    <div class="stack">
+      <div>
+        <div class="price">3.393 TL<small>oda / gece, vergiler dahil</small></div>
+        <div class="price" style="font-size:22px;margin-top:10px">× 2 oda = 6.786 TL<small>çift başına 3.393 TL</small></div>
+      </div>
+      <a class="chip sea" style="font-size:14px;padding:8px 12px;text-decoration:none" href="https://tr.hotels.com/ho757873344/igneada-parlak-resort-hotel-demirkoy-turkiye/?chkin=2026-11-21&amp;chkout=2026-11-22&amp;rm1=a2">hotels.com rezervasyon sayfası →</a>
+      <a class="chip" style="font-size:14px;padding:8px 12px;text-decoration:none" href="https://www.google.com/maps/search/?api=1&amp;query=%C4%B0%C4%9Fneada+Parlak+Resort+Hotel">Haritada aç →</a>
+    </div>
+  </div>
+
+  <h3 style="margin-top:22px">B planı (Parlak dolarsa veya yorumlar sizi korkutursa)</h3>
+  <div class="tablewrap">
+  <table>
+    <thead><tr><th>Yer</th><th>Neden</th><th class="num">Fiyat</th></tr></thead>
+    <tbody>
+      <tr><td><b>Trulya 1881</b>, Demirköy</td><td>Taş ev butik otel, İğneada'ya 25 km, Dupnisa'ya daha yakın. hotels.com'da listede, fiyat ekranda kesilmiş; bakın.</td><td class="num">?</td></tr>
+      <tr><td><b>Limanköy / Beğendik pansiyonları</b></td><td>hotels.com'da görünmeyen çok sayıda küçük pansiyon var. Booking veya Google Haritalar'da "İğneada pansiyon" araması yapın; kasımda genelde 1.500–2.500 TL/oda.</td><td class="num">~1.500–2.500</td></tr>
+      <tr><td><b>Inemare Hotel</b></td><td>8,8 puan, deniz manzaralı; ama 16.207 TL/oda. Sadece bütçe takılmıyorsa.</td><td class="num">16.207</td></tr>
+    </tbody>
+  </table>
+  </div>
+</section>
+
+<!-- ================= PROGRAM ================= -->
+<section id="program">
+  <h2>Saat saat program</h2>
+  <p class="sub">Kasımda gün 16:40'ta bitiyor; o yüzden yürüyüşler öğleden önce, deniz kenarı gün batımı, akşam yemeği erken. Rota: İstanbul → Saray → Vize → Demirköy → İğneada. Son benzin ve market Vize veya Demirköy.</p>
+
+  <div class="card day">
+    <h3>Cumartesi 21 Kasım <span>Longoz ormanı + Limanköy + balık</span></h3>
+    <ul class="tl">
+      <li><time>07:30</time><div><b>İstanbul'dan çıkış</b><p>Avrupa yakasından 07:30, Anadolu yakasından 07:00. Evden termos çay ve börek alın (aşağıda liste). TEM → Çatalca/Saray → Vize.</p></div></li>
+      <li><time>09:30</time><div><b>Vize'de mola</b><p>Benzin doldurun, tuvalet, kahve. Vize Kalesi yoldan 5 dakika; isteyen 15 dakikalık bakış atabilir.</p></div></li>
+      <li><time>11:00</time><div><b>İğneada'ya varış, bavulları otele bırakın</b><p>Giriş saati genelde 14:00; resepsiyona bırakıp çıkın.</p></div></li>
+      <li><time>11:30</time><div><b>Mert Gölü ve Longoz Ormanı yürüyüşü</b><p>Milli park girişi merkeze 3 km. Göl kenarı düz ve kolay; 1,5–2 saatlik bir tur yeterli. Çamur olur, su geçirmez ayakkabı. Yürüyüş sonunda evden getirdiğiniz piknikle öğle yemeği (göl kenarı mesire alanı).</p></div></li>
+      <li><time>14:00</time><div><b>Erikli Plajı ve Erikli Gölü</b><p>Merkezin kuzeyinde, uzun kumsal. Boş kasım plajında yürüyüş; 45 dakika yeter. Hava kötüyse atlayıp otele geçin.</p></div></li>
+      <li><time>15:15</time><div><b>Otele giriş, 30 dakika dinlenme</b><p>Duş, kuru çorap, akşam için restoran rezervasyonunu telefonla teyit edin.</p></div></li>
+      <li><time>16:00</time><div><b>Limanköy ve Fransız Feneri</b><p>Merkeze 2 km. 1866 yapımı fener burnun üstünde; çevresi tadilat halinde olabilir ama manzara için yeter. Gün batımı 16:40, ışık ormanın arkasından batar, deniz pembe olur.</p></div></li>
+      <li><time>18:00</time><div><b>Akşam yemeği: balık</b><p>Liman Restaurant (Limanköy, koy manzaralı) veya merkezde Rota Balık. Tezgahtan balık seçip pişirtebiliyorsunuz. Bütçe önemliyse Şahin Tepesi daha salaş ve ucuz.</p></div></li>
+      <li><time>20:30</time><div><b>Otel</b><p>Tavla, kart, Netflix indirin (wifi zayıf olabilir). Pazar sabahı gün doğumu için alarm 07:30.</p></div></li>
+    </ul>
+  </div>
+
+  <div class="card day">
+    <h3>Pazar 22 Kasım <span>Gün doğumu + Beğendik + dönüşte Kıyıköy</span></h3>
+    <ul class="tl">
+      <li><time>07:45</time><div><b>Plajda gün doğumu (isteğe bağlı)</b><p>İğneada doğuya bakar; güneş denizden doğar. 10 dakikalık yürüyüş, sonra kahvaltıya.</p></div></li>
+      <li><time>08:30</time><div><b>Otelde kahvaltı, 09:30 çıkış</b><p>Odayı boşaltın, bavullar arabaya.</p></div></li>
+      <li><time>09:45</time><div><b>Beğendik köyü ve Hamam Gölü</b><p>Kuzeye 10–12 km, Türkiye'nin Bulgaristan sınırındaki son köyü. Hamam Gölü'ne "yürüyüş yolu" tabelasından giriliyor, ormanın içinden sahile 1 saatlik tur. Daha uzak Saka Gölü için yol kötüyse zorlamayın.</p></div></li>
+      <li><time>11:30</time><div><b>Güneye: longoz sahil yolu üzerinden Kıyıköy</b><p>Yaklaşık 75 km, 1 saat 15 dakika. Orman içi sahil yolu; yolun kendisi manzara.</p></div></li>
+      <li><time>13:00</time><div><b>Kıyıköy: öğle yemeği ve gezi</b><p>Bizans surları, Aya Nikola Manastırı (kaya içine oyulmuş, zemini ıslak ve kaygan, dikkat), Aşıklar Tepesi manzarası. Öğle yemeği Pabuçdere kenarındaki balıkçılarda. 2,5 saat.</p></div></li>
+      <li><time>15:30</time><div><b>İstanbul'a dönüş</b><p>Kıyıköy → Vize → Saray → İstanbul, 2,5–3 saat. Pazar akşamı Çatalca girişinde trafik olur; 16:00'dan önce çıkın.</p></div></li>
+      <li><time>18:30</time><div><b>İstanbul</b><p>Avrupa yakası 18:30, Anadolu yakası 19:30 civarı.</p></div></li>
+    </ul>
+    <div class="note" style="margin-bottom:0">
+      <b>Alternatif pazar (Dupnisa Mağarası):</b> Mağaranın yarasalı Kız Mağarası bölümü 15 Kasım – 15 Mayıs arası kapalı; Sulu ve Kuru bölümler açık diye geçiyor ama kış saatlerini aramadan gitmeyin. Son 5–6 km orman yolu, yağmurdan sonra çamur. Giderseniz Kıyıköy'ü atlayıp Demirköy → Sarpdere → Kırklareli üzerinden dönün; Fatih Dökümhanesi (ücretsiz, 30 dk) yol üstünde.
+    </div>
+  </div>
+</section>
+
+<!-- ================= YERLER ================= -->
+<section id="yerler">
+  <h2>Gezilecek yerler ve harita listesi</h2>
+  <p class="sub">Pelin "İğneada · Pelin" adlı Google Haritalar listesini düzenlemeye açmış. Aşağıda beğendiklerinizi işaretleyin, "Listeyi kopyala" ile isimleri alıp o listeye ekleyin. İşaretler bu tarayıcıda kalır.</p>
+  <div class="toolbar">
+    <a class="chip sea" style="font-size:14px;padding:8px 12px;text-decoration:none" href="https://maps.app.goo.gl/HuRBx4JocDp5Cx969">Pelin'in harita listesini aç →</a>
+    <button class="primary" id="copyBtn" type="button">İşaretlileri kopyala</button>
+    <span class="count" id="count">0 yer işaretli</span>
+    <span class="copied" id="copied" hidden>Kopyalandı</span>
+  </div>
+
+  <div class="grid" id="places">
+
+    <div class="card place" data-name="Mert Gölü, İğneada Longoz Ormanları Milli Parkı">
+      <input type="checkbox" id="p1" checked /><div>
+      <label for="p1"><h3>Mert Gölü ve Longoz Ormanı</h3></label>
+      <div class="meta">Merkeze 3 km · Cumartesi öğlen · 1,5–2 saat</div>
+      <span class="chip">Yürüyüş</span><span class="chip sea">Göl</span><span class="chip sand">Piknik</span>
+      <p>Parkın en bilinen noktası: Çavuşdere'nin denize döküldüğü yerde göl, arkasında su basar orman. Kano yazlık; kasımda sadece yürüyüş. Kuş gözlemi için dürbün alın. Giriş ücreti düşük, araç ve kişi başı ayrı alınıyor; nakit bulundurun.</p>
+      <div class="links"><a href="https://www.google.com/maps/search/?api=1&amp;query=Mert+G%C3%B6l%C3%BC+%C4%B0%C4%9Fneada">Haritada aç</a></div>
+      </div>
+    </div>
+
+    <div class="card place" data-name="Erikli Gölü ve Erikli Plajı, İğneada">
+      <input type="checkbox" id="p2" checked /><div>
+      <label for="p2"><h3>Erikli Gölü ve Plajı</h3></label>
+      <div class="meta">Merkeze 4 km kuzey · Cumartesi öğleden sonra · 45 dk</div>
+      <span class="chip">Yürüyüş</span><span class="chip sea">Plaj</span>
+      <p>Lagün göl ile deniz arasında uzun kumsal. Kasımda bomboş; rüzgârlı ama fotoğraf için güzel.</p>
+      <div class="links"><a href="https://www.google.com/maps/search/?api=1&amp;query=Erikli+G%C3%B6l%C3%BC+%C4%B0%C4%9Fneada">Haritada aç</a></div>
+      </div>
+    </div>
+
+    <div class="card place" data-name="Limanköy Fransız Feneri (İğneada Deniz Feneri)">
+      <input type="checkbox" id="p3" checked /><div>
+      <label for="p3"><h3>Limanköy ve Fransız Feneri</h3></label>
+      <div class="meta">Merkeze 2 km doğu · Cumartesi gün batımı</div>
+      <span class="chip sand">Manzara</span><span class="chip">Tarih</span>
+      <p>1866'da Fransızların yaptığı fener, Limanköy burnunun üstünde. Çevresi yıllardır yarım tadilat; yine de koy manzarası ve balıkçı limanı için gidin. Altında balık restoranları.</p>
+      <div class="links"><a href="https://www.google.com/maps/search/?api=1&amp;query=Limank%C3%B6y+Deniz+Feneri+%C4%B0%C4%9Fneada">Haritada aç</a></div>
+      </div>
+    </div>
+
+    <div class="card place" data-name="Beğendik Köyü ve Hamam Gölü, Demirköy">
+      <input type="checkbox" id="p4" checked /><div>
+      <label for="p4"><h3>Beğendik Köyü ve Hamam Gölü</h3></label>
+      <div class="meta">Merkeze 10–12 km kuzey · Pazar sabahı · 1–1,5 saat</div>
+      <span class="chip">Yürüyüş</span><span class="chip sea">Göl</span>
+      <p>Bulgaristan sınırındaki son köy. Hamam Gölü 19 hektar, sahile 1,2 km; girişteki "yürüyüş yolu" tabelasını takip edin. Köyde sabah kahvesi için birkaç küçük kafe var.</p>
+      <div class="links"><a href="https://www.google.com/maps/search/?api=1&amp;query=Hamam+G%C3%B6l%C3%BC+Be%C4%9Fendik+Demirk%C3%B6y">Haritada aç</a></div>
+      </div>
+    </div>
+
+    <div class="card place" data-name="Saka Gölü Longozu, Beğendik">
+      <input type="checkbox" id="p5" /><div>
+      <label for="p5"><h3>Saka Gölü Longozu</h3></label>
+      <div class="meta">Merkeze ~15 km kuzey, en uç nokta · yol kötüyse atlayın</div>
+      <span class="chip">Yürüyüş</span><span class="chip warn">Yol bozuk</span>
+      <p>Parkın en kuzey ucunda, Bulgaristan sınırına yakın: orman ve kumullar arasında 5 hektarlık küçük göl, en el değmemiş longoz. Son kısım stabilize yol; yağmur sonrası düşük araçla zorlanabilir.</p>
+      <div class="links"><a href="https://www.google.com/maps/search/?api=1&amp;query=Saka+G%C3%B6l%C3%BC+%C4%B0%C4%9Fneada">Haritada aç</a></div>
+      </div>
+    </div>
+
+    <div class="card place" data-name="Kıyıköy Kalesi ve Bizans Surları">
+      <input type="checkbox" id="p6" checked /><div>
+      <label for="p6"><h3>Kıyıköy Kalesi ve surlar</h3></label>
+      <div class="meta">İğneada'ya 75 km güney · Pazar öğle · dönüş yolunda</div>
+      <span class="chip">Tarih</span><span class="chip sand">Manzara</span>
+      <p>Bizans dönemi surlarla çevrili kasaba, iki derenin (Pabuçdere, Kazandere) arasında bir yarımadada. Sur kapısından girip liman tarafına inin.</p>
+      <div class="links"><a href="https://www.google.com/maps/search/?api=1&amp;query=K%C4%B1y%C4%B1k%C3%B6y+Kalesi">Haritada aç</a></div>
+      </div>
+    </div>
+
+    <div class="card place" data-name="Aya Nikola Manastırı, Kıyıköy">
+      <input type="checkbox" id="p7" checked /><div>
+      <label for="p7"><h3>Aya Nikola Manastırı</h3></label>
+      <div class="meta">Kıyıköy girişinde · 30 dk · zemin kaygan</div>
+      <span class="chip">Tarih</span>
+      <p>Kayaya oyulmuş 6. yüzyıl manastırı; alt katı yağmur suyuyla dolu olabiliyor. Spor ayakkabı ve telefon feneri şart.</p>
+      <div class="links"><a href="https://www.google.com/maps/search/?api=1&amp;query=Aya+Nikola+Manast%C4%B1r%C4%B1+K%C4%B1y%C4%B1k%C3%B6y">Haritada aç</a></div>
+      </div>
+    </div>
+
+    <div class="card place" data-name="Aşıklar Tepesi, Kıyıköy">
+      <input type="checkbox" id="p8" /><div>
+      <label for="p8"><h3>Aşıklar Tepesi</h3></label>
+      <div class="meta">Kıyıköy · 15 dk · fotoğraf noktası</div>
+      <span class="chip sand">Manzara</span>
+      <p>Kasabanın üstünden limana ve Karadeniz'e bakan tepe. Hava açıksa dönüşten önce son durak.</p>
+      <div class="links"><a href="https://www.google.com/maps/search/?api=1&amp;query=A%C5%9F%C4%B1klar+Tepesi+K%C4%B1y%C4%B1k%C3%B6y">Haritada aç</a></div>
+      </div>
+    </div>
+
+    <div class="card place" data-name="Dupnisa Mağarası, Sarpdere">
+      <input type="checkbox" id="p9" /><div>
+      <label for="p9"><h3>Dupnisa Mağarası</h3></label>
+      <div class="meta">İğneada'ya ~45 km, Demirköy üzerinden · kışın kısmen kapalı</div>
+      <span class="chip">Mağara</span><span class="chip warn">15 Kas – 15 May kısmi kapalı</span>
+      <p>Trakya'nın tek ışıklandırılmış gösteri mağarası. Kız Mağarası bölümündeki 60 bin yarasa için 15 Kasım'dan itibaren kapatılıyor; Sulu ve Kuru bölümler açık olabilir. Gitmeden Demirköy Kaymakamlığı veya mağara girişini arayın. Son 5–6 km orman yolu.</p>
+      <div class="links"><a href="https://www.google.com/maps/search/?api=1&amp;query=Dupnisa+Ma%C4%9Faras%C4%B1">Haritada aç</a></div>
+      </div>
+    </div>
+
+    <div class="card place" data-name="Demirköy Fatih Dökümhanesi">
+      <input type="checkbox" id="p10" /><div>
+      <label for="p10"><h3>Fatih Dökümhanesi</h3></label>
+      <div class="meta">Demirköy'e 4 km · ücretsiz · 30 dk · Dupnisa planında</div>
+      <span class="chip">Tarih</span>
+      <p>15. yüzyıl Osmanlı demir dökümhanesi; İstanbul kuşatmasının toplarının döküldüğü söylenen yer. 2019'dan beri açık hava müzesi, araçla girilebiliyor.</p>
+      <div class="links"><a href="https://www.google.com/maps/search/?api=1&amp;query=Fatih+D%C3%B6k%C3%BCmhanesi+Demirk%C3%B6y">Haritada aç</a></div>
+      </div>
+    </div>
+
+    <div class="card place" data-name="Vize Kalesi">
+      <input type="checkbox" id="p11" /><div>
+      <label for="p11"><h3>Vize Kalesi</h3></label>
+      <div class="meta">Gidişte mola noktası · 15 dk</div>
+      <span class="chip">Tarih</span>
+      <p>Roma dönemi surları ve Ayasofya Camii (eski Bizans kilisesi) yoldan 5 dakika sapma. Cumartesi benzin molasıyla birleştirin.</p>
+      <div class="links"><a href="https://www.google.com/maps/search/?api=1&amp;query=Vize+Kalesi">Haritada aç</a></div>
+      </div>
+    </div>
+
+  </div>
+</section>
+
+<!-- ================= YEME İÇME ================= -->
+<section id="yemek">
+  <h2>Yeme içme</h2>
+  <p class="sub">İğneada'da seçenek az ve kasımda bazı yerler kapalı; cumartesi öğlen telefonla teyit edin. Hesap İstanbul'un yarısı kadar, balık tezgah fiyatına.</p>
+  <div class="tablewrap">
+  <table>
+    <thead><tr><th>Mekan</th><th>Ne için</th><th>Not</th><th>Telefon</th></tr></thead>
+    <tbody>
+      <tr><td><b>Liman Restaurant</b>, Limanköy</td><td>Cumartesi akşam balık</td><td>Koya hakim yüksek nokta, en popüler yer. Tezgahtan balık seçtirip pişirtin. Rezervasyon şart.</td><td>0288 694 41 71</td></tr>
+      <tr><td><b>Rota Balık</b>, merkez</td><td>Cumartesi akşam alternatif</td><td>Liman Cd., Yelken Otel karşısı. Yerliler rakı balık için burayı tercih ediyor.</td><td>0538 205 05 76</td></tr>
+      <tr><td><b>Şahin Tepesi</b></td><td>Bütçe balık</td><td>Daha salaş, daha ucuz, balıkları güzel.</td><td>Haritadan bakın</td></tr>
+      <tr><td><b>Dobrodosli Rumeli Köftecisi</b>, meydan</td><td>Hızlı öğle / köfte</td><td>İğneada'nın en bilinen lokantası; balık istemeyen için.</td><td>Haritadan bakın</td></tr>
+      <tr><td><b>Uğur'un Yeri Kafe</b>, Limanköy</td><td>Pazar sabah kahvesi</td><td>Otel kahvaltısı zayıf çıkarsa serpme kahvaltı için.</td><td>Haritadan bakın</td></tr>
+      <tr><td><b>Kıyıköy balıkçıları</b>, Pabuçdere kenarı</td><td>Pazar öğle</td><td>Dere kenarında balık ekmek ve ızgara; kalkan sezonu kasımda başlıyor.</td><td>Yerinde</td></tr>
+    </tbody>
+  </table>
+  </div>
+</section>
+
+<!-- ================= EVDE HAZIRLIK ================= -->
+<section id="evde">
+  <h2>Evde hazırlayıp götürülecekler</h2>
+  <p class="sub">Yolda 3,5 saat, ormanda piknik ve pazar dönüşü var. İki çift arasında bölüştürülmüş; herkes cuma akşamı kendi payını hazırlar. Soğuk çanta ve termos şart.</p>
+  <div class="grid">
+
+    <div class="card menu">
+      <h3>Cumartesi yol kahvaltısı <span>Siz ve Pelin</span></h3>
+      <ul>
+        <li><b>Kol böreği</b> (patatesli veya peynirli) <small>· cuma akşamı pişer, sabah dilimlenir, yolda soğuk da güzel</small></li>
+        <li><b>Haşlanmış yumurta</b> 8 adet + küçük tuz <small>· 8 dk, kabuğu soyulmuş, kapta</small></li>
+        <li><b>Termosta demli çay</b> 1,5 L + kağıt bardak</li>
+        <li><b>Mandalina ve elma</b> <small>· arabada koku yapmaz, çekirdeksiz</small></li>
+        <li><b>Havuçlu tarçınlı kek</b> <small>· kalıpta pişir, dilimle, streçle</small></li>
+      </ul>
+    </div>
+
+    <div class="card menu">
+      <h3>Cumartesi orman pikniği <span>Damla ve sevgilisi</span></h3>
+      <ul>
+        <li><b>Izgara köfte</b> 20–24 adet <small>· soğuk da yenir; ekmek arası veya tek başına</small></li>
+        <li><b>Kısır</b> büyük kap <small>· nar ekşili, marul yaprağıyla</small></li>
+        <li><b>Patates salatası</b> <small>· soğan, maydanoz, zeytinyağ, limon</small></li>
+        <li><b>Zeytinyağlı yaprak sarma</b> <small>· hazır da olur</small></li>
+        <li><b>Domates, salatalık, yeşil biber</b> doğranmamış, bıçak ve kesme tahtası ile</li>
+        <li><b>Tam buğday ekmek</b> 2 adet, ayran 4 kutu</li>
+      </ul>
+    </div>
+
+    <div class="card menu">
+      <h3>Otel odası akşam atıştırması <span>Ortak</span></h3>
+      <ul>
+        <li><b>Kuruyemiş karışımı</b> <small>· badem, fındık, kuru üzüm</small></li>
+        <li><b>Beyaz peynir, zeytin, kraker</b> <small>· yemek sonrası tavla eşliğinde</small></li>
+        <li><b>Hazır kahve ve bitki çayı poşetleri</b> <small>· otelde kahve makinesi olmadığı yazıyor; su ısıtıcı varsa kurtarır, yoksa küçük kettle alın</small></li>
+        <li><b>Çikolata</b></li>
+      </ul>
+    </div>
+
+    <div class="card menu">
+      <h3>Pazar dönüş yolu <span>Kalanlar + Kıyıköy'den</span></h3>
+      <ul>
+        <li>Cumartesiden kalan kek, kuruyemiş, meyve</li>
+        <li><b>Tavuklu sandviç</b> 4 adet <small>· cuma haşlanıp didiklenen tavuk, hardallı mayonez, marul; pazar sabahı otelde hazırlanır, kahvaltıdan ekmek alın</small></li>
+        <li>Kıyıköy'de dönüş için 1 kutu yerel bal veya reçel</li>
+      </ul>
+    </div>
+
+  </div>
+
+  <h3 style="margin-top:20px">Pratik</h3>
+  <ul class="check" style="margin-top:8px">
+    <li><label><input type="checkbox" data-ck="c1" /><span>Soğuk çanta + 2 buz aküsü</span></label></li>
+    <li><label><input type="checkbox" data-ck="c2" /><span>Termos, kağıt bardak, ıslak mendil</span></label></li>
+    <li><label><input type="checkbox" data-ck="c3" /><span>Piknik örtüsü veya ince mat (zemin ıslak)</span></label></li>
+    <li><label><input type="checkbox" data-ck="c4" /><span>Küçük bıçak, tahta, tabak, çatal (plastik yerine metal, geri getirin)</span></label></li>
+    <li><label><input type="checkbox" data-ck="c5" /><span>Çöp poşeti: milli parkta çöp bırakılmaz</span></label></li>
+  </ul>
+</section>
+
+<!-- ================= BÜTÇE ================= -->
+<section id="butce">
+  <h2>Bütçe (tahmini)</h2>
+  <p class="sub">Otel kesin, geri kalanı tahmin. Rakamları kendi aracınıza ve benzin fiyatına göre düzeltin; sonuç anında güncellenir.</p>
+  <div class="card">
+    <div class="calc">
+      <label>Toplam km<input type="number" id="km" value="560" min="0" /></label>
+      <label>Tüketim (L/100 km)<input type="number" id="lt" value="7" min="0" step="0.1" /></label>
+      <label>Benzin (TL/L)<input type="number" id="fuel" value="58" min="0" /></label>
+      <label>Köprü ve otoyol (TL)<input type="number" id="toll" value="300" min="0" /></label>
+      <label>Cumartesi balık, kişi başı (TL)<input type="number" id="dinner" value="1100" min="0" /></label>
+      <label>Pazar Kıyıköy öğle, kişi başı (TL)<input type="number" id="lunch" value="600" min="0" /></label>
+      <label>Park giriş + kahve + ufak (TL)<input type="number" id="misc" value="800" min="0" /></label>
+      <label>Ev yemekleri malzeme (TL)<input type="number" id="grocery" value="1500" min="0" /></label>
+    </div>
+    <div class="tablewrap">
+    <table>
+      <thead><tr><th>Kalem</th><th class="num">4 kişi toplam</th><th class="num">Çift başına</th></tr></thead>
+      <tbody id="budgetRows"></tbody>
+      <tfoot><tr><th>Toplam</th><th class="num" id="totAll">–</th><th class="num" id="totCouple">–</th></tr></tfoot>
+    </table>
+    </div>
+    <p style="font-size:13px;color:var(--muted);margin:10px 0 0">Araç ve yakıtın tek arabayla gidildiği varsayılıyor. Yakıt ve yol ücretleri iki çift arasında eşit bölündü.</p>
+  </div>
+</section>
+
+<!-- ================= NOTLAR ================= -->
+<section id="notlar">
+  <h2>Gitmeden önce</h2>
+  <div class="grid">
+    <div class="card">
+      <h3>Bu hafta yapılacaklar</h3>
+      <ul class="check" style="margin-top:8px;grid-template-columns:1fr">
+        <li><label><input type="checkbox" data-ck="t1" /><span>Parlak Resort'ta 2 oda rezervasyonu (18 Kasım'a kadar iptal serbest)</span></label></li>
+        <li><label><input type="checkbox" data-ck="t2" /><span>Liman Restaurant'a cumartesi 18:00 için 4 kişilik rezervasyon: 0288 694 41 71</span></label></li>
+        <li><label><input type="checkbox" data-ck="t3" /><span>Perşembe hava durumuna bak; sağanak varsa yürüyüşleri kısalt, Kıyıköy'ü uzat</span></label></li>
+        <li><label><input type="checkbox" data-ck="t4" /><span>Dupnisa istiyorsanız kış saatini arayıp öğrenin</span></label></li>
+        <li><label><input type="checkbox" data-ck="t5" /><span>Pelin'in harita listesine işaretli yerleri ekle</span></label></li>
+        <li><label><input type="checkbox" data-ck="t6" /><span>Yemek bölüşümünü Damla'ya at</span></label></li>
+      </ul>
+    </div>
+    <div class="card">
+      <h3>Çantaya</h3>
+      <ul class="check" style="margin-top:8px;grid-template-columns:1fr">
+        <li><label><input type="checkbox" data-ck="b1" /><span>Yağmurluk ve su geçirmez ayakkabı (longoz çamurlu)</span></label></li>
+        <li><label><input type="checkbox" data-ck="b2" /><span>Yedek çorap, ince bere, rüzgârlık (sahilde rüzgâr)</span></label></li>
+        <li><label><input type="checkbox" data-ck="b3" /><span>Powerbank; kırsalda çekim zayıf, haritayı çevrimdışı indirin</span></label></li>
+        <li><label><input type="checkbox" data-ck="b4" /><span>Nakit: park girişi ve küçük kafeler kart almayabilir</span></label></li>
+        <li><label><input type="checkbox" data-ck="b5" /><span>Dürbün, tavla veya kart oyunu</span></label></li>
+        <li><label><input type="checkbox" data-ck="b6" /><span>Telefon feneri Aya Nikola için yeter; isteyen kafa lambası</span></label></li>
+      </ul>
+    </div>
+  </div>
+  <div class="note sea" style="margin-top:16px">
+    <b>Tek araba mı iki araba mı?</b> Tek arabayla yakıt yarı yarıya düşer ve yolda sohbet olur; ama 4 kişi + soğuk çanta + 4 bavul için küçük araç dar gelir. Bagaj sığıyorsa tek araba.
+  </div>
+</section>
+
+<footer>
+  Kaynaklar: hotels.com (fiyat ve oda bilgisi, 13 Kasım 2026 ekran görüntüsü), Expedia/hotels.com otel yorumları, Anadolu Ajansı ve NTV (Dupnisa kış kapanışı), trakyagezi.com ve igneadarotabalik.com (restoran telefonları), Wikivoyage (Limanköy feneri), Wikipedia (Fatih Dökümhanesi). Fiyatlar ve saatler değişebilir; gitmeden teyit edin.
+</footer>
+
+</div>
+
+<script>
+(function(){
+  var KEY='igneada-2026';
+  var state={};
+  try{ state=JSON.parse(localStorage.getItem(KEY)||'{}')||{}; }catch(e){ state={}; }
+  function save(){ try{ localStorage.setItem(KEY, JSON.stringify(state)); }catch(e){} }
+
+  // Yer işaretleri
+  var places=document.querySelectorAll('#places .place');
+  var countEl=document.getElementById('count');
+  function updateCount(){
+    var n=0; places.forEach(function(p){ if(p.querySelector('input').checked) n++; });
+    countEl.textContent=n+' yer işaretli';
+  }
+  places.forEach(function(p){
+    var cb=p.querySelector('input');
+    if(state.hasOwnProperty('place:'+cb.id)) cb.checked=!!state['place:'+cb.id];
+    cb.addEventListener('change',function(){ state['place:'+cb.id]=cb.checked; save(); updateCount(); });
+  });
+  updateCount();
+
+  var copyBtn=document.getElementById('copyBtn'), copied=document.getElementById('copied');
+  copyBtn.addEventListener('click',function(){
+    var names=[];
+    places.forEach(function(p){ if(p.querySelector('input').checked) names.push('• '+p.getAttribute('data-name')); });
+    var text='İğneada 21–22 Kasım, haritaya eklenecekler:\n'+names.join('\n');
+    function done(){ copied.hidden=false; setTimeout(function(){ copied.hidden=true; },2000); }
+    if(navigator.clipboard && navigator.clipboard.writeText){
+      navigator.clipboard.writeText(text).then(done).catch(function(){ fallback(text); done(); });
+    } else { fallback(text); done(); }
+  });
+  function fallback(text){
+    var ta=document.createElement('textarea'); ta.value=text; ta.style.position='fixed'; ta.style.opacity='0';
+    document.body.appendChild(ta); ta.select(); try{ document.execCommand('copy'); }catch(e){} document.body.removeChild(ta);
+  }
+
+  // Kontrol listeleri
+  document.querySelectorAll('input[data-ck]').forEach(function(cb){
+    var k='ck:'+cb.getAttribute('data-ck');
+    if(state[k]) cb.checked=true;
+    cb.addEventListener('change',function(){ state[k]=cb.checked; save(); });
+  });
+
+  // Bütçe
+  var ids=['km','lt','fuel','toll','dinner','lunch','misc','grocery'];
+  var fmt=function(n){ return Math.round(n).toLocaleString('tr-TR')+' TL'; };
+  function calc(){
+    var v={}; ids.forEach(function(id){ v[id]=parseFloat(document.getElementById(id).value)||0; });
+    var fuelCost=v.km*v.lt/100*v.fuel;
+    var rows=[
+      ['Otel, 2 oda, kahvaltı dahil',6786],
+      ['Yakıt ('+Math.round(v.km*v.lt/100)+' L)',fuelCost],
+      ['Köprü ve otoyol',v.toll],
+      ['Cumartesi akşam balık',v.dinner*4],
+      ['Pazar Kıyıköy öğle',v.lunch*4],
+      ['Park girişi, kahve, ufak harcamalar',v.misc],
+      ['Ev yemekleri malzemesi',v.grocery]
+    ];
+    var tb=document.getElementById('budgetRows'); tb.innerHTML='';
+    var total=0;
+    rows.forEach(function(r){
+      total+=r[1];
+      var tr=document.createElement('tr');
+      tr.innerHTML='<td>'+r[0]+'</td><td class="num">'+fmt(r[1])+'</td><td class="num">'+fmt(r[1]/2)+'</td>';
+      tb.appendChild(tr);
+    });
+    document.getElementById('totAll').textContent=fmt(total);
+    document.getElementById('totCouple').textContent=fmt(total/2);
+  }
+  ids.forEach(function(id){ document.getElementById(id).addEventListener('input',calc); });
+  calc();
+})();
+</script>
+</body>
+</html>
