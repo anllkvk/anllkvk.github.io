@@ -193,7 +193,7 @@ footer a{color:var(--muted)}
       <li><time>07:30</time><div><b>İstanbul'dan çıkış</b><p>Avrupa yakasından 07:30, Anadolu yakasından 07:00. Evden termos çay ve börek alın (aşağıda liste). TEM → Çatalca/Saray → Vize.</p></div></li>
       <li><time>09:30</time><div><b>Vize'de mola</b><p>Benzin doldurun, tuvalet, kahve. Vize Kalesi yoldan 5 dakika; isteyen 15 dakikalık bakış atabilir.</p></div></li>
       <li><time>11:00</time><div><b>İğneada'ya varış, bavulları otele bırakın</b><p>Giriş saati genelde 14:00; resepsiyona bırakıp çıkın.</p></div></li>
-      <li><time>11:30</time><div><b>Mert Gölü ve Longoz Ormanı yürüyüşü</b><p>Milli park girişi merkeze 3 km. Göl kenarı düz ve kolay; 1,5–2 saatlik bir tur yeterli. Çamur olur, su geçirmez ayakkabı. Yürüyüş sonunda evden getirdiğiniz piknikle öğle yemeği (göl kenarı mesire alanı).</p></div></li>
+      <li><time>11:30</time><div><b>Mert Gölü ve Longoz Ormanı yürüyüşü (veya kano)</b><p>Milli park girişi merkeze 3 km. Göl kenarı düz ve kolay; 1,5–2 saatlik bir tur yeterli. Çamur olur, su geçirmez ayakkabı. Kano o gün yapılıyorsa 12:00 turu alın (1.000 TL/kişi civarı, önceden arayın). Yürüyüş sonunda evden getirdiğiniz piknikle öğle yemeği (göl kenarı mesire alanı).</p></div></li>
       <li><time>14:00</time><div><b>Erikli Plajı ve Erikli Gölü</b><p>Merkezin kuzeyinde, uzun kumsal. Boş kasım plajında yürüyüş; 45 dakika yeter. Hava kötüyse atlayıp otele geçin.</p></div></li>
       <li><time>15:15</time><div><b>Otele giriş, 30 dakika dinlenme</b><p>Duş, kuru çorap, akşam için restoran rezervasyonunu telefonla teyit edin.</p></div></li>
       <li><time>16:00</time><div><b>Limanköy ve Fransız Feneri</b><p>Merkeze 2 km. 1866 yapımı fener burnun üstünde; çevresi tadilat halinde olabilir ama manzara için yeter. Gün batımı 16:40, ışık ormanın arkasından batar, deniz pembe olur.</p></div></li>
@@ -222,9 +222,11 @@ footer a{color:var(--muted)}
 <!-- ================= YERLER ================= -->
 <section id="yerler">
   <h2>Gezilecek yerler ve harita listesi</h2>
-  <p class="sub">Pelin "İğneada · Pelin" adlı Google Haritalar listesini düzenlemeye açmış. Aşağıda beğendiklerinizi işaretleyin, "Listeyi kopyala" ile isimleri alıp o listeye ekleyin. İşaretler bu tarayıcıda kalır.</p>
+  <p class="sub">Pelin "İğneada · Pelin" adlı Google Haritalar listesini düzenlemeye açmış. Listeye ekleme yalnızca Google hesabıyla yapılabildiği için otomatik eklenemiyor; aşağıda beğendiklerinizi işaretleyin, "İşaretlileri kopyala" ile isimleri alın, Google Haritalar'da her yeri aratıp <b>Kaydet → İğneada · Pelin</b> deyin. Gün gün rota linkleri tüm durakları haritada tek seferde açar.</p>
   <div class="toolbar">
     <a class="chip sea" style="font-size:14px;padding:8px 12px;text-decoration:none" href="https://maps.app.goo.gl/HuRBx4JocDp5Cx969">Pelin'in harita listesini aç →</a>
+    <a class="chip" style="font-size:14px;padding:8px 12px;text-decoration:none" href="https://www.google.com/maps/dir/%C4%B0%C4%9Fneada+Parlak+Resort+Hotel/Mert+G%C3%B6l%C3%BC+%C4%B0%C4%9Fneada/Erikli+Plaj%C4%B1+%C4%B0%C4%9Fneada/Limank%C3%B6y+Deniz+Feneri/Liman+Restaurant+Limank%C3%B6y">Cumartesi rotası →</a>
+    <a class="chip" style="font-size:14px;padding:8px 12px;text-decoration:none" href="https://www.google.com/maps/dir/%C4%B0%C4%9Fneada+Parlak+Resort+Hotel/Hamam+G%C3%B6l%C3%BC+Be%C4%9Fendik/K%C4%B1y%C4%B1k%C3%B6y+Kalesi/Aya+Nikola+Manast%C4%B1r%C4%B1+K%C4%B1y%C4%B1k%C3%B6y/%C4%B0stanbul">Pazar rotası →</a>
     <button class="primary" id="copyBtn" type="button">İşaretlileri kopyala</button>
     <span class="count" id="count">0 yer işaretli</span>
     <span class="copied" id="copied" hidden>Kopyalandı</span>
@@ -237,7 +239,8 @@ footer a{color:var(--muted)}
       <label for="p1"><h3>Mert Gölü ve Longoz Ormanı</h3></label>
       <div class="meta">Merkeze 3 km · Cumartesi öğlen · 1,5–2 saat</div>
       <span class="chip">Yürüyüş</span><span class="chip sea">Göl</span><span class="chip sand">Piknik</span>
-      <p>Parkın en bilinen noktası: Çavuşdere'nin denize döküldüğü yerde göl, arkasında su basar orman. Kano yazlık; kasımda sadece yürüyüş. Kuş gözlemi için dürbün alın. Giriş ücreti düşük, araç ve kişi başı ayrı alınıyor; nakit bulundurun.</p>
+      <p>Parkın en bilinen noktası: Çavuşdere'nin denize döküldüğü yerde göl, arkasında su basar orman. Kuş gözlemi için dürbün alın. Giriş ücreti düşük, araç ve kişi başı ayrı alınıyor; nakit bulundurun.</p>
+      <p><b>Kano:</b> İğneada Gezim acentası Mert Gölü'nde rehberli kano turu yapıyor; turlar 10:00'dan itibaren saat başı, yaklaşık 1,5 km longoz içi parkur. 2024 bilet fiyatı 300–400 TL, 2026 sonbahar turu 1.000 TL/kişi olarak listelenmiş. Kasım tarihi sitede yok; hava ve parkura göre gün gün karar veriyorlar. Cumartesi için <b>0545 723 17 09</b>'u arayıp sorun. Kuş üreme dönemi (15 Nisan–30 Haziran) dışında kano serbest.</p>
       <div class="links"><a href="https://www.google.com/maps/search/?api=1&amp;query=Mert+G%C3%B6l%C3%BC+%C4%B0%C4%9Fneada">Haritada aç</a></div>
       </div>
     </div>
@@ -461,6 +464,7 @@ footer a{color:var(--muted)}
         <li><label><input type="checkbox" data-ck="t2" /><span>Liman Restaurant'a cumartesi 18:00 için 4 kişilik rezervasyon: 0288 694 41 71</span></label></li>
         <li><label><input type="checkbox" data-ck="t3" /><span>Perşembe hava durumuna bak; sağanak varsa yürüyüşleri kısalt, Kıyıköy'ü uzat</span></label></li>
         <li><label><input type="checkbox" data-ck="t4" /><span>Dupnisa istiyorsanız kış saatini arayıp öğrenin</span></label></li>
+        <li><label><input type="checkbox" data-ck="t7" /><span>Kano için İğneada Gezim'i ara: 0545 723 17 09 (cumartesi tur var mı, fiyat)</span></label></li>
         <li><label><input type="checkbox" data-ck="t5" /><span>Pelin'in harita listesine işaretli yerleri ekle</span></label></li>
         <li><label><input type="checkbox" data-ck="t6" /><span>Yemek bölüşümünü Damla'ya at</span></label></li>
       </ul>
@@ -483,7 +487,7 @@ footer a{color:var(--muted)}
 </section>
 
 <footer>
-  Kaynaklar: hotels.com (fiyat ve oda bilgisi, 13 Kasım 2026 ekran görüntüsü), Expedia/hotels.com otel yorumları, Anadolu Ajansı ve NTV (Dupnisa kış kapanışı), trakyagezi.com ve igneadarotabalik.com (restoran telefonları), Wikivoyage (Limanköy feneri), Wikipedia (Fatih Dökümhanesi). Fiyatlar ve saatler değişebilir; gitmeden teyit edin.
+  Kaynaklar: igneadagezim.com (kano tur fiyatları ve telefon), hotels.com (fiyat ve oda bilgisi, 13 Kasım 2026 ekran görüntüsü), Expedia/hotels.com otel yorumları, Anadolu Ajansı ve NTV (Dupnisa kış kapanışı), trakyagezi.com ve igneadarotabalik.com (restoran telefonları), Wikivoyage (Limanköy feneri), Wikipedia (Fatih Dökümhanesi). Fiyatlar ve saatler değişebilir; gitmeden teyit edin.
 </footer>
 
 </div>
